@@ -1,0 +1,23 @@
+{
+  "name": "enroute-platform",
+  "main": "lib/index.js",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "babel src/ -d build/",
+    "prepublish": "yarn run build",
+    "start": "yarn run build; node lib/index.js"
+  },
+  "dependencies": {
+    "@babel/core": "^7.6.4",
+    "@babel/preset-env": "^7.6.3",
+    "@babel/register": "^7.6.2",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.6.4",
+    "@babel/preset-flow": "^7.0.0",
+    "flow": "^0.2.3",
+    "flow-bin": "^0.109.0",
+    "flow-typed": "^2.6.1"
+  }
+}

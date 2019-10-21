@@ -1,0 +1,14 @@
+[ignore]
+<PROJECT_ROOT>/flow-typed/.*
+<PROJECT_ROOT>/lib/.*
+<PROJECT_ROOT>/node_modules/.*
+
+[include]
+
+[libs]
+
+[lints]
+
+[options]
+
+[strict]
