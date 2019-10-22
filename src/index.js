@@ -11,15 +11,21 @@ const pool = new Pool({
   ssl: true,
 });
 
-app.get("/", async (req, res) => {
-  pool.query("SELECT * FROM users", (error, results) => {
-    if (error) {
-      throw error;
-    }
-    if (results) {
-      res.status(200).json(results.rows);
-    }
-  });
+app.get("/", (req, res) => {
+  pool
+    .query("SELECT * FROM locations")
+    .then(results => res.status(200).json(results.rows))
+    .catch(error => res.status(500).json(error));
+});
+
+app.get("/new", (req, res) => {
+  pool
+    .query(
+      "INSERT INTO locations (timestamp, coords) VALUES ('1970-01-01 00:00:01 UTC', '(0,0)');"
+    )
+    .then(() => pool.query("SELECT * FROM locations"))
+    .then(results => res.status(200).json(results.rows))
+    .catch(error => res.status(500).json(error));
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
