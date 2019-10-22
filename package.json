@@ -5,7 +5,7 @@
   "scripts": {
     "build": "babel src/ -d build/",
     "prepublish": "yarn run build",
-    "start": "yarn run build; node lib/index.js"
+    "start": "node lib/index.js"
   },
   "dependencies": {
     "@babel/core": "^7.6.4",
