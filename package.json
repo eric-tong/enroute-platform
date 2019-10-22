@@ -3,7 +3,7 @@
   "main": "lib/index.js",
   "license": "UNLICENSED",
   "scripts": {
-    "build": "babel src/ -d build/",
+    "build": "babel src/ -d lib/",
     "prepublish": "yarn run build",
     "start": "node lib/index.js"
   },
