@@ -12,7 +12,7 @@ const pool = new Pool({
 });
 
 app.get("/", async (req, res) => {
-  pool.query("SELECT * FROM users WHERE id = $1", [1], (error, results) => {
+  pool.query("SELECT * FROM users", (error, results) => {
     if (error) {
       throw error;
     }
