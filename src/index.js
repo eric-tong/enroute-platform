@@ -22,11 +22,14 @@ app.get("/new", (req, res) => {
   pool
     .query("INSERT INTO locations (timestamp, coords) VALUES ($1, $2);", [
       new Date(),
-      "(0,0)",
+      `${req.query.lat},${req.query.long}`,
     ])
     .then(() => pool.query("SELECT * FROM locations"))
     .then(results => res.status(200).json(results.rows))
-    .catch(error => res.status(500).json(error));
+    .catch(error => {
+      res.status(500).json(error);
+      throw error;
+    });
 });
 
 app.listen(port, () => console.log(`EnRoute Platform successfully started.`));
