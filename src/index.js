@@ -1,15 +1,18 @@
 // @flow
 
+import cors from "cors";
 import express from "express";
 import { Pool } from "pg";
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL ?? "",
   ssl: true,
 });
+
+app.use(cors());
 
 app.get("/", (req, res) => {
   pool
