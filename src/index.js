@@ -2,37 +2,17 @@
 
 import cors from "cors";
 import express from "express";
-import { Pool } from "pg";
+import { getVehiclePosition } from "./simulator";
 
 const app = express();
 const port = process.env.PORT || 5000;
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL ?? "",
-  ssl: true,
-});
-
 app.use(cors());
 
 app.get("/", (req, res) => {
-  pool
-    .query("SELECT * FROM locations")
-    .then(results => res.status(200).json(results.rows))
+  getVehiclePosition()
+    .then(position => res.status(200).json(position))
     .catch(error => res.status(500).json(error));
-});
-
-app.get("/new", (req, res) => {
-  pool
-    .query("INSERT INTO locations (timestamp, coords) VALUES ($1, $2);", [
-      new Date(),
-      `${req.query.lat},${req.query.long}`,
-    ])
-    .then(() => pool.query("SELECT * FROM locations"))
-    .then(results => res.status(200).json(results.rows))
-    .catch(error => {
-      res.status(500).json(error);
-      throw error;
-    });
 });
 
 app.listen(port, () => console.log(`EnRoute Platform successfully started.`));
