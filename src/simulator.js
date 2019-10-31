@@ -7,39 +7,41 @@ const pool = new Pool({
 });
 
 export function getVehiclePosition() {
-  const firstAndLastRowQuery = `
-    (SELECT * FROM locations ORDER BY timestamp LIMIT 1)
+  const getAllAvailableDates =
+    "SELECT DATE(timestamp) FROM locations GROUP BY DATE(timestamp)";
+  const getFirstAndLastRowsInDate = `
+    (SELECT * FROM locations WHERE DATE(timestamp) = DATE($1) ORDER BY timestamp LIMIT 1)
     UNION ALL
-    (SELECT * FROM locations ORDER BY timestamp DESC LIMIT 1)
-  `;
-  const firstRowAfterTimestamp = `
-    SELECT * FROM locations WHERE timestamp > $1 ORDER BY timestamp LIMIT 1
-  `;
+    (SELECT * FROM locations WHERE DATE(timestamp) = DATE($1) ORDER BY timestamp DESC LIMIT 1)
+    `;
+  const getRowAfterDate =
+    "SELECT * FROM locations WHERE timestamp > $1 ORDER BY timestamp LIMIT 1";
 
-  return pool
-    .query(firstAndLastRowQuery)
-    .then(results => results.rows)
-    .then(rows => rows.map(row => moment(row.timestamp)))
-    .then(getTranslatedDate)
-    .then(date => pool.query(firstRowAfterTimestamp, [date]))
-    .then(results => results.rows);
-}
-
-function getTranslatedDate(dates) {
   const today = moment();
-  const start = dates[0].add(1, "days");
-  const end = dates[1];
+  return pool
+    .query(getAllAvailableDates)
+    .then(
+      results =>
+        results.rows.find(({ date }) => moment(date).day() === today.day()).date
+    )
+    .then(day => pool.query(getFirstAndLastRowsInDate, [day]))
+    .then(results => results.rows.map(({ timestamp }) => timestamp))
+    .then(timestamps => {
+      const start = moment(timestamps[0]);
+      const end = moment(timestamps[1]);
 
-  const duration = end.diff(start, "weeks");
-  const weeksSinceStart = today.diff(start, "weeks");
-  const translatedWeeksSinceStart = weeksSinceStart % duration;
+      const translatedDate = today
+        .clone()
+        .dayOfYear(start.dayOfYear())
+        .add(1, "hours");
+      if (translatedDate.isBefore(start)) {
+        translatedDate.add(7, "hours");
+      } else if (translatedDate.isAfter(end)) {
+        translatedDate.subtract(7, "hours");
+      }
 
-  const translatedDate = today
-    .clone()
-    .week(start.week() + translatedWeeksSinceStart)
-    .add(1, "hours");
-  if (translatedDate.isBefore(start)) translatedDate.add(1, "weeks");
-  else if (translatedDate.isAfter(end)) translatedDate.subtract(1, "weeks");
-
-  return translatedDate;
+      return translatedDate;
+    })
+    .then(date => pool.query(getRowAfterDate, [date]))
+    .then(results => results.rows[0]);
 }
