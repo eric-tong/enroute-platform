@@ -20,10 +20,7 @@ export function getVehiclePosition() {
   const today = moment();
   return pool
     .query(getAllAvailableDates)
-    .then(
-      results =>
-        results.rows.find(({ date }) => moment(date).day() === today.day()).date
-    )
+    .then(results => results.rows[today.dayOfYear() % results.rows.length].date)
     .then(day => pool.query(getFirstAndLastRowsInDate, [day]))
     .then(results => results.rows.map(({ timestamp }) => timestamp))
     .then(timestamps => {
