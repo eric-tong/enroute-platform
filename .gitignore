@@ -2,4 +2,5 @@ lib
 node_modules
 yarn-error.log
 *.code-workspace
-.*
+.env
+.DS_Store
