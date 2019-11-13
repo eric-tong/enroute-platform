@@ -2,15 +2,15 @@ import moment from "moment";
 import { Pool } from "pg";
 
 const pool = new Pool({
-  host: 'localhost',
+  host: "localhost",
   port: 5432,
-  database: 'enroute',
+  database: "enroute",
   user: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
-  poolSize: 10
+  poolSize: 10,
 });
 
-export function getVehiclePosition() {
+export function getVehicle() {
   const getAllAvailableDates =
     "SELECT DATE(timestamp) FROM locations GROUP BY DATE(timestamp)";
   const getFirstAndLastRowsInDate = `
