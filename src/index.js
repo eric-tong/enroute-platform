@@ -3,6 +3,8 @@
 import config from "./config";
 import cors from "cors";
 import express from "express";
+import graphqlHTTP from "express-graphql";
+import schema from "./graphqlSchema";
 import { getVehiclePosition } from "./simulator";
 
 const app = express();
@@ -10,10 +12,12 @@ const port = process.env.PORT || 5000;
 
 app.use(cors());
 
-app.get("/api", (req, res) => {
-  getVehiclePosition()
-    .then(position => res.status(200).json(position))
-    .catch(error => res.status(500).json(error));
-});
+app.use(
+  "/api",
+  graphqlHTTP({
+    schema: schema,
+    graphiql: true,
+  })
+);
 
 app.listen(port, () => console.log(`EnRoute Platform successfully started.`));
