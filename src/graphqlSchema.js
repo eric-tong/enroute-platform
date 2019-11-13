@@ -27,15 +27,15 @@ const VehicleType = new GraphQLObjectType({
   },
 });
 
+const vehicle = {
+  description: "Query for one vehicle using its id",
+  type: VehicleType,
+  resolve: getVehicle,
+};
+
 const RootQueryType = new GraphQLObjectType({
   name: "RootQueryType",
-  fields: {
-    vehicle: {
-      description: "Query for one vehicle using its id",
-      type: VehicleType,
-      resolve: getVehicle,
-    },
-  },
+  fields: { vehicle },
 });
 
 const schema = new GraphQLSchema({
