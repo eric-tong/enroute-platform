@@ -10,7 +10,7 @@ const port = process.env.PORT || 5000;
 
 app.use(cors());
 
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   getVehiclePosition()
     .then(position => res.status(200).json(position))
     .catch(error => res.status(500).json(error));
