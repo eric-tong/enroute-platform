@@ -2,8 +2,12 @@ import moment from "moment";
 import { Pool } from "pg";
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL ?? "",
-  ssl: true,
+  host: 'localhost',
+  port: 5432,
+  database: 'enroute',
+  user: process.env.DATABASE_USER,
+  password: process.env.DATABASE_PASSWORD,
+  poolSize: 10
 });
 
 export function getVehiclePosition() {
