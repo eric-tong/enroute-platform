@@ -1,15 +1,16 @@
 // @flow
 
 import {
-  graphql,
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLString,
   GraphQLFloat,
   GraphQLList,
+  GraphQLObjectType,
+  GraphQLSchema,
+  GraphQLString,
+  graphql,
 } from "graphql";
-import { getVehicle } from "./vehicles";
+
 import { getBusStops } from "./busStops";
+import { getVehicle } from "./vehicles";
 
 const CoordsType = new GraphQLObjectType({
   name: "CoordsType",
@@ -26,6 +27,7 @@ const VehicleType = new GraphQLObjectType({
   fields: {
     timestamp: { type: GraphQLString },
     coords: { type: CoordsType },
+    bearing: { type: GraphQLFloat },
   },
 });
 

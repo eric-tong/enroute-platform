@@ -1,5 +1,5 @@
-import moment from "moment";
 import database from "./database";
+import moment from "moment";
 
 export function getVehicle() {
   const getAllAvailableDates =
@@ -10,7 +10,7 @@ export function getVehicle() {
     (SELECT * FROM locations WHERE DATE(timestamp) = DATE($1) ORDER BY timestamp DESC LIMIT 1)
     `;
   const getRowAfterDate =
-    "SELECT * FROM locations WHERE timestamp > $1 ORDER BY timestamp LIMIT 1";
+    "SELECT * FROM locations WHERE timestamp < $1 ORDER BY timestamp DESC LIMIT 2";
 
   const today = moment();
   return database
@@ -35,5 +35,17 @@ export function getVehicle() {
       return translatedDate;
     })
     .then(date => database.query(getRowAfterDate, [date]))
-    .then(results => results.rows[0]);
+    .then(results => {
+      const current = results.rows[0];
+      const previous = results.rows[1];
+      const bearing =
+        (Math.atan2(
+          current.coords.y - previous.coords.y,
+          current.coords.x - previous.coords.x
+        ) /
+          Math.PI) *
+        180;
+
+      return { ...current, bearing };
+    });
 }
