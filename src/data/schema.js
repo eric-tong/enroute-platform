@@ -6,8 +6,10 @@ import {
   GraphQLObjectType,
   GraphQLString,
   GraphQLFloat,
+  GraphQLList,
 } from "graphql";
-import { getVehicle } from "./simulator";
+import { getVehicle } from "./vehicles";
+import { getBusStops } from "./busStops";
 
 const CoordsType = new GraphQLObjectType({
   name: "CoordsType",
@@ -27,15 +29,32 @@ const VehicleType = new GraphQLObjectType({
   },
 });
 
+const BusStopType = new GraphQLObjectType({
+  name: "BusStopType",
+  description: "Bus stop with location",
+  fields: {
+    name: { type: GraphQLString },
+    street: { type: GraphQLString },
+    icon: { type: GraphQLString },
+    coords: { type: CoordsType },
+  },
+});
+
 const vehicle = {
   description: "Query for one vehicle using its id",
   type: VehicleType,
   resolve: getVehicle,
 };
 
+const busStops = {
+  description: "Get bus stops and their locations",
+  type: new GraphQLList(BusStopType),
+  resolve: getBusStops,
+};
+
 const RootQueryType = new GraphQLObjectType({
   name: "RootQueryType",
-  fields: { vehicle },
+  fields: { vehicle, busStops },
 });
 
 const schema = new GraphQLSchema({
