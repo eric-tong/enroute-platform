@@ -1,29 +1,17 @@
 // @flow
 
 import fetch from "node-fetch";
-import { getBusStops } from "./busStops";
-
-const params: { [string]: string } = {
-  geometries: "geojson",
-  overview: "full",
-  access_token: process.env.MAPBOX_ACCESS_TOKEN ?? "",
-};
-const coords = getBusStops().reduce(
-  (total, current) =>
-    total +
-    (total.length > 0 ? ";" : "") +
-    current.coords.y +
-    "," +
-    current.coords.x,
-  ""
-);
-const url = new URL(
-  `https://api.mapbox.com/directions/v5/mapbox/driving/${coords}`
-);
-
-Object.keys(params).forEach(key => url.searchParams.set(key, params[key]));
+import { getBusStopsInOrder } from "./busStops";
 
 export function getRouteCoords() {
+  const url = getURL();
+  const params: { [string]: string } = {
+    geometries: "geojson",
+    overview: "full",
+    access_token: process.env.MAPBOX_ACCESS_TOKEN ?? "",
+  };
+  Object.keys(params).forEach(key => url.searchParams.set(key, params[key]));
+
   return fetch(url)
     .then(response => response.json())
     .then(result =>
@@ -33,4 +21,19 @@ export function getRouteCoords() {
       }))
     )
     .catch(console.log);
+}
+
+function getURL() {
+  const coords = getBusStopsInOrder().reduce(
+    (total, current) =>
+      total +
+      (total.length > 0 ? ";" : "") +
+      current.coords.y +
+      "," +
+      current.coords.x,
+    ""
+  );
+  return new URL(
+    `https://api.mapbox.com/directions/v5/mapbox/driving/${coords}`
+  );
 }
