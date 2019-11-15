@@ -10,6 +10,7 @@ import {
 } from "graphql";
 
 import { getBusStops } from "./busStops";
+import { getRouteCoords } from "./route";
 import { getVehicle } from "./vehicles";
 
 const CoordsType = new GraphQLObjectType({
@@ -54,9 +55,15 @@ const busStops = {
   resolve: getBusStops,
 };
 
+const route = {
+  description: "Get coordinates along route of bus",
+  type: new GraphQLList(CoordsType),
+  resolve: getRouteCoords,
+};
+
 const RootQueryType = new GraphQLObjectType({
   name: "RootQueryType",
-  fields: { vehicle, busStops },
+  fields: { vehicle, busStops, route },
 });
 
 const schema = new GraphQLSchema({

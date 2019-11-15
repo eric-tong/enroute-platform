@@ -1,5 +1,6 @@
 // @flow
 
+import config from "./config";
 import cors from "cors";
 import express from "express";
 import graphqlHTTP from "express-graphql";
