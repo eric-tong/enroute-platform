@@ -11,6 +11,11 @@ const port = process.env.PORT || 5000;
 
 app.use(cors());
 
+app.get("/api/position", (req, res) => {
+  const { lat, lon, id } = req.query;
+  res.status(200).json({ lat, lon, vehicleId: id });
+});
+
 app.use(
   "/api",
   graphqlHTTP({
