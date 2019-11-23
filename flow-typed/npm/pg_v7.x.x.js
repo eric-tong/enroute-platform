@@ -33,7 +33,7 @@ declare module pg {
    * the node-postgres Client constructor and the node-pool constructor
    * allowing you to fully configure the behavior of both
    * node-pool (https://github.com/coopernurse/node-pool)
-  */
+   */
   declare type PgPoolConfig = {
     // node-pool ----------------
     name: string,
@@ -84,24 +84,37 @@ declare module pg {
   /*
    * Not extends from Client, cause some of Client's functions(ex: connect and end)
    * should not be used by PoolClient (which returned from Pool.connect).
-  */
+   */
   declare type PoolClient = {
     release(error?: mixed): void,
-    query:
-    ( <T: QuerySubmittableConfig>(query: T, callback?: QueryCallback) => T ) &
-    ( (query: QueryConfig|string, callback?: QueryCallback) => Query ) &
-    ( (text: string, values: Array<any>, callback?: QueryCallback) => Query ),
-    on:
-    ((event: 'drain', listener: () => void) => events$EventEmitter )&
-    ((event: 'error', listener: (err: PG_ERROR) => void) => events$EventEmitter )&
-    ((event: 'notification', listener: (message: any) => void) => events$EventEmitter )&
-    ((event: 'notice', listener: (message: any) => void) => events$EventEmitter )&
-    ((event: 'end', listener: () => void) => events$EventEmitter ),
+    query: (<T: QuerySubmittableConfig>(
+      query: T,
+      callback?: QueryCallback
+    ) => T) &
+      ((query: QueryConfig | string, callback?: QueryCallback) => Query) &
+      ((text: string, values: Array<any>, callback?: QueryCallback) => Query),
+    on: ((event: "drain", listener: () => void) => events$EventEmitter) &
+      ((
+        event: "error",
+        listener: (err: PG_ERROR) => void
+      ) => events$EventEmitter) &
+      ((
+        event: "notification",
+        listener: (message: any) => void
+      ) => events$EventEmitter) &
+      ((
+        event: "notice",
+        listener: (message: any) => void
+      ) => events$EventEmitter) &
+      ((event: "end", listener: () => void) => events$EventEmitter),
     ...
-  }
+  };
 
-  declare type PoolConnectCallback = (error: PG_ERROR|null,
-    client: PoolClient|null, done: DoneCallback) => void;
+  declare type PoolConnectCallback = (
+    error: PG_ERROR | null,
+    client: PoolClient | null,
+    done: DoneCallback
+  ) => void;
   declare type DoneCallback = (error?: mixed) => void;
   // https://github.com/facebook/flow/blob/master/lib/node.js#L581
   // on() returns a events$EventEmitter
@@ -111,17 +124,23 @@ declare module pg {
     take(cb?: PoolConnectCallback): Promise<PoolClient>;
     end(cb?: DoneCallback): Promise<void>;
 
-  // Note: not like the pg's Client, the Pool.query return a Promise,
-  // not a Thenable Query which Client returned.
-  // And there is a flow(<0.34) issue here, when Array<mixed>,
-  // the overloading will not work
-    query:
-    ( (query: QueryConfig|string, callback?: QueryCallback) => Promise<ResultSet> ) &
-    ( (text: string, values: Array<any>, callback?: QueryCallback) => Promise<ResultSet>);
+    // Note: not like the pg's Client, the Pool.query return a Promise,
+    // not a Thenable Query which Client returned.
+    // And there is a flow(<0.34) issue here, when Array<mixed>,
+    // the overloading will not work
+    query: ((
+      query: QueryConfig | string,
+      callback?: QueryCallback
+    ) => Promise<ResultSet>) &
+      ((
+        text: string,
+        values: Array<any>,
+        callback?: QueryCallback
+      ) => Promise<ResultSet>);
 
     /* flow issue: https://github.com/facebook/flow/issues/2423
      * When this fixed, this overloading can be used.
-    */
+     */
     /*
       on:
       ((event: 'connect', listener: (client: PoolClient) => void) => events$EventEmitter )&
@@ -133,27 +152,26 @@ declare module pg {
 
   // <<------------- copy from 'pg-pool' ------------------------------
 
-
   // error
   declare type PG_ERROR = {
     name: string,
     length: number,
     severity: string,
     code: string,
-    detail: string|void,
-    hint: string|void,
-    position: string|void,
-    internalPosition: string|void,
-    internalQuery: string|void,
-    where: string|void,
-    schema: string|void,
-    table: string|void,
-    column: string|void,
-    dataType: string|void,
-    constraint: string|void,
-    file: string|void,
-    line: string|void,
-    routine: string|void,
+    detail: string | void,
+    hint: string | void,
+    position: string | void,
+    internalPosition: string | void,
+    internalQuery: string | void,
+    where: string | void,
+    schema: string | void,
+    table: string | void,
+    column: string | void,
+    dataType: string | void,
+    constraint: string | void,
+    file: string | void,
+    line: string | void,
+    routine: string | void,
     ...
   };
 
@@ -177,9 +195,9 @@ declare module pg {
     // default value: false
     fallback_application_name?: string,
     ...
-  }
+  };
 
-  declare type Row = { [key: string]: mixed, ... };
+  declare type Row = { [key: string]: any, ... };
   declare type ResultSet = {
     command: string,
     rowCount: number,
@@ -201,10 +219,19 @@ declare module pg {
     values?: any[],
     ...
   };
-  declare type QuerySubmittableConfig = QueryConfig & { submit: (connection: mixed) => void, ... };
+  declare type QuerySubmittableConfig = QueryConfig & {
+    submit: (connection: mixed) => void,
+    ...
+  };
 
-  declare type QueryCallback = (err: PG_ERROR|null, result: ResultSet|void) => void;
-  declare type ClientConnectCallback = (err: PG_ERROR|null, client: Client|void) => void;
+  declare type QueryCallback = (
+    err: PG_ERROR | null,
+    result: ResultSet | void
+  ) => void;
+  declare type ClientConnectCallback = (
+    err: PG_ERROR | null,
+    client: Client | void
+  ) => void;
 
   /*
    * lib/query.js
@@ -219,22 +246,28 @@ declare module pg {
    * const result = await q; // or await
    *
    * ToDo: should find a better way.
-  */
+   */
   declare class Query extends Promise<ResultSet> {
     then<U>(
-      onFulfill?: ?((value: ResultSet) => Promise<U> | U),
-      onReject?: ?((error: PG_ERROR) => Promise<U> | U)
+      onFulfill?: ?(value: ResultSet) => Promise<U> | U,
+      onReject?: ?(error: PG_ERROR) => Promise<U> | U
     ): Promise<U>;
     // Because then and catch return a Promise,
     // .then.catch will lose catch's type information PG_ERROR.
-    catch<U>(
-      onReject?: ?((error: PG_ERROR) => Promise<U> | U)
-    ): Promise<U>;
+    catch<U>(onReject?: ?(error: PG_ERROR) => Promise<U> | U): Promise<U>;
 
-    on :
-    ((event: 'row', listener: (row: Row, result: ResultBuilder) => void) => events$EventEmitter )&
-    ((event: 'end', listener: (result: ResultBuilder) => void) => events$EventEmitter )&
-    ((event: 'error', listener: (err: PG_ERROR) => void) => events$EventEmitter );
+    on: ((
+      event: "row",
+      listener: (row: Row, result: ResultBuilder) => void
+    ) => events$EventEmitter) &
+      ((
+        event: "end",
+        listener: (result: ResultBuilder) => void
+      ) => events$EventEmitter) &
+      ((
+        event: "error",
+        listener: (err: PG_ERROR) => void
+      ) => events$EventEmitter);
   }
 
   /*
@@ -244,47 +277,50 @@ declare module pg {
    * ToDo: Not sure in on() if return events$EventEmitter or this will be more suitable
    * return this will restrict event to given literial when chain on().on().on().
    * return a events$EventEmitter will fallback to raw EventEmitter, when chains
-  */
+   */
   declare class Client {
     constructor(config?: string | ClientConfig): void;
-    connect(callback?: ClientConnectCallback):void;
+    connect(callback?: ClientConnectCallback): void;
     end(): void;
 
     escapeLiteral(str: string): string;
     escapeIdentifier(str: string): string;
 
-    query:
-    ( <T: QuerySubmittableConfig>(query: T, callback?: QueryCallback) => T ) &
-    ( (query: QueryConfig|string, callback?: QueryCallback) => Query ) &
-    ( (text: string, values: Array<any>, callback?: QueryCallback) => Query );
+    query: (<T: QuerySubmittableConfig>(
+      query: T,
+      callback?: QueryCallback
+    ) => T) &
+      ((query: QueryConfig | string, callback?: QueryCallback) => Query) &
+      ((text: string, values: Array<any>, callback?: QueryCallback) => Query);
 
-    on:
-    ((event: 'drain', listener: () => void) => this )&
-    ((event: 'error', listener: (err: PG_ERROR) => void) => this )&
-    ((event: 'notification', listener: (message: any) => void) => this )&
-    ((event: 'notice', listener: (message: any) => void) => this )&
-    ((event: 'end', listener: () => void) => this );
+    on: ((event: "drain", listener: () => void) => this) &
+      ((event: "error", listener: (err: PG_ERROR) => void) => this) &
+      ((event: "notification", listener: (message: any) => void) => this) &
+      ((event: "notice", listener: (message: any) => void) => this) &
+      ((event: "end", listener: () => void) => this);
   }
 
   /*
    * require('pg-types')
-  */
+   */
   declare type TypeParserText = (value: string) => any;
   declare type TypeParserBinary = (value: Buffer) => any;
   declare type Types = {
-    getTypeParser:
-      ((oid: number, format?: 'text') => TypeParserText )&
-      ((oid: number, format: 'binary') => TypeParserBinary ),
-    setTypeParser:
-      ((oid: number, format?: 'text', parseFn: TypeParserText) => void )&
-      ((oid: number, format: 'binary', parseFn: TypeParserBinary) => void)&
+    getTypeParser: ((oid: number, format?: "text") => TypeParserText) &
+      ((oid: number, format: "binary") => TypeParserBinary),
+    setTypeParser: ((
+      oid: number,
+      format?: "text",
+      parseFn: TypeParserText
+    ) => void) &
+      ((oid: number, format: "binary", parseFn: TypeParserBinary) => void) &
       ((oid: number, parseFn: TypeParserText) => void),
     ...
-  }
+  };
 
   /*
    * lib/index.js ( class PG)
-  */
+   */
   declare class PG extends events$EventEmitter {
     types: Types;
     Client: Class<Client>;
@@ -299,7 +335,7 @@ declare module pg {
       Connection: mixed,
       ...
     };
-  // The end(),connect(),cancel() in PG is abandoned ?
+    // The end(),connect(),cancel() in PG is abandoned ?
   }
 
   // These class are not exposed by pg.

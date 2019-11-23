@@ -3,8 +3,8 @@
 import fetch from "node-fetch";
 import { getBusStopsInOrder } from "./busStops";
 
-export function getRouteCoords() {
-  const url = getURL();
+export async function getRouteCoords() {
+  const url = await getURL();
   const params: { [string]: string } = {
     geometries: "geojson",
     overview: "full",
@@ -23,8 +23,9 @@ export function getRouteCoords() {
     .catch(console.log);
 }
 
-function getURL() {
-  const coords = getBusStopsInOrder().reduce(
+async function getURL() {
+  const busStops = await getBusStopsInOrder();
+  const coords = busStops.reduce(
     (total, current) =>
       total +
       (total.length > 0 ? ";" : "") +

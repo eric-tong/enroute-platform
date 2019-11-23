@@ -1,3 +1,5 @@
+// @flow
+
 import database from "./database";
 import moment from "moment";
 
