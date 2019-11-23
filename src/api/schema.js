@@ -9,9 +9,9 @@ import {
   graphql,
 } from "graphql";
 
-import { getBusStops } from "./busStops";
-import { getRouteCoords } from "./route";
-import { getVehicle } from "./vehicles";
+import { getBusStops } from "../data/busStops";
+import { getRouteCoords } from "../data/route";
+import { getVehicle } from "../data/vehicles";
 
 const CoordsType = new GraphQLObjectType({
   name: "CoordsType",

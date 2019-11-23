@@ -1,5 +1,5 @@
 // @flow
-import type { Coordinates } from "./DataTypes.flow";
+
 import database from "./database";
 
 type BusStop = {

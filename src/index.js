@@ -4,7 +4,7 @@ import config from "./config";
 import cors from "cors";
 import express from "express";
 import graphqlHTTP from "express-graphql";
-import schema from "./data/schema";
+import schema from "./api/schema";
 
 const app = express();
 const port = process.env.PORT || 5000;
