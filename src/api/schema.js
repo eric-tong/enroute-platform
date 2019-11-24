@@ -3,6 +3,7 @@
 import {
   GraphQLFloat,
   GraphQLID,
+  GraphQLInt,
   GraphQLList,
   GraphQLObjectType,
   GraphQLSchema,
@@ -42,6 +43,7 @@ const BusStopType = new GraphQLObjectType({
     street: { type: GraphQLString },
     icon: { type: GraphQLString },
     coords: { type: CoordsType },
+    arrivalTimes: { type: new GraphQLList(GraphQLInt) },
   },
 });
 
