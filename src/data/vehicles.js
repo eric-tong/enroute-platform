@@ -3,6 +3,8 @@
 import database from "./database";
 import moment from "moment";
 
+type Vehicle = {| coords: Coordinates |};
+
 export function getVehicle() {
   const getAllAvailableDates =
     "SELECT DATE(timestamp) FROM locations GROUP BY DATE(timestamp)";
@@ -16,7 +18,7 @@ export function getVehicle() {
 
   const today = moment();
   return database
-    .query(getAllAvailableDates)
+    .query<{ date: string }>(getAllAvailableDates)
     .then(results => results.rows[today.dayOfYear() % results.rows.length].date)
     .then(day => database.query(getFirstAndLastRowsInDate, [day]))
     .then(results => results.rows.map(({ timestamp }) => timestamp))
@@ -36,7 +38,7 @@ export function getVehicle() {
 
       return translatedDate;
     })
-    .then(date => database.query(getRowAfterDate, [date]))
+    .then(date => database.query<Vehicle>(getRowAfterDate, [date]))
     .then(results => {
       const current = results.rows[0];
       const previous = results.rows[1];

@@ -128,15 +128,16 @@ declare module pg {
     // not a Thenable Query which Client returned.
     // And there is a flow(<0.34) issue here, when Array<mixed>,
     // the overloading will not work
-    query: ((
+    query<T>(
       query: QueryConfig | string,
       callback?: QueryCallback
-    ) => Promise<ResultSet>) &
-      ((
-        text: string,
-        values: Array<any>,
-        callback?: QueryCallback
-      ) => Promise<ResultSet>);
+    ): Promise<ResultSet<T>>;
+
+    query<T>(
+      text: string,
+      values: Array<any>,
+      callback?: QueryCallback
+    ): Promise<ResultSet<T>>;
 
     /* flow issue: https://github.com/facebook/flow/issues/2423
      * When this fixed, this overloading can be used.
@@ -197,12 +198,12 @@ declare module pg {
     ...
   };
 
-  declare type Row = { [key: string]: any, ... };
-  declare type ResultSet = {
+  declare type Row = { [key: string]: mixed, ... };
+  declare type ResultSet<T> = {
     command: string,
     rowCount: number,
     oid: number,
-    rows: Array<Row>,
+    rows: Array<T>,
     ...
   };
   declare type ResultBuilder = {
@@ -226,7 +227,7 @@ declare module pg {
 
   declare type QueryCallback = (
     err: PG_ERROR | null,
-    result: ResultSet | void
+    result: ResultSet<Row> | void
   ) => void;
   declare type ClientConnectCallback = (
     err: PG_ERROR | null,
@@ -247,9 +248,9 @@ declare module pg {
    *
    * ToDo: should find a better way.
    */
-  declare class Query extends Promise<ResultSet> {
+  declare class Query extends Promise<ResultSet<Row>> {
     then<U>(
-      onFulfill?: ?(value: ResultSet) => Promise<U> | U,
+      onFulfill?: ?(value: ResultSet<Row>) => Promise<U> | U,
       onReject?: ?(error: PG_ERROR) => Promise<U> | U
     ): Promise<U>;
     // Because then and catch return a Promise,
