@@ -2,6 +2,7 @@
 
 import {
   GraphQLFloat,
+  GraphQLID,
   GraphQLList,
   GraphQLObjectType,
   GraphQLSchema,
@@ -36,6 +37,7 @@ const BusStopType = new GraphQLObjectType({
   name: "BusStopType",
   description: "Bus stop with location",
   fields: {
+    id: { type: GraphQLID },
     name: { type: GraphQLString },
     street: { type: GraphQLString },
     icon: { type: GraphQLString },
