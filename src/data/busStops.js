@@ -12,8 +12,12 @@ export type BusStop = {|
 |};
 
 const GET_ALL_BUS_STOPS = "SELECT * FROM busStops";
-const GET_ALL_BUS_STOPS_IN_ORDER =
-  "SELECT coords FROM busStops INNER JOIN arrivalTimes ON busStops.id = arrivalTimes.busStopId WHERE arrivalTimes.tripId = 1 ORDER BY time";
+const GET_ALL_BUS_STOPS_IN_ORDER = `
+SELECT coords FROM busStops INNER JOIN arrivals 
+  ON busStops.id = arrivals.busStopId 
+  WHERE arrivals.tripId = 1
+  ORDER BY time
+`;
 
 export function getBusStops() {
   return database
