@@ -11,6 +11,7 @@ import {
   graphql,
 } from "graphql";
 
+import { getArrivalsFromBusStop } from "../data/arrivals";
 import { getBusStops } from "../data/busStops";
 import { getRouteCoords } from "../data/route";
 import { getVehicle } from "../data/vehicles";
@@ -43,7 +44,10 @@ const BusStopType = new GraphQLObjectType({
     street: { type: GraphQLString },
     icon: { type: GraphQLString },
     coords: { type: CoordsType },
-    arrivalTimes: { type: new GraphQLList(GraphQLInt) },
+    arrivals: {
+      type: new GraphQLList(GraphQLInt),
+      resolve: getArrivalsFromBusStop,
+    },
   },
 });
 

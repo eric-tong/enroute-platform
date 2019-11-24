@@ -1,5 +1,6 @@
 // @flow
 
+import type { Coordinates } from "../DataTypes";
 import database from "./database";
 import moment from "moment";
 
