@@ -8,7 +8,6 @@ import {
   GraphQLObjectType,
   GraphQLSchema,
   GraphQLString,
-  graphql,
 } from "graphql";
 
 import { getArrivalsFromBusStop } from "../data/arrivals";
@@ -45,7 +44,8 @@ const BusStopType = new GraphQLObjectType({
     icon: { type: GraphQLString },
     coords: { type: CoordsType },
     arrivals: {
-      type: new GraphQLList(GraphQLInt),
+      type: new GraphQLList(GraphQLString),
+      args: { maxLength: { type: GraphQLInt } },
       resolve: getArrivalsFromBusStop,
     },
   },
