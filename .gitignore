@@ -4,3 +4,4 @@ yarn-error.log
 *.code-workspace
 .env
 .DS_Store
+.node-persist
