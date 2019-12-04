@@ -5,15 +5,22 @@ import cors from "cors";
 import express from "express";
 import graphqlHTTP from "express-graphql";
 import schema from "./api/schema";
+import storage from "node-persist";
 
 const app = express();
 const port = process.env.PORT || 5000;
 
 app.use(cors());
 
-app.get("/api/position", (req, res) => {
-  const { lat, lon, id } = req.query;
-  res.status(200).json({ lat, lon, vehicleId: id });
+app.get("/", (req, res) => {
+  storage
+    .init()
+    .then(() => storage.getItem("queries"))
+    .then(queries => (Array.isArray(queries) ? queries : []))
+    .then(queries => storage.setItem("queries", [...queries, req.query]))
+    .then(() => storage.getItem("queries"))
+    .then(queries => res.status(200).json(queries))
+    .catch(console.log);
 });
 
 app.use(
