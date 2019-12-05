@@ -35,4 +35,6 @@ app.use(
   })
 );
 
-app.listen(port, () => console.log(`EnRoute Platform successfully started.`));
+app.listen(port, () =>
+  console.log(`EnRoute Platform successfully started at port ${port}.`)
+);

@@ -38,5 +38,5 @@ var server = net.createServer(function(socket) {
 });
 
 server.listen(port, () =>
-  console.log(`EnRoute Platform successfully started.`)
+  console.log(`EnRoute TCP Platform successfully started at port ${port}.`)
 );
