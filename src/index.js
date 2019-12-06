@@ -13,7 +13,7 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 
 app.use(
-  "/api",
+  "/",
   graphqlHTTP({
     schema: schema,
     graphiql: true,
