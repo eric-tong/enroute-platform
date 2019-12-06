@@ -1,26 +1,21 @@
 var net = require("net");
-const storage = require("node-persist");
 
-// Keep track of the chat clients
 var clients = [];
+const port = process.env.PORT || 3000;
 
-const port = process.env.PORT || 445;
-
-var server = net.createServer(function(socket) {
+var server = net.createServer(socket => {
   socket.name = socket.remoteAddress + ":" + socket.remotePort;
   clients.push(socket);
 
-  socket.write("Welcome " + socket.name + "\n");
-  broadcast(socket.name + " joined the chat\n", socket);
-
   socket.on("data", function(data) {
-    broadcast(socket.name + "> " + data, socket);
-    storage
-      .init()
-      .then(() => storage.getItem("queries"))
-      .then(queries => (Array.isArray(queries) ? queries : []))
-      .then(queries => storage.setItem("queries", [...queries, data]))
-      .catch(console.log);
+    const arr = [...data];
+    console.log(arr);
+    if (arr[1] > 0) socket.write("\x01");
+    else {
+      const reply = Buffer.from([0, 0, 0, arr[9]]);
+      console.log(reply);
+      socket.write(reply);
+    }
   });
 
   socket.on("end", function() {
