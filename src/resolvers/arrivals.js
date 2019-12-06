@@ -1,7 +1,7 @@
 // @flow
 
 import type { BusStop } from "./busStops";
-import database from "./database";
+import database from "../database/database";
 import moment from "moment";
 
 const GET_ARRIVAL_TIMES_WITH_BUS_STOP_ID = `

@@ -1,7 +1,7 @@
 // @flow
 
-import type { Coordinates } from "../DataTypes";
-import database from "./database";
+import type { Coordinates } from "../types/DataTypes";
+import database from "../database/database";
 
 export type BusStop = {|
   id: number,

@@ -10,10 +10,10 @@ import {
   GraphQLString,
 } from "graphql";
 
-import { getArrivalsFromBusStop } from "../data/arrivals";
-import { getBusStops } from "../data/busStops";
-import { getRouteCoords } from "../data/route";
-import { getVehicle } from "../data/vehicles";
+import { getArrivalsFromBusStop } from "../resolvers/arrivals";
+import { getBusStops } from "../resolvers/busStops";
+import { getRouteCoords } from "../resolvers/route";
+import { getVehicle } from "../resolvers/vehicles";
 
 const CoordsType = new GraphQLObjectType({
   name: "CoordsType",
