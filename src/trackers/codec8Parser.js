@@ -35,28 +35,29 @@ X       AVL Data            Array (See below)
 1       N8                  Number of 1-byte IO items
 2*N8    ID/Value            ID - 1 byte, value - 8 byte
 
-Items that need verifying: Zero bytes, data field length, CRC
+Items that need verifying: Zero bytes, data field length, number of data 1 & 2, CRC
 
 */
 
-type DataPart = $Exact<{ start: number, length: number }>;
+const dataPartBytes: [string, number][] = [
+  ["preamble", 4],
+  ["dataFieldLength", 4],
+  ["codecId", 1],
+  ["avlDataCount", 1],
+  ["timestamp", 8],
+];
 
-const preamble: DataPart = { start: 0, length: 4 };
-const dataFieldLength: DataPart = { start: 4, length: 4 };
-const codecId: DataPart = { start: 8, length: 1 };
+export default function parse(
+  stream: string,
+  bytes: [string, number][] = dataPartBytes
+) {
+  const result = {};
 
-export default function parse(stream: string) {
-  const getValue = ({ start, length }: DataPart) =>
-    parseInt(stream.substr(start * 2, length * 2), 16);
+  let index = 0;
+  bytes.forEach(([key, size]) => {
+    result[key] = parseInt(stream.substr(index * 2, size * 2), 16);
+    index += size;
+  });
 
-  const parts: { [string]: DataPart } = {
-    preamble,
-    dataFieldLength,
-    codecId,
-  };
-
-  return Object.keys(parts).reduce<{ [string]: number }>(
-    (total, key) => Object.assign({}, total, { [key]: getValue(parts[key]) }),
-    {}
-  );
+  return result;
 }
