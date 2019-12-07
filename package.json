@@ -5,7 +5,8 @@
   "scripts": {
     "build": "babel src/ -d lib/",
     "prepublish": "yarn run build",
-    "start": "node lib/index.js"
+    "start": "node lib/index.js",
+    "test": "jest"
   },
   "dependencies": {
     "@babel/core": "^7.6.4",
@@ -29,6 +30,13 @@
     "@babel/preset-flow": "^7.0.0",
     "flow": "^0.2.3",
     "flow-bin": "^0.109.0",
-    "flow-typed": "^2.6.1"
+    "flow-typed": "^2.6.1",
+    "jest": "^24.9.0"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "<rootDir>/node_modules/",
+      "<rootDir>/lib/"
+    ]
   }
 }
