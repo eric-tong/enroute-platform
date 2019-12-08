@@ -3,7 +3,9 @@
 import net from "net";
 import parseCodec8Stream from "./codec8Parser";
 
-type ParsedDataType = { type: "imei", imei: string } | { type: "avl", avl: {} };
+type ParsedDataType =
+  | { type: "imei", imei: string }
+  | { type: "avl", avl: any };
 
 const imeis = new Map();
 const validImeis = ["358480089803458"];
@@ -16,14 +18,15 @@ const server = net.createServer(socket => {
     try {
       const data = parse(stream);
       if (data.type === "imei") {
-        imeis.set(socket, stream);
         if (validImeis.includes(data.imei)) {
+          imeis.set(socket, data.imei);
           socket.write("\x01");
         } else {
           throw new Error(`Invalid IMEI ${data.imei}`);
         }
       } else if (data.type === "avl") {
         console.log(data.avl);
+        socket.write(Buffer.from[(0, 0, 0, data.avl.avlDataCount)]);
       }
     } catch (error) {
       console.log(error);
