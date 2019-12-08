@@ -1,6 +1,7 @@
 // @flow
 
-import generateCRC16 from "../crc16Generator";
+import crcIsValid, { generateCRC16 } from "../crc16Checker";
+
 import packet from "./packetData";
 import parse from "../codec8Parser";
 
@@ -177,5 +178,15 @@ describe("Codec8 parsing", () => {
     const expected = 0x252c;
 
     expect(actual).toEqual(expected);
+  });
+
+  test("validates crc", () => {
+    const string =
+      "000000000000004308020000016B40D57B480100000000000000000000000000000001010101000000000000016B40D5C198010000000000000000000000000000000101010101000000020000252C";
+    const stream = Buffer.from(string, "hex");
+
+    const actual = crcIsValid(stream);
+
+    expect(actual).toEqual(true);
   });
 });

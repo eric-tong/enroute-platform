@@ -1,6 +1,7 @@
 // @flow
 
 import type { Socket } from "net";
+import crcIsValid from "./crc16Checker";
 import net from "net";
 import parseCodec8Stream from "./codec8Parser";
 
@@ -44,10 +45,12 @@ const server = net.createServer((socket: Socket) => {
       }
     } else if (!client.imei) {
       setImei(stream);
-    } else {
+    } else if (crcIsValid(stream)) {
       const data: any = parseCodec8Stream(stream.toString("hex"));
-      console.log(data);
+      console.log("Valid CRC", data);
       write(Buffer.from([0, 0, 0, data.avlDataCount]));
+    } else {
+      console.log("Invalid CRC");
     }
   });
 

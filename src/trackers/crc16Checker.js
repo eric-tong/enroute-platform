@@ -1,6 +1,13 @@
 // @flow
 
-export default function generateCRC16(stream: Buffer) {
+export default function crcIsValid(stream: Buffer) {
+  return (
+    generateCRC16(stream.slice(8, -4)).toString(16) ===
+    stream.slice(-2).toString("hex")
+  );
+}
+
+export function generateCRC16(stream: Buffer) {
   let crc = 0;
   stream.forEach(byte => {
     crc ^= byte;
