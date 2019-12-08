@@ -39,7 +39,7 @@ const server = net.createServer((socket: Socket) => {
         [ip, imei] = stream.toString().split("\n");
         client.ip = ip;
         if (!imei) return;
-        else imei = imei.slice(12);
+        else imei = imei.slice(2);
       }
 
       if (!imei) imei = stream.slice(2).toString();
