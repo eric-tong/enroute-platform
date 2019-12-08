@@ -29,7 +29,10 @@ const server = net.createServer((socket: Socket) => {
 
   socket.on("data", (stream: Buffer) => {
     console.log({
-      stream: stream.length < 100 ? stream.toString() : stream.toString("hex"),
+      stream:
+        !client.header || !client.imei
+          ? stream.toString()
+          : stream.toString("hex"),
     });
 
     if (!client.header) {
