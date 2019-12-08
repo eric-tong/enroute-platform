@@ -2,8 +2,8 @@
 
 export default function crcIsValid(stream: Buffer) {
   return (
-    generateCRC16(stream.slice(8, -4)).toString(16) ===
-    stream.slice(-2).toString("hex")
+    generateCRC16(stream.slice(8, -4)) ===
+    parseInt(stream.slice(-2).toString("hex"), 16)
   );
 }
 

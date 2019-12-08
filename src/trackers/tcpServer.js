@@ -11,7 +11,7 @@ type Client = {|
   imei: ?string,
 |};
 
-const IMEI_REPLY = { ACCEPT: "\x01", REJECT: "\x00" };
+const REPLY = { ACCEPT: "\x01", REJECT: "\x00" };
 
 const clients = new Map<Socket, Client>();
 const validImeis = ["358480089803458"];
@@ -40,7 +40,7 @@ const server = net.createServer((socket: Socket) => {
         if (!imei) return;
         else setImei(imei);
       } else {
-        write(IMEI_REPLY.REJECT);
+        write(REPLY.REJECT);
         console.log("Invalid header");
       }
     } else if (!client.imei) {
@@ -51,6 +51,7 @@ const server = net.createServer((socket: Socket) => {
       write(Buffer.from([0, 0, 0, data.avlDataCount]));
     } else {
       console.log("Invalid CRC");
+      write(REPLY.REJECT);
     }
   });
 
@@ -60,9 +61,9 @@ const server = net.createServer((socket: Socket) => {
     const imei = stream.slice(2).toString();
     if (validImeis.includes(imei)) {
       client.imei = imei;
-      write(IMEI_REPLY.ACCEPT);
+      write(REPLY.ACCEPT);
     } else {
-      write(IMEI_REPLY.REJECT);
+      write(REPLY.REJECT);
       console.log(`Invalid IMEI ${imei}`);
     }
   }
