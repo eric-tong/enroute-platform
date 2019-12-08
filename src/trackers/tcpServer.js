@@ -47,7 +47,7 @@ const server = net.createServer((socket: Socket) => {
     } else {
       const data: any = parseCodec8Stream(stream.toString("hex"));
       console.log(data);
-      write(Buffer.from([(0, 0, 0, data.avlDataCount)]));
+      write(Buffer.from([0, 0, 0, data.avlDataCount]));
     }
   });
 
