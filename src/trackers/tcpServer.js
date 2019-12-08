@@ -10,6 +10,8 @@ const validImeis = ["358480089803458"];
 const port = process.env.PORT || 3000;
 
 const server = net.createServer(socket => {
+  console.log("Connected", socket);
+
   socket.on("data", function(stream) {
     try {
       const data = parse(stream);
@@ -30,7 +32,7 @@ const server = net.createServer(socket => {
 
   socket.on("end", function() {
     imeis.delete(socket);
-    console.log(`${socket} disconnected`);
+    console.log("Disconnected", socket);
   });
 
   function parse(stream: Buffer): ParsedDataType {
