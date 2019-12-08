@@ -11,6 +11,8 @@ const imeis = new Map();
 const validImeis = ["358480089803458"];
 const port = process.env.PORT || 3000;
 
+const IMEI_REPLY = { ACCEPT: "\x01", REJECT: "\x00" };
+
 const server = net.createServer(socket => {
   console.log("Connected", socket);
 
@@ -20,8 +22,9 @@ const server = net.createServer(socket => {
       if (data.type === "imei") {
         if (validImeis.includes(data.imei)) {
           imeis.set(socket, data.imei);
-          socket.write("\x01");
+          socket.write(IMEI_REPLY.ACCEPT);
         } else {
+          socket.write(IMEI_REPLY.REJECT);
           throw new Error(`Invalid IMEI ${data.imei}`);
         }
       } else if (data.type === "avl") {
