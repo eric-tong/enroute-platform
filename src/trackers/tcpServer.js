@@ -14,9 +14,10 @@ const port = process.env.PORT || 3000;
 const IMEI_REPLY = { ACCEPT: "\x01", REJECT: "\x00" };
 
 const server = net.createServer(socket => {
-  console.log("Connected", socket);
+  console.log(`Connected to ${socket.remoteAddress}:${socket.remotePort}`);
 
   socket.on("data", function(stream) {
+    console.log({ stream });
     try {
       const data = parse(stream);
       if (data.type === "imei") {
@@ -38,7 +39,9 @@ const server = net.createServer(socket => {
 
   socket.on("end", function() {
     imeis.delete(socket);
-    console.log("Disconnected", socket);
+    console.log(
+      `Disconnected from ${socket.remoteAddress}:${socket.remotePort}`
+    );
   });
 
   function parse(stream: Buffer): ParsedDataType {
