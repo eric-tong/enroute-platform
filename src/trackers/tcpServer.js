@@ -28,10 +28,11 @@ const server = net.createServer((socket: Socket) => {
   console.log(`Connected to ${client.name}`);
 
   socket.on("data", (stream: Buffer) => {
-    console.log({ stream });
+    console.log({ stream: stream.toString() });
 
     if (!client.ip) {
       client.ip = stream.toString();
+      socket.write(IMEI_REPLY.ACCEPT);
     } else if (!client.imei) {
       const imei = stream.slice(2).toString();
       if (validImeis.includes(imei)) {
@@ -44,7 +45,7 @@ const server = net.createServer((socket: Socket) => {
     } else {
       const data: any = parseCodec8Stream(stream.toString("hex"));
       console.log(data);
-      socket.write(Buffer.from[(0, 0, 0, data.avlDataCount)]);
+      socket.write(Buffer.from([(0, 0, 0, data.avlDataCount)]));
     }
   });
 
