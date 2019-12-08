@@ -1,61 +1,54 @@
 // @flow
 
+import type { Socket } from "net";
 import net from "net";
 import parseCodec8Stream from "./codec8Parser";
 
 type ParsedDataType =
   | { type: "imei", imei: string }
   | { type: "avl", avl: any };
-
-const imeis = new Map();
-const validImeis = ["358480089803458"];
-const port = process.env.PORT || 3000;
+type Client = {|
+  name: string,
+  ip: ?string,
+  imei: ?string,
+|};
 
 const IMEI_REPLY = { ACCEPT: "\x01", REJECT: "\x00" };
 
-const server = net.createServer(socket => {
-  console.log(`Connected to ${socket.remoteAddress}:${socket.remotePort}`);
+const clients = new Map<Socket, Client>();
+const validImeis = ["358480089803458"];
+const port = process.env.PORT || 3000;
 
-  socket.on("data", function(stream) {
+const server = net.createServer((socket: Socket) => {
+  const client: Client = {
+    name: `${socket.remoteAddress ?? "undefined"}:${socket.remotePort}`,
+    ip: undefined,
+    imei: undefined,
+  };
+  console.log(`Connected to ${client.name}`);
+
+  socket.on("data", (stream: Buffer) => {
     console.log({ stream });
-    try {
-      const data = parse(stream);
-      if (data.type === "imei") {
-        if (validImeis.includes(data.imei)) {
-          imeis.set(socket, data.imei);
-          socket.write(IMEI_REPLY.ACCEPT);
-        } else {
-          socket.write(IMEI_REPLY.REJECT);
-          throw new Error(`Invalid IMEI ${data.imei}`);
-        }
-      } else if (data.type === "avl") {
-        console.log(data.avl);
-        socket.write(Buffer.from[(0, 0, 0, data.avl.avlDataCount)]);
+
+    if (!client.ip) {
+      client.ip = stream.toString();
+    } else if (!client.imei) {
+      const imei = stream.slice(2).toString();
+      if (validImeis.includes(imei)) {
+        client.imei = imei;
+        socket.write(IMEI_REPLY.ACCEPT);
+      } else {
+        socket.write(IMEI_REPLY.REJECT);
+        console.log(`Invalid IMEI ${imei}`);
       }
-    } catch (error) {
-      console.log(error);
-    }
-  });
-
-  socket.on("end", function() {
-    imeis.delete(socket);
-    console.log(
-      `Disconnected from ${socket.remoteAddress}:${socket.remotePort}`
-    );
-  });
-
-  function parse(stream: Buffer): ParsedDataType {
-    if (imeis.has(socket)) {
-      return {
-        type: "avl",
-        avl: parseCodec8Stream(stream.toString("hex")),
-      };
-    } else if (stream.length > 2) {
-      return { type: "imei", imei: stream.slice(2).toString() };
     } else {
-      throw new Error("Invalid stream");
+      const data: any = parseCodec8Stream(stream.toString("hex"));
+      console.log(data);
+      socket.write(Buffer.from[(0, 0, 0, data.avlDataCount)]);
     }
-  }
+  });
+
+  socket.on("end", () => console.log(`Disconnected from ${client.name}`));
 });
 
 server.listen(port, () =>
