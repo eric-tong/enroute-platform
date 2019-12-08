@@ -1,34 +1,49 @@
-var net = require("net");
+// @flow
 
-var clients = [];
+import net from "net";
+import parseCodec8Stream from "./codec8Parser";
+
+type ParsedDataType = { type: "imei", imei: string } | { type: "avl", avl: {} };
+
+const imeis = new Map();
+const validImeis = ["358480089803458"];
 const port = process.env.PORT || 3000;
 
-var server = net.createServer(socket => {
-  socket.name = socket.remoteAddress + ":" + socket.remotePort;
-  clients.push(socket);
-
-  socket.on("data", function(data) {
-    const arr = [...data];
-    console.log(arr);
-    if (arr[1] > 0) socket.write("\x01");
-    else {
-      const reply = Buffer.from([0, 0, 0, arr[9]]);
-      console.log(reply);
-      socket.write(reply);
+const server = net.createServer(socket => {
+  socket.on("data", function(stream) {
+    try {
+      const data = parse(stream);
+      if (data.type === "imei") {
+        imeis.set(socket, stream);
+        if (validImeis.includes(data.imei)) {
+          socket.write("\x01");
+        } else {
+          throw new Error(`Invalid IMEI ${data.imei}`);
+        }
+      } else if (data.type === "avl") {
+        console.log(data.avl);
+      }
+    } catch (error) {
+      console.log(error);
     }
   });
 
   socket.on("end", function() {
-    clients.splice(clients.indexOf(socket), 1);
-    broadcast(socket.name + " left the chat.\n");
+    imeis.delete(socket);
+    console.log(`${socket} disconnected`);
   });
 
-  function broadcast(message, sender) {
-    clients.forEach(function(client) {
-      if (client === sender) return;
-      client.write(message);
-    });
-    process.stdout.write(message);
+  function parse(stream: Buffer): ParsedDataType {
+    if (imeis.has(socket)) {
+      return {
+        type: "avl",
+        avl: parseCodec8Stream(stream.toString("hex")),
+      };
+    } else if (stream.length > 2) {
+      return { type: "imei", imei: stream.slice(2).toString() };
+    } else {
+      throw new Error("Invalid stream");
+    }
   }
 });
 
