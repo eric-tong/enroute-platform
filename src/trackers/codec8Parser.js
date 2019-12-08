@@ -35,29 +35,64 @@ X       AVL Data            Array (See below)
 1       N8                  Number of 1-byte IO items
 2*N8    ID/Value            ID - 1 byte, value - 8 byte
 
-Items that need verifying: Zero bytes, data field length, number of data 1 & 2, CRC
+Items that need verifying: Zero bytes, data field length, number of data 1 & 2, speed is 0 if invalid, CRC
 
 */
 
-const dataPartBytes: [string, number][] = [
+type DataByteSize = [string, number | [DataByteSize[], string]];
+
+const ioDataBytes: (1 | 2 | 4 | 8) => DataByteSize[] = size => [
+  ["ioId", 1],
+  ["ioValue", size],
+];
+const avlDataBytes: DataByteSize[] = [
+  ["timestamp", 8],
+  ["priority", 1],
+  ["longitude", 4],
+  ["latitude", 4],
+  ["altitude", 2],
+  ["angle", 2],
+  ["satellites", 1],
+  ["speed", 2],
+  ["eventIOId", 1],
+  ["totalIOCount", 1],
+  ["oneByteIOCount", 1],
+  ["oneByteIOData", [ioDataBytes(1), "oneByteIOCount"]],
+  ["twoByteIOCount", 1],
+  ["twoByteIOData", [ioDataBytes(2), "twoByteIOCount"]],
+  ["fourByteIOCount", 1],
+  ["fourByteIOData", [ioDataBytes(4), "fourByteIOCount"]],
+  ["eightByteIOCount", 1],
+  ["eightByteIOData", [ioDataBytes(8), "eightByteIOCount"]],
+];
+const dataBytes: DataByteSize[] = [
   ["preamble", 4],
   ["dataFieldLength", 4],
   ["codecId", 1],
   ["avlDataCount", 1],
-  ["timestamp", 8],
+  ["avlData", [avlDataBytes, "avlDataCount"]],
 ];
 
-export default function parse(
-  stream: string,
-  bytes: [string, number][] = dataPartBytes
-) {
-  const result = {};
-
+export default function parseCodec8Stream(stream: string) {
   let index = 0;
-  bytes.forEach(([key, size]) => {
-    result[key] = parseInt(stream.substr(index * 2, size * 2), 16);
-    index += size;
-  });
 
-  return result;
+  function parse(bytes: DataByteSize[], prev: {}) {
+    const result = Object.assign({}, prev);
+    bytes.forEach(([key, value]) => {
+      if (typeof value === "number") {
+        const size = value;
+        result[key] = parseInt(stream.substr(index * 2, size * 2), 16);
+        index += size;
+      } else if (Array.isArray(value)) {
+        const [childBytes, childBytesCount] = value;
+        result[key] = [];
+        for (let i = 0; i < result[childBytesCount]; i++) {
+          result[key].push(parse(childBytes, prev));
+        }
+      }
+    });
+    return result;
+  }
+
+  return parse(dataBytes, {});
 }
