@@ -87,4 +87,63 @@ describe("Codec8 parsing", () => {
 
     expect(actual).toEqual(expected);
   });
+
+  test("parses stream 3", () => {
+    const stream =
+      "000000000000004308020000016B40D57B480100000000000000000000000000000001010101000000000000016B40D5C198010000000000000000000000000000000101010101000000020000252C";
+
+    const actual = parse(stream);
+    const expected = {
+      preamble: 0,
+      dataFieldLength: 0x43,
+      codecId: 8,
+      avlDataCount: 2,
+      avlData: [
+        {
+          timestamp: 0x016b40d57b48,
+          priority: 1,
+          longitude: 0,
+          latitude: 0,
+          altitude: 0,
+          angle: 0,
+          satellites: 0,
+          speed: 0,
+          eventIOId: 1,
+          totalIOCount: 1,
+          oneByteIOCount: 1,
+          oneByteIOData: [{ ioId: 1, ioValue: 0 }],
+          twoByteIOCount: 0,
+          twoByteIOData: [],
+          fourByteIOCount: 0,
+          fourByteIOData: [],
+          eightByteIOCount: 0,
+          eightByteIOData: [],
+        },
+        {
+          timestamp: 0x016b40d5c198,
+          priority: 1,
+          longitude: 0,
+          latitude: 0,
+          altitude: 0,
+          angle: 0,
+          satellites: 0,
+          speed: 0,
+          eventIOId: 1,
+          totalIOCount: 1,
+          oneByteIOCount: 1,
+          oneByteIOData: [{ ioId: 1, ioValue: 1 }],
+          twoByteIOCount: 0,
+          twoByteIOData: [],
+          fourByteIOCount: 0,
+          fourByteIOData: [],
+          eightByteIOCount: 0,
+          eightByteIOData: [],
+        },
+      ],
+      avlDataCountTwo: 2,
+      crc: 0x252c,
+    };
+
+    expect(actual).toEqual(expected);
+  });
 });
