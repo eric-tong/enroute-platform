@@ -28,13 +28,21 @@ const server = net.createServer((socket: Socket) => {
   console.log(`Connected to ${client.name}`);
 
   socket.on("data", (stream: Buffer) => {
-    console.log({ stream: stream.toString() });
+    console.log({
+      stream: stream.length < 100 ? stream.toString() : stream.toString("hex"),
+    });
 
-    if (!client.ip) {
-      client.ip = stream.toString();
-      socket.write(IMEI_REPLY.ACCEPT);
-    } else if (!client.imei) {
-      const imei = stream.slice(2).toString();
+    if (!client.imei) {
+      let ip, imei;
+
+      if (!client.ip) {
+        [ip, imei] = stream.toString().split("\n");
+        client.ip = ip;
+        if (!imei) return;
+        else imei = imei.slice(12);
+      }
+
+      if (!imei) imei = stream.slice(2).toString();
       if (validImeis.includes(imei)) {
         client.imei = imei;
         socket.write(IMEI_REPLY.ACCEPT);
