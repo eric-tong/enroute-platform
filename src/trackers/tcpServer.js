@@ -9,7 +9,7 @@ type ParsedDataType =
   | { type: "avl", avl: any };
 type Client = {|
   name: string,
-  ip: ?string,
+  header: ?string,
   imei: ?string,
 |};
 
@@ -22,7 +22,7 @@ const port = process.env.PORT || 3000;
 const server = net.createServer((socket: Socket) => {
   const client: Client = {
     name: `${socket.remoteAddress ?? "undefined"}:${socket.remotePort}`,
-    ip: undefined,
+    header: undefined,
     imei: undefined,
   };
   console.log(`Connected to ${client.name}`);
@@ -32,11 +32,16 @@ const server = net.createServer((socket: Socket) => {
       stream: stream.length < 100 ? stream.toString() : stream.toString("hex"),
     });
 
-    if (!client.ip) {
-      const [ip, imei] = stream.toString().split("\n");
-      client.ip = ip;
-      if (!imei) return;
-      else setImei(imei);
+    if (!client.header) {
+      const [header, imei] = stream.toString().split("\n");
+      if (header.startsWith("PROXY TCP4")) {
+        client.header = header;
+        if (!imei) return;
+        else setImei(imei);
+      } else {
+        write(IMEI_REPLY.REJECT);
+        console.log("Invalid header");
+      }
     } else if (!client.imei) {
       setImei(stream);
     } else {
