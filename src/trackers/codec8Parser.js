@@ -1,7 +1,9 @@
 // @flow
 
-/*
+import type { DataSchema } from "./codec8Schema";
+import schema from "./codec8Schema";
 
+/*
 Bytes   Name                Description
 
 4       Preamble            0x00000000
@@ -39,44 +41,10 @@ Items that need verifying: Zero bytes, data field length, number of data 1 & 2, 
 
 */
 
-type DataByteSize = [string, number | [DataByteSize[], string]];
-
-const ioDataBytes: (1 | 2 | 4 | 8) => DataByteSize[] = size => [
-  ["ioId", 1],
-  ["ioValue", size],
-];
-const avlDataBytes: DataByteSize[] = [
-  ["timestamp", 8],
-  ["priority", 1],
-  ["longitude", 4],
-  ["latitude", 4],
-  ["altitude", 2],
-  ["angle", 2],
-  ["satellites", 1],
-  ["speed", 2],
-  ["eventIOId", 1],
-  ["totalIOCount", 1],
-  ["oneByteIOCount", 1],
-  ["oneByteIOData", [ioDataBytes(1), "oneByteIOCount"]],
-  ["twoByteIOCount", 1],
-  ["twoByteIOData", [ioDataBytes(2), "twoByteIOCount"]],
-  ["fourByteIOCount", 1],
-  ["fourByteIOData", [ioDataBytes(4), "fourByteIOCount"]],
-  ["eightByteIOCount", 1],
-  ["eightByteIOData", [ioDataBytes(8), "eightByteIOCount"]],
-];
-const dataBytes: DataByteSize[] = [
-  ["preamble", 4],
-  ["dataFieldLength", 4],
-  ["codecId", 1],
-  ["avlDataCount", 1],
-  ["avlData", [avlDataBytes, "avlDataCount"]],
-];
-
 export default function parseCodec8Stream(stream: string) {
   let index = 0;
 
-  function parse(bytes: DataByteSize[], prev: {}) {
+  function parse(bytes: DataSchema, prev: {}) {
     const result = Object.assign({}, prev);
     bytes.forEach(([key, value]) => {
       if (typeof value === "number") {
@@ -93,6 +61,5 @@ export default function parseCodec8Stream(stream: string) {
     });
     return result;
   }
-
-  return parse(dataBytes, {});
+  return parse(schema, {});
 }
