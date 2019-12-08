@@ -4,9 +4,6 @@ import type { Socket } from "net";
 import net from "net";
 import parseCodec8Stream from "./codec8Parser";
 
-type ParsedDataType =
-  | { type: "imei", imei: string }
-  | { type: "avl", avl: any };
 type Client = {|
   name: string,
   header: ?string,

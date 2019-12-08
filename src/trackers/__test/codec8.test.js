@@ -1,5 +1,6 @@
 // @flow
 
+import generateCRC16 from "../crc16Generator";
 import packet from "./packetData";
 import parse from "../codec8Parser";
 
@@ -143,6 +144,37 @@ describe("Codec8 parsing", () => {
       avlDataCountTwo: 2,
       crc: 0x252c,
     };
+
+    expect(actual).toEqual(expected);
+  });
+
+  test("generates crc 1", () => {
+    const string =
+      "08010000016B40D8EA30010000000000000000000000000000000105021503010101425E0F01F10000601A014E000000000000000001";
+    const stream = Buffer.from(string, "hex");
+
+    const actual = generateCRC16(stream);
+    const expected = 0xc7cf;
+
+    expect(actual).toEqual(expected);
+  });
+  test("generates crc 2", () => {
+    const string =
+      "08010000016B40D9AD80010000000000000000000000000000000103021503010101425E10000001";
+    const stream = Buffer.from(string, "hex");
+
+    const actual = generateCRC16(stream);
+    const expected = 0xf22a;
+
+    expect(actual).toEqual(expected);
+  });
+  test("generates crc 3", () => {
+    const string =
+      "08020000016B40D57B480100000000000000000000000000000001010101000000000000016B40D5C19801000000000000000000000000000000010101010100000002";
+    const stream = Buffer.from(string, "hex");
+
+    const actual = generateCRC16(stream);
+    const expected = 0x252c;
 
     expect(actual).toEqual(expected);
   });
