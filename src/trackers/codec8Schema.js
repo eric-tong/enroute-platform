@@ -1,6 +1,8 @@
 // @flow
+import { DateTime } from "luxon";
 
 type Size = 1 | 2 | 4 | 8;
+
 export type DataSchema = (
   | $Exact<{
       key: string,
@@ -10,12 +12,46 @@ export type DataSchema = (
   | $Exact<{ key: string, schema: DataSchema, countKey: string }>
 )[];
 
+type IOData = {
+  ioId: number,
+  ioValue: number,
+};
+type AVLData = {
+  timestamp: DateTime,
+  priority: 0 | 1 | 2,
+  longitude: number,
+  latitude: number,
+  altitude: number,
+  angle: number,
+  satellites: number,
+  speed: number,
+  eventIOId: number,
+  totalIOCount: number,
+  oneByteIOCount: number,
+  oneByteIOData: IOData[],
+  twoByteIOCount: number,
+  twoByteIOData: IOData[],
+  fourByteIOCount: number,
+  fourByteIOData: IOData[],
+  eightByteIOCount: number,
+  eightByteIOData: IOData[],
+};
+export type Codec8Data = {
+  preamble: 0,
+  dataFieldLength: number,
+  codecId: number,
+  avlDataCount: number,
+  avlData: AVLData[],
+  avlDataCountTwo: number,
+  crc: number,
+};
+
 const ioDataSchema: Size => DataSchema = size => [
   { key: "ioId", size: 1 },
   { key: "ioValue", size },
 ];
 const avlDataSchema: DataSchema = [
-  { key: "timestamp", size: 8 },
+  { key: "timestamp", size: 8, transform: DateTime.fromMillis },
   { key: "priority", size: 1 },
   { key: "longitude", size: 4 },
   { key: "latitude", size: 4 },

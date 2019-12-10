@@ -2,6 +2,8 @@
 
 import crcIsValid, { generateCRC16 } from "../crc16Checker";
 
+import type { Codec8Data } from "../codec8Schema";
+import { DateTime } from "luxon";
 import packet from "./packetData";
 import parse from "../codec8Parser";
 
@@ -18,7 +20,7 @@ describe("Codec8 parsing", () => {
       avlDataCount: 1,
       avlData: [
         {
-          timestamp: 0x16b40d8ea30,
+          timestamp: DateTime.fromMillis(0x16b40d8ea30),
           priority: 1,
           longitude: 1,
           latitude: 2,
@@ -60,7 +62,7 @@ describe("Codec8 parsing", () => {
       avlDataCount: 1,
       avlData: [
         {
-          timestamp: 0x016b40d9ad80,
+          timestamp: DateTime.fromMillis(0x016b40d9ad80),
           priority: 1,
           longitude: 0,
           latitude: 0,
@@ -102,7 +104,7 @@ describe("Codec8 parsing", () => {
       avlDataCount: 2,
       avlData: [
         {
-          timestamp: 0x016b40d57b48,
+          timestamp: DateTime.fromMillis(0x016b40d57b48),
           priority: 1,
           longitude: 0,
           latitude: 0,
@@ -122,7 +124,7 @@ describe("Codec8 parsing", () => {
           eightByteIOData: [],
         },
         {
-          timestamp: 0x016b40d5c198,
+          timestamp: DateTime.fromMillis(0x016b40d5c198),
           priority: 1,
           longitude: 0,
           latitude: 0,

@@ -1,6 +1,7 @@
 // @flow
 
-import type { DataSchema } from "./codec8Schema";
+import type { Codec8Data, DataSchema } from "./codec8Schema";
+
 import schema from "./codec8Schema";
 
 /*
@@ -41,7 +42,7 @@ Items that need verifying: Zero bytes, data field length, number of data 1 & 2, 
 
 */
 
-export default function parseCodec8Stream(stream: string) {
+export default function parseCodec8Stream(stream: string): Codec8Data {
   let index = 0;
 
   function parse(dataSchema: DataSchema, prev: {}) {
@@ -56,6 +57,7 @@ export default function parseCodec8Stream(stream: string) {
       } else {
         const { key, size, transform } = item;
         result[key] = parseInt(stream.substr(index * 2, size * 2), 16);
+        if (transform) result[key] = transform(result[key]);
         index += size;
       }
     });
