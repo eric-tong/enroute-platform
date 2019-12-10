@@ -10,7 +10,7 @@ import parse from "../codec8Parser";
 describe("Codec8 parsing", () => {
   test("parses stream 1", () => {
     const stream =
-      "000000000000003608010000016B40D8EA30010000000100000002000300040500060105021503010101425E0F01F10000601A014E0000000000000000010000C7CF";
+      "000000000000003608010000016B40D8EA3001ff38b6af1ee2c267000300040500060105021503010101425E0F01F10000601A014E0000000000000000010000C7CF";
 
     const actual = parse(stream);
     const expected = {
@@ -22,8 +22,8 @@ describe("Codec8 parsing", () => {
         {
           timestamp: DateTime.fromMillis(0x16b40d8ea30),
           priority: 1,
-          longitude: 1,
-          latitude: 2,
+          longitude: -1.3060432,
+          latitude: 51.8177383,
           altitude: 3,
           angle: 4,
           satellites: 5,

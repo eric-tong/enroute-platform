@@ -1,5 +1,7 @@
 // @flow
+
 import { DateTime } from "luxon";
+import { parsePosition } from "./codec8Parser";
 
 type Size = 1 | 2 | 4 | 8;
 
@@ -18,7 +20,7 @@ type IOData = {
 };
 type AVLData = {
   timestamp: DateTime,
-  priority: 0 | 1 | 2,
+  priority: "low" | "high" | "panic",
   longitude: number,
   latitude: number,
   altitude: number,
@@ -52,9 +54,14 @@ const ioDataSchema: Size => DataSchema = size => [
 ];
 const avlDataSchema: DataSchema = [
   { key: "timestamp", size: 8, transform: DateTime.fromMillis },
-  { key: "priority", size: 1 },
-  { key: "longitude", size: 4 },
-  { key: "latitude", size: 4 },
+  {
+    key: "priority",
+    size: 1,
+    transform: priority =>
+      priority === 0 ? "low" : priority === 1 ? "high" : "panic",
+  },
+  { key: "longitude", size: 4, transform: parsePosition },
+  { key: "latitude", size: 4, transform: parsePosition },
   { key: "altitude", size: 2 },
   { key: "angle", size: 2 },
   { key: "satellites", size: 1 },

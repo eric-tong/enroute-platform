@@ -65,3 +65,9 @@ export default function parseCodec8Stream(stream: string): Codec8Data {
   }
   return parse(schema, {});
 }
+
+export function parsePosition(data: number) {
+  const mask = 1 << 31;
+  const isNegative = (data & mask) != 0;
+  return (isNegative ? ~data * -1 : data) / 1e7;
+}
