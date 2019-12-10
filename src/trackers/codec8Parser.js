@@ -44,19 +44,19 @@ Items that need verifying: Zero bytes, data field length, number of data 1 & 2, 
 export default function parseCodec8Stream(stream: string) {
   let index = 0;
 
-  function parse(bytes: DataSchema, prev: {}) {
+  function parse(dataSchema: DataSchema, prev: {}) {
     const result = Object.assign({}, prev);
-    bytes.forEach(([key, value]) => {
-      if (typeof value === "number") {
-        const size = value;
+    dataSchema.forEach(item => {
+      if (item.schema) {
+        const { key, schema, countKey } = item;
+        result[key] = [];
+        for (let i = 0; i < result[countKey]; i++) {
+          result[key].push(parse(schema, prev));
+        }
+      } else {
+        const { key, size, transform } = item;
         result[key] = parseInt(stream.substr(index * 2, size * 2), 16);
         index += size;
-      } else if (Array.isArray(value)) {
-        const [childBytes, childBytesCount] = value;
-        result[key] = [];
-        for (let i = 0; i < result[childBytesCount]; i++) {
-          result[key].push(parse(childBytes, prev));
-        }
       }
     });
     return result;

@@ -1,39 +1,63 @@
 // @flow
 
-export type DataSchema = [string, number | [DataSchema, string]][];
+type Size = 1 | 2 | 4 | 8;
+export type DataSchema = (
+  | $Exact<{
+      key: string,
+      size: Size,
+      transform?: number => mixed,
+    }>
+  | $Exact<{ key: string, schema: DataSchema, countKey: string }>
+)[];
 
-const ioDataSchema: (1 | 2 | 4 | 8) => DataSchema = size => [
-  ["ioId", 1],
-  ["ioValue", size],
+const ioDataSchema: Size => DataSchema = size => [
+  { key: "ioId", size: 1 },
+  { key: "ioValue", size },
 ];
 const avlDataSchema: DataSchema = [
-  ["timestamp", 8],
-  ["priority", 1],
-  ["longitude", 4],
-  ["latitude", 4],
-  ["altitude", 2],
-  ["angle", 2],
-  ["satellites", 1],
-  ["speed", 2],
-  ["eventIOId", 1],
-  ["totalIOCount", 1],
-  ["oneByteIOCount", 1],
-  ["oneByteIOData", [ioDataSchema(1), "oneByteIOCount"]],
-  ["twoByteIOCount", 1],
-  ["twoByteIOData", [ioDataSchema(2), "twoByteIOCount"]],
-  ["fourByteIOCount", 1],
-  ["fourByteIOData", [ioDataSchema(4), "fourByteIOCount"]],
-  ["eightByteIOCount", 1],
-  ["eightByteIOData", [ioDataSchema(8), "eightByteIOCount"]],
+  { key: "timestamp", size: 8 },
+  { key: "priority", size: 1 },
+  { key: "longitude", size: 4 },
+  { key: "latitude", size: 4 },
+  { key: "altitude", size: 2 },
+  { key: "angle", size: 2 },
+  { key: "satellites", size: 1 },
+  { key: "speed", size: 2 },
+  { key: "eventIOId", size: 1 },
+  { key: "totalIOCount", size: 1 },
+  { key: "oneByteIOCount", size: 1 },
+  {
+    key: "oneByteIOData",
+    schema: ioDataSchema(1),
+    countKey: "oneByteIOCount",
+  },
+  { key: "twoByteIOCount", size: 1 },
+  {
+    key: "twoByteIOData",
+    schema: ioDataSchema(2),
+    countKey: "twoByteIOCount",
+  },
+  { key: "fourByteIOCount", size: 1 },
+  {
+    key: "fourByteIOData",
+    schema: ioDataSchema(4),
+    countKey: "fourByteIOCount",
+  },
+  { key: "eightByteIOCount", size: 1 },
+  {
+    key: "eightByteIOData",
+    schema: ioDataSchema(8),
+    countKey: "eightByteIOCount",
+  },
 ];
 const dataSchema: DataSchema = [
-  ["preamble", 4],
-  ["dataFieldLength", 4],
-  ["codecId", 1],
-  ["avlDataCount", 1],
-  ["avlData", [avlDataSchema, "avlDataCount"]],
-  ["avlDataCountTwo", 1],
-  ["crc", 4],
+  { key: "preamble", size: 4 },
+  { key: "dataFieldLength", size: 4 },
+  { key: "codecId", size: 1 },
+  { key: "avlDataCount", size: 1 },
+  { key: "avlData", schema: avlDataSchema, countKey: "avlDataCount" },
+  { key: "avlDataCountTwo", size: 1 },
+  { key: "crc", size: 4 },
 ];
 
 export default dataSchema;
