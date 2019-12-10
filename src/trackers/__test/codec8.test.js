@@ -21,7 +21,7 @@ describe("Codec8 parsing", () => {
       avlData: [
         {
           timestamp: DateTime.fromMillis(0x16b40d8ea30),
-          priority: 1,
+          priority: "high",
           longitude: -1.3060432,
           latitude: 51.8177383,
           altitude: 3,
@@ -63,7 +63,7 @@ describe("Codec8 parsing", () => {
       avlData: [
         {
           timestamp: DateTime.fromMillis(0x016b40d9ad80),
-          priority: 1,
+          priority: "high",
           longitude: 0,
           latitude: 0,
           altitude: 0,
@@ -105,7 +105,7 @@ describe("Codec8 parsing", () => {
       avlData: [
         {
           timestamp: DateTime.fromMillis(0x016b40d57b48),
-          priority: 1,
+          priority: "high",
           longitude: 0,
           latitude: 0,
           altitude: 0,
@@ -125,7 +125,7 @@ describe("Codec8 parsing", () => {
         },
         {
           timestamp: DateTime.fromMillis(0x016b40d5c198),
-          priority: 1,
+          priority: "high",
           longitude: 0,
           latitude: 0,
           altitude: 0,
