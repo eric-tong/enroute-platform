@@ -16,10 +16,10 @@ INSERT INTO io (avl_id, id, value)
 
 export default function saveAVLData(data: AVLData, imei: string) {
   database
-    .query<number>(VEHICLE_ID_FROM_IMEI, [imei])
-    .then(results => results.rows[0])
+    .query<{ id: number }>(VEHICLE_ID_FROM_IMEI, [imei])
+    .then(results => results.rows[0].id)
     .then(vehicleId =>
-      database.query<number>(INSERT_AVL_DATA, [
+      database.query<{ id: number }>(INSERT_AVL_DATA, [
         data.timestamp,
         data.priority,
         data.longitude,
@@ -32,7 +32,7 @@ export default function saveAVLData(data: AVLData, imei: string) {
         data.eventIOId,
       ])
     )
-    .then(results => results.rows[0])
+    .then(results => results.rows[0].id)
     .then(avlId => {
       Promise.all(
         [
