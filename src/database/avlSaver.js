@@ -20,7 +20,7 @@ export default function saveAVLData(data: AVLData, imei: string) {
     .then(results => results.rows[0].id)
     .then(vehicleId =>
       database.query<{ id: number }>(INSERT_AVL_DATA, [
-        data.timestamp,
+        data.timestamp.toSQL(),
         data.priority,
         data.longitude,
         data.latitude,
