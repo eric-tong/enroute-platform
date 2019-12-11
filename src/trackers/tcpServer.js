@@ -4,6 +4,7 @@ import type { Socket } from "net";
 import crcIsValid from "./crc16Checker";
 import net from "net";
 import parseCodec8Stream from "./codec8Parser";
+import save from "../database/avlSaver";
 
 type Client = {|
   name: string,
@@ -45,9 +46,11 @@ const server = net.createServer((socket: Socket) => {
       }
     } else if (!client.imei) {
       setImei(stream);
-    } else if (crcIsValid(stream)) {
+    } else if (client.imei && crcIsValid(stream)) {
+      const imei = client.imei;
       const data: any = parseCodec8Stream(stream.toString("hex"));
       console.log("Valid CRC", data);
+      save(data, imei);
       write(Buffer.from([0, 0, 0, data.avlDataCount]));
     } else {
       console.log("Invalid CRC");

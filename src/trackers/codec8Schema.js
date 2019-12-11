@@ -18,7 +18,7 @@ type IOData = {
   ioId: number,
   ioValue: number,
 };
-type AVLData = {
+export type AVLData = {
   timestamp: DateTime,
   priority: "low" | "high" | "panic",
   longitude: number,
