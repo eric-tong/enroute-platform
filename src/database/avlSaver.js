@@ -15,7 +15,7 @@ INSERT INTO io (avl_id, id, value)
 `;
 
 export default function saveAVLData(data: Codec8Data, imei: string) {
-  const queryPromises = data.avlData.map(avlData =>
+  data.avlData.forEach(avlData =>
     database
       .query<{ id: number }>(VEHICLE_ID_FROM_IMEI, [imei])
       .then(results => results.rows[0].id)
