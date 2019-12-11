@@ -15,9 +15,9 @@ export async function getRouteCoords() {
   return fetch(url)
     .then(response => response.json())
     .then(result =>
-      result.routes[0].geometry.coordinates.map(([lon, lat]) => ({
-        x: lat,
-        y: lon,
+      result.routes[0].geometry.coordinates.map(([longitude, latitude]) => ({
+        latitude,
+        longitude,
       }))
     )
     .catch(console.log);
@@ -29,9 +29,9 @@ async function getURL() {
     (total, current) =>
       total +
       (total.length > 0 ? ";" : "") +
-      current.coords.y +
+      current.longitude +
       "," +
-      current.coords.x,
+      current.latitude,
     ""
   );
   return new URL(

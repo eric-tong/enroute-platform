@@ -4,6 +4,7 @@ import {
   GraphQLFloat,
   GraphQLID,
   GraphQLInt,
+  GraphQLInterfaceType,
   GraphQLList,
   GraphQLObjectType,
   GraphQLSchema,
@@ -15,12 +16,22 @@ import { getBusStops } from "../resolvers/busStops";
 import { getRouteCoords } from "../resolvers/route";
 import { getVehicle } from "../resolvers/vehicles";
 
-const CoordsType = new GraphQLObjectType({
-  name: "CoordsType",
-  description: "Coordinates with x and y values",
+const LocationInterface = new GraphQLInterfaceType({
+  name: "LocationInterface",
+  description: "Interface for objects with latitude and longitude values",
   fields: {
-    x: { type: GraphQLFloat },
-    y: { type: GraphQLFloat },
+    latitude: { type: GraphQLFloat },
+    longitude: { type: GraphQLFloat },
+  },
+});
+
+const LocationType = new GraphQLObjectType({
+  name: "LocationType",
+  description: "Point with latitude and longitude values",
+  interfaces: [LocationInterface],
+  fields: {
+    latitude: { type: GraphQLFloat },
+    longitude: { type: GraphQLFloat },
   },
 });
 
@@ -28,32 +39,34 @@ const VehicleType = new GraphQLObjectType({
   name: "VehicleType",
   description: "Vehicle id with timestamped coordinates",
   fields: {
-    timestamp: { type: GraphQLString },
-    coords: { type: CoordsType },
-    bearing: { type: GraphQLFloat },
+    id: { type: GraphQLInt },
+    registration: { type: GraphQLString },
+    imei: { type: GraphQLString },
   },
 });
 
 const BusStopType = new GraphQLObjectType({
   name: "BusStopType",
   description: "Bus stop with location",
+  interfaces: [LocationInterface],
   fields: {
     id: { type: GraphQLID },
     name: { type: GraphQLString },
     street: { type: GraphQLString },
     icon: { type: GraphQLString },
-    coords: { type: CoordsType },
     arrivals: {
       type: new GraphQLList(GraphQLString),
       args: { maxLength: { type: GraphQLInt } },
       resolve: getArrivalsFromBusStop,
     },
+    latitude: { type: GraphQLFloat },
+    longitude: { type: GraphQLFloat },
   },
 });
 
-const vehicle = {
-  description: "Query for one vehicle using its id",
-  type: VehicleType,
+const vehicles = {
+  description: "Query for all vehicles",
+  type: new GraphQLList(VehicleType),
   resolve: getVehicle,
 };
 
@@ -65,13 +78,13 @@ const busStops = {
 
 const route = {
   description: "Get coordinates along route of bus",
-  type: new GraphQLList(CoordsType),
+  type: new GraphQLList(LocationType),
   resolve: getRouteCoords,
 };
 
 const RootQueryType = new GraphQLObjectType({
   name: "RootQueryType",
-  fields: { vehicle, busStops, route },
+  fields: { vehicles, busStops, route },
 });
 
 const schema = new GraphQLSchema({

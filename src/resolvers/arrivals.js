@@ -6,7 +6,7 @@ import moment from "moment";
 
 const GET_ARRIVAL_TIMES_WITH_BUS_STOP_ID = `
 SELECT ARRAY_AGG(time) as times
-  FROM (SELECT * FROM arrivals WHERE "busStopId" = $1 ORDER BY time) as arrivals
+  FROM (SELECT * FROM arrivals WHERE bus_stop_id = $1 ORDER BY time) as arrivals
 `;
 
 export function getArrivalsFromBusStop(
