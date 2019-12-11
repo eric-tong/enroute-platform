@@ -2,7 +2,7 @@
 
 import database from "../database/database";
 
-type Vehicle = {|
+export type Vehicle = {|
   id: number,
   registration: string,
   imei: string,

@@ -12,6 +12,7 @@ import {
 } from "graphql";
 
 import { getArrivalsFromBusStop } from "../resolvers/arrivals";
+import { getAvlOfVehicle } from "../resolvers/avl";
 import { getBusStops } from "../resolvers/busStops";
 import { getRouteCoords } from "../resolvers/route";
 import { getVehicle } from "../resolvers/vehicles";
@@ -35,6 +36,18 @@ const LocationType = new GraphQLObjectType({
   },
 });
 
+const AVLType = new GraphQLObjectType({
+  name: "AVLType",
+  description: "Automatic Vehicle Location data",
+  fields: {
+    timestamp: { type: GraphQLString },
+    longitude: { type: GraphQLFloat },
+    latitude: { type: GraphQLFloat },
+    angle: { type: GraphQLInt },
+    speed: { type: GraphQLInt },
+  },
+});
+
 const VehicleType = new GraphQLObjectType({
   name: "VehicleType",
   description: "Vehicle id with timestamped coordinates",
@@ -42,6 +55,7 @@ const VehicleType = new GraphQLObjectType({
     id: { type: GraphQLInt },
     registration: { type: GraphQLString },
     imei: { type: GraphQLString },
+    avl: { type: AVLType, resolve: getAvlOfVehicle },
   },
 });
 
