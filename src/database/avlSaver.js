@@ -1,6 +1,6 @@
 // @flow
 
-import type { AVLData } from "../trackers/codec8Schema";
+import type { Codec8Data } from "../trackers/codec8Schema";
 import database from "./database";
 
 const VEHICLE_ID_FROM_IMEI = "SELECT id FROM vehicles WHERE imei = $1 LIMIT 1";
@@ -14,36 +14,39 @@ INSERT INTO io (avl_id, id, value)
   VALUES ($1, $2, $3)
 `;
 
-export default function saveAVLData(data: AVLData, imei: string) {
-  database
-    .query<{ id: number }>(VEHICLE_ID_FROM_IMEI, [imei])
-    .then(results => results.rows[0].id)
-    .then(vehicleId =>
-      database.query<{ id: number }>(INSERT_AVL_DATA, [
-        data.timestamp.toSQL(),
-        data.priority,
-        data.longitude,
-        data.latitude,
-        data.altitude,
-        data.angle,
-        data.satellites,
-        data.speed,
-        vehicleId,
-        data.eventIOId,
-      ])
-    )
-    .then(results => results.rows[0].id)
-    .then(avlId => {
-      Promise.all(
-        [
-          ...data.oneByteIOData,
-          ...data.twoByteIOData,
-          ...data.fourByteIOData,
-          ...data.eightByteIOData,
-        ].map(ioData =>
-          database.query(INSERT_IO_DATA, [avlId, ioData.ioId, ioData.ioValue])
-        )
-      );
-    })
-    .catch(console.log);
+export default function saveAVLData(data: Codec8Data, imei: string) {
+  const queryPromises = data.avlData.map(avlData =>
+    database
+      .query<{ id: number }>(VEHICLE_ID_FROM_IMEI, [imei])
+      .then(results => results.rows[0].id)
+      .then(vehicleId =>
+        database.query<{ id: number }>(INSERT_AVL_DATA, [
+          avlData.timestamp.toSQL(),
+          avlData.priority,
+          avlData.longitude,
+          avlData.latitude,
+          avlData.altitude,
+          avlData.angle,
+          avlData.satellites,
+          avlData.speed,
+          vehicleId,
+          avlData.eventIOId,
+        ])
+      )
+      .then(results => results.rows[0].id)
+      .then(avlId => {
+        Promise.all(
+          [
+            ...avlData.oneByteIOData,
+            ...avlData.twoByteIOData,
+            ...avlData.fourByteIOData,
+            ...avlData.eightByteIOData,
+          ].map(ioData =>
+            database.query(INSERT_IO_DATA, [avlId, ioData.ioId, ioData.ioValue])
+          )
+        );
+      })
+  );
+
+  Promise.all(queryPromises).catch(console.log);
 }
