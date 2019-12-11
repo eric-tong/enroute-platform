@@ -46,7 +46,6 @@ export default function saveAVLData(data: Codec8Data, imei: string) {
           )
         );
       })
+      .catch(console.log)
   );
-
-  Promise.all(queryPromises).catch(console.log);
 }
