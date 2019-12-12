@@ -12,8 +12,9 @@ import {
 } from "graphql";
 
 import { getArrivalsFromBusStop } from "../resolvers/arrivals";
-import { getAvlOfVehicle } from "../resolvers/avl";
 import { getBusStops } from "../resolvers/busStops";
+import { getIoFromAvl } from "../resolvers/io";
+import { getLatestAvlOfVehicle } from "../resolvers/avl";
 import { getRouteCoords } from "../resolvers/route";
 import { getVehicle } from "../resolvers/vehicles";
 
@@ -36,15 +37,26 @@ const LocationType = new GraphQLObjectType({
   },
 });
 
+const IOType = new GraphQLObjectType({
+  name: "IO",
+  description: "IO elements data",
+  fields: {
+    name: { type: GraphQLString },
+    value: { type: GraphQLInt },
+  },
+});
+
 const AVLType = new GraphQLObjectType({
   name: "AVLType",
   description: "Automatic Vehicle Location data",
+  interfaces: [LocationInterface],
   fields: {
     timestamp: { type: GraphQLString },
     longitude: { type: GraphQLFloat },
     latitude: { type: GraphQLFloat },
     angle: { type: GraphQLInt },
     speed: { type: GraphQLInt },
+    io: { type: new GraphQLList(IOType), resolve: getIoFromAvl },
   },
 });
 
@@ -55,7 +67,7 @@ const VehicleType = new GraphQLObjectType({
     id: { type: GraphQLInt },
     registration: { type: GraphQLString },
     imei: { type: GraphQLString },
-    avl: { type: AVLType, resolve: getAvlOfVehicle },
+    avl: { type: AVLType, resolve: getLatestAvlOfVehicle },
   },
 });
 

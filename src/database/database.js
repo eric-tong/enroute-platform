@@ -2,7 +2,7 @@
 
 import { Pool } from "pg";
 
-const pool = new Pool({
+const database = new Pool({
   host: "localhost",
   port: 5432,
   database: "enroute",
@@ -10,4 +10,4 @@ const pool = new Pool({
   password: process.env.DATABASE_PASSWORD ?? "",
 });
 
-export default pool;
+export default database;
