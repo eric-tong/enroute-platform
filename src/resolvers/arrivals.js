@@ -1,8 +1,8 @@
 // @flow
 
 import type { BusStop } from "./busStops";
+import { DateTime } from "luxon";
 import database from "../database/database";
-import moment from "moment";
 
 const GET_ARRIVAL_TIMES_WITH_BUS_STOP_ID = `
 SELECT ARRAY_AGG(time) as times
@@ -13,22 +13,22 @@ export function getArrivalsFromBusStop(
   busStop: BusStop,
   { maxLength = 5 }: { maxLength: number }
 ) {
-  const now = moment();
+  const now = DateTime.local();
   return database
     .query<{ times: number[] }>(GET_ARRIVAL_TIMES_WITH_BUS_STOP_ID, [
       busStop.id,
     ])
     .then(results =>
       results.rows[0].times
-        .map<moment>(toActualTime)
-        .filter(moment => moment.isAfter(now))
+        .map<DateTime>(toActualTime)
+        .filter(dateTime => dateTime.valueOf() > now.valueOf())
         .slice(0, maxLength)
-        .map<string>(moment => moment.format())
+        .map<string>(dateTime => dateTime.toISO())
     );
 }
 
 function toActualTime(minuteOfDay: number) {
-  return moment()
+  return DateTime.local()
     .startOf("day")
-    .add(minuteOfDay, "minute");
+    .plus({ minute: minuteOfDay });
 }
