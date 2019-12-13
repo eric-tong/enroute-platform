@@ -10,11 +10,11 @@ import {
   GraphQLSchema,
   GraphQLString,
 } from "graphql";
+import { getAvl, getLatestAvlOfVehicle } from "../resolvers/avl";
 
 import { getArrivalsFromBusStop } from "../resolvers/arrivals";
 import { getBusStops } from "../resolvers/busStops";
 import { getIoFromAvl } from "../resolvers/io";
-import { getLatestAvlOfVehicle } from "../resolvers/avl";
 import { getRouteCoords } from "../resolvers/route";
 import { getVehicle } from "../resolvers/vehicles";
 
@@ -108,9 +108,16 @@ const route = {
   resolve: getRouteCoords,
 };
 
+const avls = {
+  description: "Get AVL data",
+  type: new GraphQLList(AVLType),
+  args: { date: { type: GraphQLString } },
+  resolve: getAvl,
+};
+
 const RootQueryType = new GraphQLObjectType({
   name: "RootQueryType",
-  fields: { vehicles, busStops, route },
+  fields: { vehicles, busStops, route, avls },
 });
 
 const schema = new GraphQLSchema({
