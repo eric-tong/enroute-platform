@@ -13,7 +13,7 @@ export type AVL = {|
   speed: number,
 |};
 
-const GET_ALL_AVL_WITH_DATE = `SELECT * FROM avl WHERE DATE(timestamp) = DATE($1) ORDER BY timestamp DESC`;
+const GET_ALL_AVL_WITH_DATE = `SELECT * FROM avl WHERE DATE(timestamp) = DATE($1) ORDER BY timestamp`;
 const GET_AVL_OF_VEHICLE = `SELECT * FROM avl WHERE vehicle_id = $1 ORDER BY timestamp DESC LIMIT 1`;
 
 export function getAvl(
