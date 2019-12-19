@@ -13,7 +13,24 @@ export type AVL = {|
   speed: number,
 |};
 
-const GET_ALL_AVL_WITH_DATE = `SELECT * FROM avl WHERE DATE(timestamp) = DATE($1) ORDER BY timestamp`;
+const GET_ALL_AVL_WITH_DATE = `
+WITH _avls_by_position AS (
+  SELECT
+    *,
+    row_number() OVER (PARTITION BY latitude, longitude ORDER BY timestamp) AS row_number_position
+  FROM avl
+  WHERE timestamp::DATE = $1::DATE
+),
+_avls_by_minute AS (
+  SELECT
+    *,
+    row_number() OVER (PARTITION BY DATE_TRUNC('minute', timestamp) ORDER BY timestamp) AS row_number_minute
+  FROM _avls_by_position
+  WHERE row_number_position = 1
+)
+
+SELECT * FROM _avls_by_minute WHERE row_number_minute = 1;
+`;
 const GET_AVL_OF_VEHICLE = `SELECT * FROM avl WHERE vehicle_id = $1 ORDER BY timestamp DESC LIMIT 1`;
 
 export function getAvl(
