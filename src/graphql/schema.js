@@ -1,6 +1,7 @@
 // @flow
 
 import {
+  GraphQLBoolean,
   GraphQLFloat,
   GraphQLID,
   GraphQLInt,
@@ -8,7 +9,7 @@ import {
   GraphQLList,
   GraphQLObjectType,
   GraphQLSchema,
-  GraphQLString,
+  GraphQLString
 } from "graphql";
 import { getAvl, getLatestAvlOfVehicle } from "../resolvers/avl";
 
@@ -23,8 +24,8 @@ const LocationInterface = new GraphQLInterfaceType({
   description: "Interface for objects with latitude and longitude values",
   fields: {
     latitude: { type: GraphQLFloat },
-    longitude: { type: GraphQLFloat },
-  },
+    longitude: { type: GraphQLFloat }
+  }
 });
 
 const LocationType = new GraphQLObjectType({
@@ -33,8 +34,8 @@ const LocationType = new GraphQLObjectType({
   interfaces: [LocationInterface],
   fields: {
     latitude: { type: GraphQLFloat },
-    longitude: { type: GraphQLFloat },
-  },
+    longitude: { type: GraphQLFloat }
+  }
 });
 
 const IOType = new GraphQLObjectType({
@@ -42,8 +43,8 @@ const IOType = new GraphQLObjectType({
   description: "IO elements data",
   fields: {
     name: { type: GraphQLString },
-    value: { type: GraphQLInt },
-  },
+    value: { type: GraphQLInt }
+  }
 });
 
 const AVLType = new GraphQLObjectType({
@@ -51,13 +52,18 @@ const AVLType = new GraphQLObjectType({
   description: "Automatic Vehicle Location data",
   interfaces: [LocationInterface],
   fields: {
+    id: { type: GraphQLInt },
+    priority: { type: GraphQLString },
     timestamp: { type: GraphQLString },
+    altitude: { type: GraphQLInt },
     longitude: { type: GraphQLFloat },
     latitude: { type: GraphQLFloat },
     angle: { type: GraphQLInt },
+    satellites: { type: GraphQLInt },
     speed: { type: GraphQLInt },
-    io: { type: new GraphQLList(IOType), resolve: getIoFromAvl },
-  },
+    vehicleId: { type: GraphQLInt },
+    io: { type: new GraphQLList(IOType), resolve: getIoFromAvl }
+  }
 });
 
 const VehicleType = new GraphQLObjectType({
@@ -67,8 +73,8 @@ const VehicleType = new GraphQLObjectType({
     id: { type: GraphQLInt },
     registration: { type: GraphQLString },
     imei: { type: GraphQLString },
-    avl: { type: AVLType, resolve: getLatestAvlOfVehicle },
-  },
+    avl: { type: AVLType, resolve: getLatestAvlOfVehicle }
+  }
 });
 
 const BusStopType = new GraphQLObjectType({
@@ -83,45 +89,48 @@ const BusStopType = new GraphQLObjectType({
     arrivals: {
       type: new GraphQLList(GraphQLString),
       args: { maxLength: { type: GraphQLInt } },
-      resolve: getArrivalsFromBusStop,
+      resolve: getArrivalsFromBusStop
     },
     latitude: { type: GraphQLFloat },
-    longitude: { type: GraphQLFloat },
-  },
+    longitude: { type: GraphQLFloat }
+  }
 });
 
 const vehicles = {
   description: "Query for all vehicles",
   type: new GraphQLList(VehicleType),
-  resolve: getVehicle,
+  resolve: getVehicle
 };
 
 const busStops = {
   description: "Get bus stops and their locations",
   type: new GraphQLList(BusStopType),
-  resolve: getBusStops,
+  resolve: getBusStops
 };
 
 const route = {
   description: "Get coordinates along route of bus",
   type: new GraphQLList(LocationType),
-  resolve: getRouteCoords,
+  resolve: getRouteCoords
 };
 
 const avls = {
   description: "Get AVL data",
   type: new GraphQLList(AVLType),
-  args: { date: { type: GraphQLString } },
-  resolve: getAvl,
+  args: {
+    date: { type: GraphQLString },
+    full: { type: GraphQLBoolean }
+  },
+  resolve: getAvl
 };
 
 const RootQueryType = new GraphQLObjectType({
   name: "RootQueryType",
-  fields: { vehicles, busStops, route, avls },
+  fields: { vehicles, busStops, route, avls }
 });
 
 const schema = new GraphQLSchema({
-  query: RootQueryType,
+  query: RootQueryType
 });
 
 export default schema;

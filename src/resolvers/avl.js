@@ -10,10 +10,11 @@ export type AVL = {|
   longitude: number,
   latitude: number,
   angle: number,
-  speed: number,
+  speed: number
 |};
 
-const GET_ALL_AVL_WITH_DATE = `
+const GET_FULL_AVLS_WITH_DATE = `SELECT *, vehicle_id as "vehicleId" FROM avl WHERE timestamp::DATE = $1::DATE`;
+const GET_COMPRESSED_AVLS_WITH_DATE = `
 WITH _avls_by_position AS (
   SELECT
     *,
@@ -31,14 +32,21 @@ _avls_by_minute AS (
 
 SELECT * FROM _avls_by_minute WHERE row_number_minute = 1;
 `;
+
 const GET_AVL_OF_VEHICLE = `SELECT * FROM avl WHERE vehicle_id = $1 ORDER BY timestamp DESC LIMIT 1`;
 
 export function getAvl(
   _: void,
-  { date = DateTime.local().toSQL() }: { date: ?string }
+  {
+    date = DateTime.local().toSQL(),
+    full = false
+  }: { date: ?string, full: ?boolean }
 ) {
   return database
-    .query<AVL>(GET_ALL_AVL_WITH_DATE, [date])
+    .query<AVL>(
+      full ? GET_FULL_AVLS_WITH_DATE : GET_COMPRESSED_AVLS_WITH_DATE,
+      [date]
+    )
     .then(results => results.rows);
 }
 
