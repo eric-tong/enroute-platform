@@ -33,7 +33,7 @@ _avls_by_minute AS (
 SELECT * FROM _avls_by_minute WHERE row_number_minute = 1;
 `;
 
-const GET_AVL_OF_VEHICLE = `SELECT * FROM avl WHERE vehicle_id = $1 ORDER BY timestamp DESC LIMIT 1`;
+const GET_AVL_OF_VEHICLE = `SELECT * FROM avl WHERE vehicle_id = $1 AND satellites > 3 ORDER BY timestamp DESC LIMIT 1`;
 
 export function getAvl(
   _: void,

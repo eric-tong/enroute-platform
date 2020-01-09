@@ -13,6 +13,8 @@ SELECT ARRAY_AGG(time) as times FROM (
   AND stops_from_terminal > 1
 `;
 
+const DEPARTURE_BUFFER = 2 * 60 * 1000;
+
 export function getDeparturesFromBusStop(
   busStop: BusStop,
   { maxLength = 5 }: { maxLength: number }
@@ -25,7 +27,9 @@ export function getDeparturesFromBusStop(
     .then(results =>
       results.rows[0].times
         .map<DateTime>(toActualTime)
-        .filter(dateTime => dateTime.valueOf() > now.valueOf())
+        .filter(
+          dateTime => dateTime.valueOf() + DEPARTURE_BUFFER > now.valueOf()
+        )
         .slice(0, maxLength)
         .map<string>(dateTime => dateTime.toISO())
     );
