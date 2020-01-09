@@ -13,8 +13,8 @@ import {
 } from "graphql";
 import { getAvl, getLatestAvlOfVehicle } from "../resolvers/avl";
 
-import { getArrivalsFromBusStop } from "../resolvers/arrivals";
 import { getBusStops } from "../resolvers/busStops";
+import { getDeparturesFromBusStop } from "../resolvers/departures";
 import { getIoFromAvl } from "../resolvers/io";
 import { getRouteCoords } from "../resolvers/route";
 import { getVehicle } from "../resolvers/vehicles";
@@ -86,10 +86,11 @@ const BusStopType = new GraphQLObjectType({
     name: { type: GraphQLString },
     street: { type: GraphQLString },
     icon: { type: GraphQLString },
-    arrivals: {
+    direction: { type: GraphQLString },
+    departures: {
       type: new GraphQLList(GraphQLString),
       args: { maxLength: { type: GraphQLInt } },
-      resolve: getArrivalsFromBusStop
+      resolve: getDeparturesFromBusStop
     },
     latitude: { type: GraphQLFloat },
     longitude: { type: GraphQLFloat }

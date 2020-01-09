@@ -4,22 +4,22 @@ import type { BusStop } from "./busStops";
 import { DateTime } from "luxon";
 import database from "../database/database";
 
-const GET_ARRIVAL_TIMES_WITH_BUS_STOP_ID = `
+const GET_DEPARTURE_TIMES_WITH_BUS_STOP_ID = `
 SELECT ARRAY_AGG(time) as times FROM (
   SELECT *, ROW_NUMBER() OVER (PARTITION BY trip_id ORDER BY trip_id, time DESC) as stops_from_terminal
-    FROM arrivals
-) as arrivals
+    FROM departures
+) as departures
   WHERE bus_stop_id = $1
   AND stops_from_terminal > 1
 `;
 
-export function getArrivalsFromBusStop(
+export function getDeparturesFromBusStop(
   busStop: BusStop,
   { maxLength = 5 }: { maxLength: number }
 ) {
   const now = DateTime.local();
   return database
-    .query<{ times: number[] }>(GET_ARRIVAL_TIMES_WITH_BUS_STOP_ID, [
+    .query<{ times: number[] }>(GET_DEPARTURE_TIMES_WITH_BUS_STOP_ID, [
       busStop.id
     ])
     .then(results =>
