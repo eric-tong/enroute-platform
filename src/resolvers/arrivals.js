@@ -5,8 +5,12 @@ import { DateTime } from "luxon";
 import database from "../database/database";
 
 const GET_ARRIVAL_TIMES_WITH_BUS_STOP_ID = `
-SELECT ARRAY_AGG(time) as times
-  FROM (SELECT * FROM arrivals WHERE bus_stop_id = $1 ORDER BY time) as arrivals
+SELECT ARRAY_AGG(time) as times FROM (
+  SELECT *, ROW_NUMBER() OVER (PARTITION BY trip_id ORDER BY trip_id, time DESC) as stops_from_terminal
+    FROM arrivals
+) as arrivals
+  WHERE bus_stop_id = $1
+  AND stops_from_terminal > 1
 `;
 
 export function getArrivalsFromBusStop(
@@ -16,7 +20,7 @@ export function getArrivalsFromBusStop(
   const now = DateTime.local();
   return database
     .query<{ times: number[] }>(GET_ARRIVAL_TIMES_WITH_BUS_STOP_ID, [
-      busStop.id,
+      busStop.id
     ])
     .then(results =>
       results.rows[0].times
