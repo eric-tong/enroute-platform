@@ -11,7 +11,7 @@ export type BusStop = {|
   icon: string
 |};
 
-const GET_ALL_BUS_STOPS = `SELECT * FROM bus_stops ORDER BY latitude`;
+const GET_ALL_BUS_STOPS = `SELECT * FROM bus_stops ORDER BY display_position`;
 const GET_ALL_BUS_STOPS_IN_ORDER = `
 SELECT longitude, latitude FROM bus_stops INNER JOIN departures 
   ON bus_stops.id = departures.bus_stop_id
