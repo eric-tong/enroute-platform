@@ -2,6 +2,7 @@
 
 import type { Socket } from "net";
 import crcIsValid from "./crc16Checker";
+import { getValidImeis } from "../resolvers/vehicles";
 import net from "net";
 import parseCodec8Stream from "./codec8Parser";
 import save from "../database/avlSaver";
@@ -9,20 +10,19 @@ import save from "../database/avlSaver";
 type Client = {|
   name: string,
   header: ?string,
-  imei: ?string,
+  imei: ?string
 |};
 
 const REPLY = { ACCEPT: "\x01", REJECT: "\x00" };
 
 const clients = new Map<Socket, Client>();
-const validImeis = ["358480089803458"];
 const port = process.env.PORT || 3000;
 
 const server = net.createServer((socket: Socket) => {
   const client: Client = {
     name: `${socket.remoteAddress ?? "undefined"}:${socket.remotePort}`,
     header: undefined,
-    imei: undefined,
+    imei: undefined
   };
   console.log(`Connected to ${client.name}`);
 
@@ -31,7 +31,7 @@ const server = net.createServer((socket: Socket) => {
       stream:
         !client.header || !client.imei
           ? stream.toString()
-          : stream.toString("hex"),
+          : stream.toString("hex")
     });
 
     if (!client.header) {
@@ -60,8 +60,9 @@ const server = net.createServer((socket: Socket) => {
 
   socket.on("end", () => console.log(`Disconnected from ${client.name}`));
 
-  function setImei(stream: string | Buffer) {
+  async function setImei(stream: string | Buffer) {
     const imei = stream.slice(2).toString();
+    const validImeis = await getValidImeis();
     if (validImeis.includes(imei)) {
       client.imei = imei;
       write(REPLY.ACCEPT);

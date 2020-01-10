@@ -13,7 +13,7 @@ SELECT ARRAY_AGG(time) as times FROM (
   AND stops_from_terminal > 1
 `;
 
-const DEPARTURE_BUFFER = 2 * 60 * 1000;
+const DEPARTURE_BUFFER = 60 * 1000;
 
 export function getDeparturesFromBusStop(
   busStop: BusStop,
