@@ -1,6 +1,8 @@
 // @flow
 
-import type { Codec8Data } from "../trackers/codec8Schema";
+import type { AVLData, Codec8Data } from "../trackers/codec8Schema";
+
+import { checkStateTransition } from "../predictor/stateTransitions";
 import database from "./database";
 
 const VEHICLE_ID_FROM_IMEI = "SELECT id FROM vehicles WHERE imei = $1 LIMIT 1";
@@ -15,37 +17,48 @@ INSERT INTO io (avl_id, id, value)
 `;
 
 export default function saveAVLData(data: Codec8Data, imei: string) {
-  data.avlData.forEach(avlData =>
-    database
-      .query<{ id: number }>(VEHICLE_ID_FROM_IMEI, [imei])
-      .then(results => results.rows[0].id)
-      .then(vehicleId =>
-        database.query<{ id: number }>(INSERT_AVL_DATA, [
-          avlData.timestamp.toSQL(),
-          avlData.priority,
-          avlData.longitude,
-          avlData.latitude,
-          avlData.altitude,
-          avlData.angle,
-          avlData.satellites,
-          avlData.speed,
-          vehicleId,
-          avlData.eventIOId,
-        ])
-      )
-      .then(results => results.rows[0].id)
-      .then(avlId => {
-        Promise.all(
-          [
-            ...avlData.oneByteIOData,
-            ...avlData.twoByteIOData,
-            ...avlData.fourByteIOData,
-            ...avlData.eightByteIOData,
-          ].map(ioData =>
-            database.query(INSERT_IO_DATA, [avlId, ioData.ioId, ioData.ioValue])
-          )
-        );
-      })
-      .catch(console.log)
+  Promise.all(
+    data.avlData.map(avlData =>
+      database
+        .query<{ id: number }>(VEHICLE_ID_FROM_IMEI, [imei])
+        .then(results => results.rows[0].id)
+        .then(vehicleId => updateAvlTable(avlData, vehicleId))
+        .then(results => results.rows[0].id)
+        .then(avlId => {
+          updateIoTable(avlData, avlId);
+          return avlId;
+        })
+        .catch(console.log)
+    )
+  ).then(avlIds =>
+    Promise.all(avlIds.map(avlId => avlId && checkStateTransition(avlId)))
+  );
+}
+
+function updateAvlTable(avlData: AVLData, vehicleId: number) {
+  return database.query<{ id: number }>(INSERT_AVL_DATA, [
+    avlData.timestamp.toSQL(),
+    avlData.priority,
+    avlData.longitude,
+    avlData.latitude,
+    avlData.altitude,
+    avlData.angle,
+    avlData.satellites,
+    avlData.speed,
+    vehicleId,
+    avlData.eventIOId
+  ]);
+}
+
+function updateIoTable(avlData: AVLData, avlId: number) {
+  Promise.all(
+    [
+      ...avlData.oneByteIOData,
+      ...avlData.twoByteIOData,
+      ...avlData.fourByteIOData,
+      ...avlData.eightByteIOData
+    ].map(ioData =>
+      database.query(INSERT_IO_DATA, [avlId, ioData.ioId, ioData.ioValue])
+    )
   );
 }
