@@ -9,7 +9,7 @@ export type Vehicle = {|
 |};
 
 const GET_ALL_VEHICLES = `SELECT * FROM vehicles`;
-const GET_VALID_IMEIS = `SELECT imei FROM vehicles`;
+const SELECT_VEHICLE_WITH_IMEI = `SELECT imei FROM vehicles WHERE imei = $1`;
 
 export function getVehicle() {
   return database
@@ -17,6 +17,8 @@ export function getVehicle() {
     .then(results => results.rows);
 }
 
-export function getValidImeis() {
-  return database.query<string>(GET_VALID_IMEIS).then(results => results.rows);
+export function imeiIsValid(imei: string) {
+  return database
+    .query<{ imei: string }>(SELECT_VEHICLE_WITH_IMEI, [imei])
+    .then(results => results.rows.length > 0);
 }

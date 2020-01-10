@@ -2,7 +2,7 @@
 
 import type { Socket } from "net";
 import crcIsValid from "./crc16Checker";
-import { getValidImeis } from "../resolvers/vehicles";
+import { imeiIsValid } from "../resolvers/vehicles";
 import net from "net";
 import parseCodec8Stream from "./codec8Parser";
 import save from "../database/avlSaver";
@@ -62,8 +62,7 @@ const server = net.createServer((socket: Socket) => {
 
   async function setImei(stream: string | Buffer) {
     const imei = stream.slice(2).toString();
-    const validImeis = await getValidImeis();
-    if (validImeis.includes(imei)) {
+    if (imeiIsValid(imei)) {
       client.imei = imei;
       write(REPLY.ACCEPT);
     } else {
