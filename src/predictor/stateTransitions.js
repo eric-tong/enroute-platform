@@ -1,5 +1,7 @@
 // @flow
 
+import { DateTime, Interval } from "luxon";
+
 import type { AVLData } from "../trackers/codec8Schema";
 import database from "../database/database";
 import { getBusStops } from "../resolvers/busStops";
@@ -25,25 +27,55 @@ nearby_bus_stops AS (
     GROUP BY avl_id
 )
 
-SELECT avl.id AS "avlId", avl.timestamp, POINT(avl.longitude, avl.latitude) as "avlCoords",
-       bus_stops.id AS "busStopId", POINT(bus_stops.longitude, bus_stops.latitude) as "busStopCoords"
+SELECT avl.id AS "avlId", avl.timestamp, POINT(avl.longitude, avl.latitude) as "avlCoords", avl.vehicle_id as vehicleId,
+       bus_stops.id AS "nearbyBusStopId", POINT(bus_stops.longitude, bus_stops.latitude) as "nearbyBusStopCoords",
+       bus_stops.is_terminal AS "isInTerminal"
   FROM nearby_bus_stops
   LEFT JOIN avl ON nearby_bus_stops.avl_id = avl.id
   LEFT JOIN bus_stops ON nearby_bus_stops.bus_stop_id = bus_stops.id;
+`;
+const INSERT_VEHICLE_STATE_TRANSITION = `
+INSERT INTO vehicle_state_transitions (vehicle_id, timestamp, transition, bus_stop_id, initial_avl_id, final_avl_id)
+  VALUES($1, $2, $3, $4, $5, $6)
 `;
 
 type AVLToBusStop = {
   avlId: number,
   timestamp: string,
   avlCoords: { x: number, y: number },
-  busStopId: number,
-  busStopCoords: { x: number, y: number }
+  vehicleId: number,
+  nearbyBusStopId: ?number,
+  nearbyBusStopCoords: ?{ x: number, y: number },
+  isInTerminal: ?boolean
 };
 
 export async function checkStateTransition(avlId: number) {
-  const avlToNearbyBusStop = await database
+  const avls = await database
     .query<AVLToBusStop>(GET_NEARBY_BUS_STOPS, [avlId])
     .then(results => results.rows);
-  console.log(avlToNearbyBusStop);
-  return avlToNearbyBusStop;
+
+  // No transition has occurred
+  if (avls.length < 2 || avls[0].nearbyBusStopId === avls[1].nearbyBusStopId)
+    return;
+
+  const [finalAvl, initialAvl] = avls;
+  const action = finalAvl.nearbyBusStopId ? "enter" : "exit";
+  const { vehicleId, nearbyBusStopId, nearbyBusStopCoords, isInTerminal } =
+    action === "enter" ? finalAvl : initialAvl;
+
+  const transition = `${action}_${isInTerminal ? "terminal" : "bus_stop"}`;
+  const timestamp = DateTime.fromMillis(
+    (DateTime.fromSQL(finalAvl.timestamp).toMillis() +
+      DateTime.fromSQL(initialAvl.timestamp).toMillis()) /
+      2
+  );
+
+  return database.query<{}>(INSERT_VEHICLE_STATE_TRANSITION, [
+    vehicleId,
+    timestamp,
+    transition,
+    nearbyBusStopId,
+    initialAvl.avlId,
+    finalAvl.avlId
+  ]);
 }
