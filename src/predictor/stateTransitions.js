@@ -22,7 +22,7 @@ avls AS (
 ),
 nearby_bus_stops AS (
   SELECT avls.id AS avl_id,
-  MAX(CASE WHEN CIRCLE(POINT(bus_stops.longitude, bus_stops.latitude), 0.001) @> POINT(avls.longitude, avls.latitude) 
+  MAX(CASE WHEN CIRCLE(POINT(bus_stops.longitude, bus_stops.latitude), ${GEOFENCE_RADIUS}) @> POINT(avls.longitude, avls.latitude) 
     THEN bus_stops.id ELSE 0 END) AS bus_stop_id
     FROM bus_stops CROSS JOIN avls
     GROUP BY avl_id
@@ -58,14 +58,8 @@ export async function checkStateTransition(avlId: number) {
     .then(results => results.rows);
 
   // No transition has occurred
-  if (avls.length < 2 || avls[0].nearbyBusStopId === avls[1].nearbyBusStopId) {
-    console.log(
-      "Transition",
-      avls[0].timestamp ?? "",
-      "No transition has occurred"
-    );
+  if (avls.length < 2 || avls[0].nearbyBusStopId === avls[1].nearbyBusStopId)
     return;
-  }
 
   const [finalAvl, initialAvl] = avls;
   const action = finalAvl.nearbyBusStopId ? "enter" : "exit";
@@ -74,8 +68,8 @@ export async function checkStateTransition(avlId: number) {
 
   const transition = `${action}_${isInTerminal ? "terminal" : "bus_stop"}`;
   const timestamp = DateTime.fromMillis(
-    (DateTime.fromSQL(initialAvl.timestamp).toMillis() +
-      DateTime.fromSQL(finalAvl.timestamp).toMillis()) /
+    (DateTime.fromISO(initialAvl.timestamp).toMillis() +
+      DateTime.fromISO(finalAvl.timestamp).toMillis()) /
       2
   ).toSQL();
 
