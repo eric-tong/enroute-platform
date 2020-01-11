@@ -1,8 +1,7 @@
 // @flow
 
-import { DateTime, Interval } from "luxon";
-
 import type { AVLData } from "../trackers/codec8Schema";
+import { DateTime } from "luxon";
 import database from "../database/database";
 import { getBusStops } from "../resolvers/busStops";
 
@@ -44,7 +43,7 @@ const GET_AVL_ID_IN_DATE =
 
 type AVLToBusStop = {
   avlId: number,
-  timestamp: string,
+  timestamp: Date,
   avlCoords: { x: number, y: number },
   vehicleId: number,
   nearbyBusStopId: ?number,
@@ -68,8 +67,8 @@ export async function checkStateTransition(avlId: number) {
 
   const transition = `${action}_${isInTerminal ? "terminal" : "bus_stop"}`;
   const timestamp = DateTime.fromMillis(
-    (DateTime.fromISO(initialAvl.timestamp).toMillis() +
-      DateTime.fromISO(finalAvl.timestamp).toMillis()) /
+    (initialAvl.timestamp.getMilliseconds() +
+      initialAvl.timestamp.getMilliseconds()) /
       2
   ).toSQL();
 
