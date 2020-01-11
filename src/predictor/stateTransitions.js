@@ -88,14 +88,16 @@ export async function checkStateTransition(avlId: number) {
     finalAvl: finalAvl.avlId
   });
 
-  return database.query<{}>(INSERT_VEHICLE_STATE_TRANSITION, [
-    vehicleId,
-    timestamp,
-    transition,
-    nearbyBusStopId,
-    initialAvl.avlId,
-    finalAvl.avlId
-  ]);
+  database
+    .query<{}>(INSERT_VEHICLE_STATE_TRANSITION, [
+      vehicleId,
+      timestamp,
+      transition,
+      nearbyBusStopId,
+      initialAvl.avlId,
+      finalAvl.avlId
+    ])
+    .catch(console.log);
 }
 
 export function checkStateTransitionInDate(
