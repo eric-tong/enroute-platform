@@ -74,7 +74,9 @@ export async function checkStateTransition(avlId: number) {
 
   const transition = `${action}_${isInTerminal ? "terminal" : "bus_stop"}`;
   const timestamp = DateTime.fromMillis(
-    parseInt(finalAvl.timestamp, 10) + parseInt(initialAvl.timestamp, 10) / 2
+    (DateTime.fromSQL(initialAvl.timestamp).toMillis() +
+      DateTime.fromSQL(finalAvl.timestamp).toMillis()) /
+      2
   ).toSQL();
 
   console.log("Transition", {
