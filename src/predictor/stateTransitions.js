@@ -32,10 +32,18 @@ SELECT avl.id AS "avlId", avl.timestamp, POINT(avl.longitude, avl.latitude) as "
   LEFT JOIN bus_stops ON nearby_bus_stops.bus_stop_id = bus_stops.id;
 `;
 
+type AVLToBusStop = {
+  avlId: number,
+  timestamp: string,
+  avlCoords: { x: number, y: number },
+  busStopId: number,
+  busStopCoords: { x: number, y: number }
+};
+
 export async function checkStateTransition(avlId: number) {
   const avlToNearbyBusStop = await database
-    .query(GET_NEARBY_BUS_STOPS, [avlId])
-    .then(results => results.rows[0]);
-
+    .query<AVLToBusStop>(GET_NEARBY_BUS_STOPS, [avlId])
+    .then(results => results.rows);
+  console.log(avlToNearbyBusStop);
   return avlToNearbyBusStop;
 }
