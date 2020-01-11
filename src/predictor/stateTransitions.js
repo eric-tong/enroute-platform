@@ -10,7 +10,7 @@ const GEOFENCE_RADIUS = 0.001;
 // TODO Check for angle when matching bus stops;
 const GET_NEARBY_BUS_STOPS = `
 WITH final_avl AS (
-  SELECT timestamp, vehicle_id FROM avl WHERE id = 84118
+  SELECT timestamp, vehicle_id FROM avl WHERE id = $1
 ),
 avls AS (
   SELECT id, longitude, latitude FROM avl 
