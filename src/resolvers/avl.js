@@ -13,7 +13,7 @@ export type AVL = {|
   speed: number
 |};
 
-const GET_FULL_AVLS_WITH_DATE = `SELECT *, vehicle_id as "vehicleId" FROM avl WHERE timestamp::DATE = $1::DATE`;
+const GET_FULL_AVLS_WITH_DATE = `SELECT *, vehicle_id as "vehicleId" FROM avl WHERE timestamp::DATE = $1::DATE ORDER BY timestamp`;
 const GET_COMPRESSED_AVLS_WITH_DATE = `
 WITH _avls_by_position AS (
   SELECT

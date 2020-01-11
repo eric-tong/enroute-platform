@@ -34,7 +34,8 @@ SELECT avl.id AS "avlId", avl.timestamp, POINT(avl.longitude, avl.latitude) as "
        bus_stops.is_terminal AS "isInTerminal"
   FROM nearby_bus_stops
   LEFT JOIN avl ON nearby_bus_stops.avl_id = avl.id
-  LEFT JOIN bus_stops ON nearby_bus_stops.bus_stop_id = bus_stops.id;
+  LEFT JOIN bus_stops ON nearby_bus_stops.bus_stop_id = bus_stops.id
+  ORDER BY avl.timestamp DESC
 `;
 const INSERT_VEHICLE_STATE_TRANSITION = `
 INSERT INTO vehicle_state_transitions (vehicle_id, timestamp, transition, bus_stop_id, initial_avl_id, final_avl_id)
