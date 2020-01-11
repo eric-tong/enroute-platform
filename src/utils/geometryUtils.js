@@ -27,7 +27,7 @@ export function findParametricValueAtBoundary(
     (-b - Math.sqrt(b * b - 4 * a * c)) / (2 * a)
   ];
 
-  return solutions.find(solution => solution < 1);
+  return solutions.find(solution => solution < 1) ?? 0.5;
 }
 
 function distance(p1: Point, p2: Point) {

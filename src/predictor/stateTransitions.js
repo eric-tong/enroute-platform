@@ -4,6 +4,7 @@ import type { AVLData } from "../trackers/codec8Schema";
 import { DateTime } from "luxon";
 import type { Point } from "../utils/geometryUtils";
 import database from "../database/database";
+import { findParametricValueAtBoundary } from "../utils/geometryUtils";
 import { getBusStops } from "../resolvers/busStops";
 
 const GEOFENCE_RADIUS = 0.001;
@@ -67,8 +68,15 @@ export async function checkStateTransition(avlId: number) {
     action === "enter" ? finalAvl : initialAvl;
 
   const transition = `${action}_${isInTerminal ? "terminal" : "bus_stop"}`;
+  const closenessToInitialAvl = findParametricValueAtBoundary(
+    initialAvl.avlCoords,
+    finalAvl.avlCoords,
+    nearbyBusStopCoords ?? { x: 0, y: 0 },
+    GEOFENCE_RADIUS
+  );
   const timestamp = DateTime.fromMillis(
-    (initialAvl.timestamp.getTime() + initialAvl.timestamp.getTime()) / 2
+    initialAvl.timestamp.getTime() * closenessToInitialAvl +
+      initialAvl.timestamp.getTime() * (1 - closenessToInitialAvl)
   ).toSQL();
 
   console.log("Transition", {
