@@ -10,7 +10,7 @@ const GEOFENCE_RADIUS = 0.001;
 // TODO Check for angle when matching bus stops;
 const GET_NEARBY_BUS_STOPS = `
 WITH final_avl AS (
-  SELECT timestamp, vehicle_id FROM avl WHERE id = $1
+  SELECT timestamp, vehicle_id FROM avl WHERE id = 84118
 ),
 avls AS (
   SELECT id, longitude, latitude FROM avl 
@@ -28,7 +28,7 @@ nearby_bus_stops AS (
     GROUP BY avl_id
 )
 
-SELECT avl.id AS "avlId", avl.timestamp, POINT(avl.longitude, avl.latitude) as "avlCoords", avl.vehicle_id as vehicleId,
+SELECT avl.id AS "avlId", avl.timestamp, POINT(avl.longitude, avl.latitude) as "avlCoords", avl.vehicle_id as "vehicleId",
        bus_stops.id AS "nearbyBusStopId", POINT(bus_stops.longitude, bus_stops.latitude) as "nearbyBusStopCoords",
        bus_stops.is_terminal AS "isInTerminal"
   FROM nearby_bus_stops
@@ -59,7 +59,11 @@ export async function checkStateTransition(avlId: number) {
 
   // No transition has occurred
   if (avls.length < 2 || avls[0].nearbyBusStopId === avls[1].nearbyBusStopId) {
-    console.log("Transition", "No transition has occurred");
+    console.log(
+      "Transition",
+      avls[0].timestamp ?? "",
+      "No transition has occurred"
+    );
     return;
   }
 
@@ -70,10 +74,8 @@ export async function checkStateTransition(avlId: number) {
 
   const transition = `${action}_${isInTerminal ? "terminal" : "bus_stop"}`;
   const timestamp = DateTime.fromMillis(
-    (DateTime.fromSQL(finalAvl.timestamp).toMillis() +
-      DateTime.fromSQL(initialAvl.timestamp).toMillis()) /
-      2
-  );
+    parseInt(finalAvl.timestamp, 10) + parseInt(initialAvl.timestamp, 10) / 2
+  ).toSQL();
 
   console.log("Transition", {
     vehicleId,
