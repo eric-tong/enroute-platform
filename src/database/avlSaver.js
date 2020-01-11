@@ -2,8 +2,8 @@
 
 import type { AVLData, Codec8Data } from "../trackers/codec8Schema";
 
-import { checkStateTransition } from "../predictor/stateTransitions";
 import database from "./database";
+import { saveBusStopVisits } from "../predictor/busStopVisits";
 
 const VEHICLE_ID_FROM_IMEI = "SELECT id FROM vehicles WHERE imei = $1 LIMIT 1";
 const INSERT_AVL_DATA = `
@@ -31,7 +31,7 @@ export default function saveAVLData(data: Codec8Data, imei: string) {
         .catch(console.log)
     )
   ).then(avlIds =>
-    Promise.all(avlIds.map(avlId => avlId && checkStateTransition(avlId)))
+    Promise.all(avlIds.map(avlId => avlId && saveBusStopVisits(avlId)))
   );
 }
 
