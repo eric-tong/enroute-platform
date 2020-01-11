@@ -7,6 +7,7 @@ import database from "../database/database";
 import { getBusStops } from "../resolvers/busStops";
 
 const GEOFENCE_RADIUS = 0.001;
+// TODO Check for angle when matching bus stops;
 const GET_NEARBY_BUS_STOPS = `
 WITH final_avl AS (
   SELECT timestamp, vehicle_id FROM avl WHERE id = $1
@@ -38,6 +39,8 @@ const INSERT_VEHICLE_STATE_TRANSITION = `
 INSERT INTO vehicle_state_transitions (vehicle_id, timestamp, transition, bus_stop_id, initial_avl_id, final_avl_id)
   VALUES($1, $2, $3, $4, $5, $6)
 `;
+const GET_AVL_ID_IN_DATE =
+  "SELECT id FROM avl WHERE DATE(timestamp) = DATE($1)";
 
 type AVLToBusStop = {
   avlId: number,
@@ -89,4 +92,14 @@ export async function checkStateTransition(avlId: number) {
     initialAvl.avlId,
     finalAvl.avlId
   ]);
+}
+
+export function checkStateTransitionInDate(
+  date: string = DateTime.local().toSQL()
+) {
+  return database
+    .query<{ id: number }>(GET_AVL_ID_IN_DATE, [date])
+    .then(results => results.rows.map(avl => avl.id))
+    .then(avlIds => avlIds.forEach(checkStateTransition))
+    .catch(console.log);
 }
