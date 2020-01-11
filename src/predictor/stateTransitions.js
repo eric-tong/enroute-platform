@@ -2,6 +2,7 @@
 
 import type { AVLData } from "../trackers/codec8Schema";
 import { DateTime } from "luxon";
+import type { Point } from "../utils/geometryUtils";
 import database from "../database/database";
 import { getBusStops } from "../resolvers/busStops";
 
@@ -44,10 +45,10 @@ const GET_AVL_ID_IN_DATE =
 type AVLToBusStop = {
   avlId: number,
   timestamp: Date,
-  avlCoords: { x: number, y: number },
+  avlCoords: Point,
   vehicleId: number,
   nearbyBusStopId: ?number,
-  nearbyBusStopCoords: ?{ x: number, y: number },
+  nearbyBusStopCoords: ?Point,
   isInTerminal: ?boolean
 };
 
