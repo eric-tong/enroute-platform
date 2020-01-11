@@ -55,8 +55,10 @@ export async function checkStateTransition(avlId: number) {
     .then(results => results.rows);
 
   // No transition has occurred
-  if (avls.length < 2 || avls[0].nearbyBusStopId === avls[1].nearbyBusStopId)
+  if (avls.length < 2 || avls[0].nearbyBusStopId === avls[1].nearbyBusStopId) {
+    console.log("Transition", "No transition has occurred");
     return;
+  }
 
   const [finalAvl, initialAvl] = avls;
   const action = finalAvl.nearbyBusStopId ? "enter" : "exit";
@@ -69,6 +71,15 @@ export async function checkStateTransition(avlId: number) {
       DateTime.fromSQL(initialAvl.timestamp).toMillis()) /
       2
   );
+
+  console.log("Transition", {
+    vehicleId,
+    timestamp,
+    transition,
+    nearbyBusStopId,
+    initialAvl: initialAvl.avlId,
+    finalAvl: finalAvl.avlId
+  });
 
   return database.query<{}>(INSERT_VEHICLE_STATE_TRANSITION, [
     vehicleId,
