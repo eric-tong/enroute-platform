@@ -13,7 +13,7 @@ SELECT avl.id as avl_id, bus_stops.id as bus_stop_id
     FROM bus_stops CROSS JOIN avl
     WHERE CIRCLE(POINT(bus_stops.longitude, bus_stops.latitude), ${GEOFENCE_RADIUS}) @> POINT(avl.longitude, avl.latitude)
     AND (
-        bus_stops.road_angle = NULL
+        bus_stops.road_angle IS NULL
         OR ABS(bus_stops.road_angle - avl.angle) < 45
         OR ABS(bus_stops.road_angle - avl.angle) > 315
     )
