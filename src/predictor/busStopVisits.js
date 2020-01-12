@@ -26,7 +26,7 @@ export function saveBusStopVisits(avlId: number) {
   return database
     .query(SAVE_BUS_STOP_VISIT_FROM_AVL_ID, [avlId])
     .then(result => result.rows)
-    .then(rows => rows.length && console.log(rows))
+    .then(rows => console.log("Bus stop visits", rows))
     .catch(console.log);
 }
 
