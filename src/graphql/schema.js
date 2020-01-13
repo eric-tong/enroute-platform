@@ -16,7 +16,7 @@ import { getAvl, getLatestAvlOfVehicle } from "../resolvers/avl";
 import { getBusStops } from "../resolvers/busStops";
 import { getDeparturesFromBusStop } from "../resolvers/departures";
 import { getIoFromAvl } from "../resolvers/io";
-import { getRouteCoords } from "../predictor/predictRoute";
+import { getRouteCoords } from "../resolvers/routes";
 import { getVehicles } from "../resolvers/vehicles";
 
 const LocationInterface = new GraphQLInterfaceType({

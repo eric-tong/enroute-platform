@@ -3,8 +3,8 @@
 import type { BusStop } from "../resolvers/busStops";
 import NodeCache from "node-cache";
 import fetch from "node-fetch";
-import { getBusStopsInOrder } from "../resolvers/busStops";
-import { getTripIdWithNearestStartTime } from "../resolvers/trips";
+import { getBusStopsInOrder } from "./busStops";
+import { getTripIdWithNearestStartTime } from "./trips";
 import util from "util";
 
 export const routeByTripCache = new NodeCache({ stdTTL: 6000 });
