@@ -3,12 +3,13 @@
 import NodeCache from "node-cache";
 import fetch from "node-fetch";
 import { getBusStopsInOrder } from "../resolvers/busStops";
-import { getCurrentTripId } from "../resolvers/trips";
+import { getTripIdWithNearestStartTime } from "../resolvers/trips";
+import util from "util";
 
 export const routeByTripCache = new NodeCache({ stdTTL: 6000 });
 
 export async function getRouteCoords(tripId?: number) {
-  const trip = tripId ?? (await getCurrentTripId());
+  const trip = tripId ?? (await getTripIdWithNearestStartTime());
   if (routeByTripCache.has(trip)) {
     return routeByTripCache.get(trip);
   } else {
@@ -29,11 +30,16 @@ async function downloadRouteCoords(tripId: number) {
 
   return fetch(url)
     .then(response => response.json())
-    .then(result =>
-      result.routes[0].geometry.coordinates.map(([longitude, latitude]) => ({
-        latitude,
-        longitude
-      }))
+    .then(
+      result =>
+        console.log(
+          tripId,
+          util.inspect(result, { showHidden: false, depth: null })
+        ) ||
+        result.routes[0].geometry.coordinates.map(([longitude, latitude]) => ({
+          latitude,
+          longitude
+        }))
     )
     .catch(console.log);
 }

@@ -1,10 +1,16 @@
 // @flow
 
+import {
+  getBusStopsVisitedByVehicle,
+  getCurrentBusStopOfVehicle
+} from "../resolvers/busStops";
+
+import { DateTime } from "luxon";
 import NodeCache from "node-cache";
-import estimateVehicleStatus from "./vehicleStatusEstimator";
+import { getCurrentTripIdOfVehicle } from "../resolvers/trips";
 import { getVehicles } from "../resolvers/vehicles";
 
-export type Status =
+type Status =
   | {
       isInTerminal: true
     }
@@ -28,4 +34,29 @@ export function updateVehicleStatus() {
       )
     )
   );
+}
+
+async function estimateVehicleStatus(
+  vehicleId: number,
+  beforeTimestamp: string = DateTime.local().toSQL()
+): Promise<Status> {
+  const [
+    { currentBusStopId, isInTerminal },
+    { tripId, confidence },
+    busStopsVisited
+  ] = await Promise.all([
+    getCurrentBusStopOfVehicle(vehicleId, beforeTimestamp),
+    getCurrentTripIdOfVehicle(vehicleId, beforeTimestamp),
+    getBusStopsVisitedByVehicle(vehicleId, beforeTimestamp)
+  ]);
+
+  return isInTerminal
+    ? { isInTerminal: true }
+    : {
+        isInTerminal: false,
+        tripId,
+        confidence,
+        currentBusStopId,
+        busStopsVisited
+      };
 }
