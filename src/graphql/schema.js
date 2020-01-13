@@ -17,7 +17,7 @@ import { getBusStops } from "../resolvers/busStops";
 import { getDeparturesFromBusStop } from "../resolvers/departures";
 import { getIoFromAvl } from "../resolvers/io";
 import { getRouteCoords } from "../resolvers/route";
-import { getVehicle } from "../resolvers/vehicles";
+import { getVehicles } from "../resolvers/vehicles";
 
 const LocationInterface = new GraphQLInterfaceType({
   name: "LocationInterface",
@@ -100,7 +100,7 @@ const BusStopType = new GraphQLObjectType({
 const vehicles = {
   description: "Query for all vehicles",
   type: new GraphQLList(VehicleType),
-  resolve: getVehicle
+  resolve: getVehicles
 };
 
 const busStops = {

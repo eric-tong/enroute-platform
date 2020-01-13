@@ -11,7 +11,7 @@ export type Vehicle = {|
 const GET_ALL_VEHICLES = `SELECT * FROM vehicles`;
 const SELECT_VEHICLE_WITH_IMEI = `SELECT imei FROM vehicles WHERE imei = $1`;
 
-export function getVehicle() {
+export function getVehicles() {
   return database
     .query<Vehicle>(GET_ALL_VEHICLES)
     .then(results => results.rows);

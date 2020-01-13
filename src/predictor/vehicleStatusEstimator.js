@@ -73,23 +73,25 @@ export default async function estimateVehicleStatus(
   vehicleId: number,
   beforeTimestamp: string = DateTime.local().toSQL()
 ) {
-  const time = new Date().getTime();
-  console.log("Start", new Date().getTime() - time);
-  const { currentBusStopId, isInTerminal } = await getCurrentBusStop();
-  if (isInTerminal) return { isInTerminal };
-
-  const [{ tripId, confidence }, busStopsVisited] = await Promise.all([
+  const [
+    { currentBusStopId, isInTerminal },
+    { tripId, confidence },
+    busStopsVisited
+  ] = await Promise.all([
+    getCurrentBusStop(),
     getCurrentTrip(),
     getBusStopsVisited()
   ]);
 
-  return {
-    isInTerminal,
-    tripId,
-    confidence,
-    currentBusStopId,
-    busStopsVisited
-  };
+  return isInTerminal
+    ? { isInTerminal }
+    : {
+        isInTerminal,
+        tripId,
+        confidence,
+        currentBusStopId,
+        busStopsVisited
+      };
 
   function getCurrentBusStop() {
     return database
