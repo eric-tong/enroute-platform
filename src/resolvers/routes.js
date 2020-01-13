@@ -15,7 +15,7 @@ export async function getRouteCoords(tripId?: number) {
     return routeByTripCache.get(trip);
   } else {
     // $FlowFixMe
-    const busStops = await getBusStopsInOrder(tripId);
+    const busStops = await getBusStopsInOrder(trip);
     const route = await downloadDirections(busStops);
     const routeCoords = route.geometry.coordinates.map(
       ([longitude, latitude]) => ({
