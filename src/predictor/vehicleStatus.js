@@ -5,9 +5,13 @@ import {
   getCurrentBusStopOfVehicle
 } from "../resolvers/busStops";
 
+import type { BusStopsArrival } from "./busArrivalPredictor";
 import { DateTime } from "luxon";
 import NodeCache from "node-cache";
+import type { Vehicle } from "../resolvers/vehicles";
+import { getBusArrivalPredictions } from "./busArrivalPredictor";
 import { getCurrentTripIdOfVehicle } from "../resolvers/trips";
+import { getLatestAvlOfVehicle } from "../resolvers/avl";
 import { getVehicles } from "../resolvers/vehicles";
 
 export type Status =
@@ -19,36 +23,49 @@ export type Status =
       tripId: number,
       confidence: number,
       currentBusStopId: ?number,
-      busStopsVisited: number[]
+      coords: { longitude: number, latitude: number },
+      busStopsVisited: number[],
+      predictedArrivals: BusStopsArrival[]
     };
 
 export const vehicleStatusCache = new NodeCache();
 
 export function updateVehicleStatus() {
   getVehicles().then(vehicles =>
-    vehicles.map(({ id }) =>
-      estimateVehicleStatus(id).then(
+    vehicles.map(vehicle =>
+      estimateVehicleStatus(vehicle).then(
         vehicleStatus =>
-          console.log(id, vehicleStatus) ||
-          vehicleStatusCache.set(id, vehicleStatus)
+          console.log(vehicle.id, vehicleStatus) ||
+          vehicleStatusCache.set(vehicle.id, vehicleStatus)
       )
     )
   );
 }
 
 async function estimateVehicleStatus(
-  vehicleId: number,
+  vehicle: Vehicle,
   beforeTimestamp: string = DateTime.local().toSQL()
 ): Promise<Status> {
   const [
     { currentBusStopId, isInTerminal },
     { tripId, confidence },
+    { longitude, latitude },
     busStopsVisited
   ] = await Promise.all([
-    getCurrentBusStopOfVehicle(vehicleId, beforeTimestamp),
-    getCurrentTripIdOfVehicle(vehicleId, beforeTimestamp),
-    getBusStopsVisitedByVehicle(vehicleId, beforeTimestamp)
+    getCurrentBusStopOfVehicle(vehicle.id, beforeTimestamp),
+    getCurrentTripIdOfVehicle(vehicle.id, beforeTimestamp),
+    getLatestAvlOfVehicle(vehicle),
+    getBusStopsVisitedByVehicle(vehicle.id, beforeTimestamp)
   ]);
+
+  const predictedArrivals = await getBusArrivalPredictions(
+    tripId,
+    busStopsVisited,
+    {
+      longitude,
+      latitude
+    }
+  );
 
   return isInTerminal
     ? { isInTerminal: true }
@@ -57,6 +74,8 @@ async function estimateVehicleStatus(
         tripId,
         confidence,
         currentBusStopId,
-        busStopsVisited
+        coords: { longitude, latitude },
+        busStopsVisited,
+        predictedArrivals
       };
 }

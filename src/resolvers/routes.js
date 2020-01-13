@@ -14,23 +14,26 @@ export async function getRouteCoords(tripId?: number) {
   if (routeByTripCache.has(trip)) {
     return routeByTripCache.get(trip);
   } else {
-    const routeCoords = downloadRouteCoords(trip);
+    const routeCoords = getRouteCoords(trip);
     routeByTripCache.set(trip, routeCoords);
     return routeCoords;
   }
 }
 
-async function downloadRouteCoords(tripId: number) {
+async function getRouteCoords(tripId: number) {
+  // $FlowFixMe
   const busStops = await getBusStopsInOrder(tripId);
-  const route = await downloadRoute(busStops);
+  const route = await downloadDirections(busStops);
   return route.geometry.coordinates.map(([longitude, latitude]) => ({
     latitude,
     longitude
   }));
 }
 
-export async function downloadRoute(busStops: BusStop[]) {
-  const url = await getURL(busStops);
+export async function downloadDirections(
+  coordsList: { longitude: number, latitude: number }[]
+) {
+  const url = await getURL(coordsList);
   const params: { [string]: string } = {
     geometries: "geojson",
     overview: "full",
@@ -44,7 +47,7 @@ export async function downloadRoute(busStops: BusStop[]) {
     .catch(console.log);
 }
 
-async function getURL(busStops: BusStop[]) {
+async function getURL(busStops: { longitude: number, latitude: number }[]) {
   const coords = busStops.reduce(
     (total, current) =>
       total +

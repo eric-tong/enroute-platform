@@ -50,7 +50,7 @@ SELECT bus_stops.id, ROW_NUMBER() OVER (PARTITION BY bus_stops.id ORDER BY avl.t
     ORDER BY avl.timestamp
 )
 
-SELECT id FROM visited_bus_stops_in_current_trip WHERE id_within_bus_stop = 1;
+SELECT id FROM visited_bus_stops_in_current_trip WHERE id_within_bus_stop = 1
 `;
 
 export function getBusStops() {
@@ -65,16 +65,16 @@ export function getBusStopsInOrder(tripId: number) {
     .then(results => results.rows);
 }
 
-export async function getUpcomingBusStopsOfVehicle(vehicleStatus: Status) {
-  if (vehicleStatus.isInTerminal) return [];
+export async function getUpcomingBusStopsOfTrip(
+  tripId: number,
+  idsOfBusStopsVisited: number[]
+): Promise<BusStop[]> {
+  const busStops = await getBusStopsInOrder(tripId);
+  const busStopsVisitedSet = new Set(idsOfBusStopsVisited);
 
-  const busStops = await getBusStopsInOrder(vehicleStatus.tripId);
-  const busStopsVisited = new Set(vehicleStatus.busStopsVisited);
-
-  // $FlowFixMe
   return busStops.filter(busStop => {
-    if (busStopsVisited.has(busStop.id)) {
-      busStopsVisited.delete(busStop.id);
+    if (busStopsVisitedSet.has(busStop.id)) {
+      busStopsVisitedSet.delete(busStop.id);
       return false;
     } else {
       return true;
