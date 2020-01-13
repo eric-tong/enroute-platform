@@ -15,7 +15,7 @@ export type BusStop = {|
 
 const GET_ALL_BUS_STOPS = `SELECT * FROM bus_stops ORDER BY display_position`;
 const GET_ALL_BUS_STOPS_IN_ORDER = `
-SELECT longitude, latitude FROM bus_stops INNER JOIN departures 
+SELECT * FROM bus_stops INNER JOIN departures 
   ON bus_stops.id = departures.bus_stop_id
   WHERE departures.trip_id = $1
   ORDER BY time
@@ -67,19 +67,23 @@ export function getBusStopsInOrder(tripId: number) {
 
 export async function getUpcomingBusStopsOfTrip(
   tripId: number,
-  idsOfBusStopsVisited: number[]
+  visitedBusStopIds: number[]
 ): Promise<BusStop[]> {
-  const busStops = await getBusStopsInOrder(tripId);
-  const busStopsVisitedSet = new Set(idsOfBusStopsVisited);
+  const tripBusStops = await getBusStopsInOrder(tripId);
+  const tripBusStopIds = tripBusStops.map(busStop => busStop.id);
 
-  return busStops.filter(busStop => {
-    if (busStopsVisitedSet.has(busStop.id)) {
-      busStopsVisitedSet.delete(busStop.id);
-      return false;
-    } else {
-      return true;
+  // Find last bus stop id in the visited set that matches any bus stops defined in the trip.
+  // The upcoming bus stops are the ones that follow it as defined in the trip.
+
+  let tripIndex = 0;
+  visitedBusStopIds.forEach(visitedId => {
+    const matchedIndex = tripBusStopIds.indexOf(visitedId, tripIndex);
+    if (matchedIndex > -1) {
+      tripIndex = matchedIndex + 1;
     }
   });
+
+  return tripBusStops.slice(tripIndex);
 }
 
 export function getCurrentBusStopOfVehicle(

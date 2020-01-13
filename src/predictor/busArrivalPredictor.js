@@ -7,7 +7,8 @@ import { getUpcomingBusStopsOfTrip } from "../resolvers/busStops";
 
 export type BusStopsArrival = {
   busStopId: number,
-  arrivalTime: DateTime
+  busStopName: string,
+  arrivalTime: string
 };
 
 export async function getBusArrivalPredictions(
@@ -23,13 +24,12 @@ export async function getBusArrivalPredictions(
     vehicleCoords,
     ...upcomingBusStops
   ]);
-  const durations: number[] = directions.routes[0].legs.map(
-    leg => leg.duration
-  );
+  const durations: number[] = directions.legs.map(leg => leg.duration);
   const now = DateTime.local();
 
   return upcomingBusStops.map<BusStopsArrival>((busStop, i) => ({
     busStopId: busStop.id,
-    arrivalTime: now.plus({ seconds: durations[i - 1] })
+    busStopName: busStop.name,
+    arrivalTime: now.plus({ seconds: durations[i - 1] }).toSQL()
   }));
 }

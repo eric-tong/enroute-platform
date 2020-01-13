@@ -3,12 +3,13 @@ import { updateVehicleStatus } from "../predictor/vehicleStatus";
 
 // @flow
 
-const PERIOD = 30 * 1000;
+const PERIOD = 60 * 1000;
 const BACKGROUND_TASKS = [updateVehicleStatus];
 
 startServiceWorker();
 
 function startServiceWorker() {
+  runBackgroundTasks();
   setInterval(runBackgroundTasks, PERIOD);
 }
 
