@@ -14,20 +14,18 @@ export async function getRouteCoords(tripId?: number) {
   if (routeByTripCache.has(trip)) {
     return routeByTripCache.get(trip);
   } else {
-    const routeCoords = getRouteCoords(trip);
+    // $FlowFixMe
+    const busStops = await getBusStopsInOrder(tripId);
+    const route = await downloadDirections(busStops);
+    const routeCoords = route.geometry.coordinates.map(
+      ([longitude, latitude]) => ({
+        latitude,
+        longitude
+      })
+    );
     routeByTripCache.set(trip, routeCoords);
     return routeCoords;
   }
-}
-
-async function getRouteCoords(tripId: number) {
-  // $FlowFixMe
-  const busStops = await getBusStopsInOrder(tripId);
-  const route = await downloadDirections(busStops);
-  return route.geometry.coordinates.map(([longitude, latitude]) => ({
-    latitude,
-    longitude
-  }));
 }
 
 export async function downloadDirections(
