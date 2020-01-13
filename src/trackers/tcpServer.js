@@ -6,7 +6,6 @@ import { imeiIsValid } from "../resolvers/vehicles";
 import net from "net";
 import parseCodec8Stream from "./codec8Parser";
 import save from "../database/avlSaver";
-import updateStatus from "../predictor/updateStatus";
 
 type Client = {|
   name: string,

@@ -1,10 +1,26 @@
 // @flow
 
+import NodeCache from "node-cache";
 import fetch from "node-fetch";
 import { getBusStopsInOrder } from "../resolvers/busStops";
+import { getCurrentTripId } from "../resolvers/trips";
 
-export async function getRouteCoords() {
-  const url = await getURL();
+export const routeByTripCache = new NodeCache({ stdTTL: 6000 });
+
+export async function getRouteCoords(
+  tripId?: number = await getCurrentTripId()
+) {
+  if (routeByTripCache.has(tripId)) {
+    return routeByTripCache.get(tripId);
+  } else {
+    const routeCoords = downloadRouteCoords(tripId);
+    routeByTripCache.set(tripId, routeCoords);
+    return routeCoords;
+  }
+}
+
+async function downloadRouteCoords(tripId: number) {
+  const url = await getURL(tripId);
   const params: { [string]: string } = {
     geometries: "geojson",
     overview: "full",
@@ -23,8 +39,8 @@ export async function getRouteCoords() {
     .catch(console.log);
 }
 
-async function getURL() {
-  const busStops = await getBusStopsInOrder();
+async function getURL(tripId: number) {
+  const busStops = await getBusStopsInOrder(tripId);
   const coords = busStops.reduce(
     (total, current) =>
       total +

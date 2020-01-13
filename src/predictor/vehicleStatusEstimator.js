@@ -1,6 +1,7 @@
 // @flow
 
 import { DateTime } from "luxon";
+import type { Status } from "./vehicleStatus";
 import database from "../database/database";
 
 const GET_CURRENT_BUS_STOP = `
@@ -57,22 +58,10 @@ SELECT bus_stops.id, ROW_NUMBER() OVER (PARTITION BY bus_stops.id ORDER BY avl.t
 SELECT id FROM visited_bus_stops_in_current_trip WHERE id_within_bus_stop = 1;
 `;
 
-type Status =
-  | {
-      isInTerminal: true
-    }
-  | {
-      isInTerminal: false,
-      tripId: number,
-      confidence: number,
-      currentBusStopId: ?number,
-      busStopsVisited: number[]
-    };
-
 export default async function estimateVehicleStatus(
   vehicleId: number,
   beforeTimestamp: string = DateTime.local().toSQL()
-) {
+): Promise<Status> {
   const [
     { currentBusStopId, isInTerminal },
     { tripId, confidence },
@@ -84,9 +73,9 @@ export default async function estimateVehicleStatus(
   ]);
 
   return isInTerminal
-    ? { isInTerminal }
+    ? { isInTerminal: true }
     : {
-        isInTerminal,
+        isInTerminal: false,
         tripId,
         confidence,
         currentBusStopId,

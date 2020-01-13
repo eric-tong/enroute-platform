@@ -1,10 +1,24 @@
 // @flow
 
+import NodeCache from "node-cache";
 import estimateVehicleStatus from "./vehicleStatusEstimator";
 import { getVehicles } from "../resolvers/vehicles";
-import { vehicleStatusCache } from "../config";
 
-export default function updateStatus() {
+export type Status =
+  | {
+      isInTerminal: true
+    }
+  | {
+      isInTerminal: false,
+      tripId: number,
+      confidence: number,
+      currentBusStopId: ?number,
+      busStopsVisited: number[]
+    };
+
+export const vehicleStatusCache = new NodeCache();
+
+export function updateVehicleStatus() {
   getVehicles().then(vehicles =>
     vehicles.map(({ id }) =>
       estimateVehicleStatus(id).then(

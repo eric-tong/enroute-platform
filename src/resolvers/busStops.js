@@ -15,7 +15,7 @@ const GET_ALL_BUS_STOPS = `SELECT * FROM bus_stops ORDER BY display_position`;
 const GET_ALL_BUS_STOPS_IN_ORDER = `
 SELECT longitude, latitude FROM bus_stops INNER JOIN departures 
   ON bus_stops.id = departures.bus_stop_id
-  WHERE departures.trip_id = 1
+  WHERE departures.trip_id = $1
   ORDER BY time
 `;
 
@@ -25,8 +25,8 @@ export function getBusStops() {
     .then(results => results.rows);
 }
 
-export function getBusStopsInOrder() {
+export function getBusStopsInOrder(tripId: number) {
   return database
-    .query<BusStop>(GET_ALL_BUS_STOPS_IN_ORDER)
+    .query<BusStop>(GET_ALL_BUS_STOPS_IN_ORDER, [tripId])
     .then(results => results.rows);
 }
