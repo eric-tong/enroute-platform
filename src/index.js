@@ -1,6 +1,7 @@
 // @flow
 
-import "./config";
+import "./service/config";
+import "./service/serviceWorker";
 
 import cors from "cors";
 import express from "express";
@@ -25,5 +26,3 @@ app.use(
 app.listen(port, () =>
   console.log(`EnRoute Platform successfully started at port ${port}.`)
 );
-
-setInterval(updateVehicleStatus, 15000);

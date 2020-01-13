@@ -7,14 +7,13 @@ import { getCurrentTripId } from "../resolvers/trips";
 
 export const routeByTripCache = new NodeCache({ stdTTL: 6000 });
 
-export async function getRouteCoords(
-  tripId?: number = await getCurrentTripId()
-) {
-  if (routeByTripCache.has(tripId)) {
-    return routeByTripCache.get(tripId);
+export async function getRouteCoords(tripId?: number) {
+  const trip = tripId ?? (await getCurrentTripId());
+  if (routeByTripCache.has(trip)) {
+    return routeByTripCache.get(trip);
   } else {
-    const routeCoords = downloadRouteCoords(tripId);
-    routeByTripCache.set(tripId, routeCoords);
+    const routeCoords = downloadRouteCoords(trip);
+    routeByTripCache.set(trip, routeCoords);
     return routeCoords;
   }
 }
