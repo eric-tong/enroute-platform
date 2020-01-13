@@ -78,8 +78,6 @@ const server = net.createServer((socket: Socket) => {
   }
 });
 
-setInterval(updateStatus, 15000);
-
 server.listen(port, () =>
   console.log(`EnRoute TCP Platform successfully started at port ${port}.`)
 );
