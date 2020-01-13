@@ -73,34 +73,14 @@ export default async function estimateVehicleStatus(
   vehicleId: number,
   beforeTimestamp: string = DateTime.local().toSQL()
 ) {
-  const { currentBusStopId, isInTerminal } = await database
-    .query<{ currentBusStopId: ?number, isInTerminal: boolean }>(
-      GET_CURRENT_BUS_STOP,
-      [vehicleId, beforeTimestamp]
-    )
-    .then(results => results.rows[0]);
+  const time = new Date().getTime();
+  console.log("Start", new Date().getTime() - time);
+  const { currentBusStopId, isInTerminal } = await getCurrentBusStop();
   if (isInTerminal) return { isInTerminal };
 
-  const tripsPromise = database
-    .query<{ tripId: number, delta: number }>(GET_CURRENT_TRIP, [
-      vehicleId,
-      beforeTimestamp
-    ])
-    .then(results => results.rows)
-    .then(trips => {
-      const tripId = trips.length > 0 ? trips[0].tripId : 0;
-      const confidence =
-        trips.length > 1 ? 1 - trips[0].delta / trips[1].delta / 2 : 1;
-      return { tripId, confidence };
-    });
-
-  const busStopsVisitedPromise = database
-    .query<{ id: number }>(BUS_STOPS_VISITED, [vehicleId, beforeTimestamp])
-    .then(results => results.rows.map<number>(row => row.id));
-
   const [{ tripId, confidence }, busStopsVisited] = await Promise.all([
-    tripsPromise,
-    busStopsVisitedPromise
+    getCurrentTrip(),
+    getBusStopsVisited()
   ]);
 
   return {
@@ -110,4 +90,34 @@ export default async function estimateVehicleStatus(
     currentBusStopId,
     busStopsVisited
   };
+
+  function getCurrentBusStop() {
+    return database
+      .query<{ currentBusStopId: ?number, isInTerminal: boolean }>(
+        GET_CURRENT_BUS_STOP,
+        [vehicleId, beforeTimestamp]
+      )
+      .then(results => results.rows[0]);
+  }
+
+  function getCurrentTrip() {
+    return database
+      .query<{ tripId: number, delta: number }>(GET_CURRENT_TRIP, [
+        vehicleId,
+        beforeTimestamp
+      ])
+      .then(results => results.rows)
+      .then(trips => {
+        const tripId = trips.length > 0 ? trips[0].tripId : 0;
+        const confidence =
+          trips.length > 1 ? 1 - trips[0].delta / trips[1].delta / 2 : 1;
+        return { tripId, confidence };
+      });
+  }
+
+  function getBusStopsVisited() {
+    return database
+      .query<{ id: number }>(BUS_STOPS_VISITED, [vehicleId, beforeTimestamp])
+      .then(results => results.rows.map<number>(row => row.id));
+  }
 }
