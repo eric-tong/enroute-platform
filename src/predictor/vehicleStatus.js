@@ -58,15 +58,6 @@ async function estimateVehicleStatus(
     getBusStopsVisitedByVehicle(vehicle.id, beforeTimestamp)
   ]);
 
-  const predictedArrivals = await getBusArrivalPredictions(
-    tripId,
-    busStopsVisited,
-    {
-      longitude,
-      latitude
-    }
-  );
-
   return isInTerminal
     ? { isInTerminal: true }
     : {
@@ -76,6 +67,13 @@ async function estimateVehicleStatus(
         currentBusStopId,
         coords: { longitude, latitude },
         busStopsVisited,
-        predictedArrivals
+        predictedArrivals: await getBusArrivalPredictions(
+          tripId,
+          busStopsVisited,
+          {
+            longitude,
+            latitude
+          }
+        )
       };
 }
