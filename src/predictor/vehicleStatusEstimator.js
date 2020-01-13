@@ -18,7 +18,7 @@ WITH last_terminal_exit AS (
       INNER JOIN bus_stop_visits ON bus_stop_visits.avl_id = avl.id
       INNER JOIN bus_stops ON bus_stops.id = bus_stop_visits.bus_stop_id
       WHERE vehicle_id = $1
-      AND avl.timestamp < $2
+      AND avl.timestamp <= $2
       AND bus_stops.is_terminal
       ORDER BY timestamp DESC
       LIMIT 1
@@ -33,6 +33,29 @@ SELECT trip_id as "tripId", ABS(last_terminal_exit.minute_of_day - first_stops.t
   ORDER BY delta
   LIMIT 2
 `;
+const BUS_STOPS_VISITED = `
+WITH last_terminal_exit AS (
+  SELECT avl.timestamp FROM avl
+      INNER JOIN bus_stop_visits ON bus_stop_visits.avl_id = avl.id
+      INNER JOIN bus_stops ON bus_stops.id = bus_stop_visits.bus_stop_id
+      WHERE vehicle_id = $1
+      AND avl.timestamp <= $2
+      AND bus_stops.is_terminal
+      ORDER BY avl.timestamp DESC
+      LIMIT 1
+),
+visited_bus_stops_in_current_trip AS (
+SELECT bus_stops.id, ROW_NUMBER() OVER (PARTITION BY bus_stops.id ORDER BY avl.timestamp) AS id_within_bus_stop FROM avl
+    INNER JOIN bus_stop_visits ON bus_stop_visits.avl_id = avl.id
+    INNER JOIN bus_stops ON bus_stops.id = bus_stop_visits.bus_stop_id
+    WHERE avl.vehicle_id = $1
+    AND avl.timestamp >= (SELECT timestamp FROM last_terminal_exit)
+    AND avl.timestamp <= $2
+    ORDER BY avl.timestamp
+)
+
+SELECT id FROM visited_bus_stops_in_current_trip WHERE id_within_bus_stop = 1;
+`;
 
 type Status =
   | {
@@ -41,8 +64,9 @@ type Status =
   | {
       isInTerminal: false,
       tripId: number,
+      confidence: number,
       currentBusStopId: ?number,
-      confidence: number
+      busStopsVisited: number[]
     };
 
 export default async function estimateVehicleStatus(
@@ -57,15 +81,33 @@ export default async function estimateVehicleStatus(
     .then(results => results.rows[0]);
   if (isInTerminal) return { isInTerminal };
 
-  const trips = await database
+  const tripsPromise = database
     .query<{ tripId: number, delta: number }>(GET_CURRENT_TRIP, [
       vehicleId,
       beforeTimestamp
     ])
-    .then(results => results.rows);
-  const tripId = trips.length > 0 ? trips[0].tripId : 0;
-  const confidence =
-    trips.length > 1 ? 1 - trips[0].delta / trips[1].delta / 2 : 1;
+    .then(results => results.rows)
+    .then(trips => {
+      const tripId = trips.length > 0 ? trips[0].tripId : 0;
+      const confidence =
+        trips.length > 1 ? 1 - trips[0].delta / trips[1].delta / 2 : 1;
+      return { tripId, confidence };
+    });
 
-  return { isInTerminal, tripId, currentBusStopId, confidence };
+  const busStopsVisitedPromise = database
+    .query<{ id: number }>(BUS_STOPS_VISITED, [vehicleId, beforeTimestamp])
+    .then(results => results.rows.map<number>(row => row.id));
+
+  const [{ tripId, confidence }, busStopsVisited] = await Promise.all([
+    tripsPromise,
+    busStopsVisitedPromise
+  ]);
+
+  return {
+    isInTerminal,
+    tripId,
+    confidence,
+    currentBusStopId,
+    busStopsVisited
+  };
 }
