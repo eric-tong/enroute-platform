@@ -1,6 +1,7 @@
 // @flow
 
 import { DateTime } from "luxon";
+import type { Status } from "../predictor/vehicleStatus";
 import database from "../database/database";
 
 export type BusStop = {|
@@ -62,6 +63,23 @@ export function getBusStopsInOrder(tripId: number) {
   return database
     .query<BusStop>(GET_ALL_BUS_STOPS_IN_ORDER, [tripId])
     .then(results => results.rows);
+}
+
+export async function getUpcomingBusStopsOfVehicle(vehicleStatus: Status) {
+  if (vehicleStatus.isInTerminal) return [];
+
+  const busStops = await getBusStopsInOrder(vehicleStatus.tripId);
+  const busStopsVisited = new Set(vehicleStatus.busStopsVisited);
+
+  // $FlowFixMe
+  return busStops.filter(busStop => {
+    if (busStopsVisited.has(busStop.id)) {
+      busStopsVisited.delete(busStop.id);
+      return false;
+    } else {
+      return true;
+    }
+  });
 }
 
 export function getCurrentBusStopOfVehicle(

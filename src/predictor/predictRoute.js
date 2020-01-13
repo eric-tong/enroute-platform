@@ -1,5 +1,6 @@
 // @flow
 
+import type { BusStop } from "../resolvers/busStops";
 import NodeCache from "node-cache";
 import fetch from "node-fetch";
 import { getBusStopsInOrder } from "../resolvers/busStops";
@@ -20,7 +21,16 @@ export async function getRouteCoords(tripId?: number) {
 }
 
 async function downloadRouteCoords(tripId: number) {
-  const url = await getURL(tripId);
+  const busStops = await getBusStopsInOrder(tripId);
+  const route = await downloadRoute(busStops);
+  return route.geometry.coordinates.map(([longitude, latitude]) => ({
+    latitude,
+    longitude
+  }));
+}
+
+export async function downloadRoute(busStops: BusStop[]) {
+  const url = await getURL(busStops);
   const params: { [string]: string } = {
     geometries: "geojson",
     overview: "full",
@@ -30,22 +40,11 @@ async function downloadRouteCoords(tripId: number) {
 
   return fetch(url)
     .then(response => response.json())
-    .then(
-      result =>
-        console.log(
-          tripId,
-          util.inspect(result, { showHidden: false, depth: null })
-        ) ||
-        result.routes[0].geometry.coordinates.map(([longitude, latitude]) => ({
-          latitude,
-          longitude
-        }))
-    )
+    .then(result => result.routes[0])
     .catch(console.log);
 }
 
-async function getURL(tripId: number) {
-  const busStops = await getBusStopsInOrder(tripId);
+async function getURL(busStops: BusStop[]) {
   const coords = busStops.reduce(
     (total, current) =>
       total +

@@ -10,7 +10,7 @@ import NodeCache from "node-cache";
 import { getCurrentTripIdOfVehicle } from "../resolvers/trips";
 import { getVehicles } from "../resolvers/vehicles";
 
-type Status =
+export type Status =
   | {
       isInTerminal: true
     }
