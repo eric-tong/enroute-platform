@@ -5,5 +5,5 @@ yarn-error.log
 .env
 .DS_Store
 .node-persist
-start-autossh.sh
+*.sh
 commands.sql

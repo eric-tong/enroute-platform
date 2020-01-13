@@ -3,14 +3,14 @@
 import { DateTime } from "luxon";
 import database from "../database/database";
 
-const VEHICLE_IS_IN_TERMINAL = `
+const GET_CURRENT_BUS_STOP = `
 WITH latest_avl AS (
-  SELECT * FROM avl WHERE vehicle_id = $1 AND timestamp < $2 ORDER BY timestamp DESC LIMIT 1
+  SELECT * FROM avl WHERE vehicle_id = $1 AND timestamp <= $2 ORDER BY timestamp DESC LIMIT 1
 )
 
-SELECT bus_stops.is_terminal AS "isTerminal" FROM latest_avl
-  INNER JOIN bus_stop_visits ON bus_stop_visits.avl_id = latest_avl.id
-  INNER JOIN bus_stops ON bus_stops.id = bus_stop_visits.bus_stop_id;
+SELECT bus_stops.id AS "currentBusStopId", bus_stops.is_terminal AS "isInTerminal" FROM latest_avl
+  LEFT JOIN bus_stop_visits ON bus_stop_visits.avl_id = latest_avl.id
+  LEFT JOIN bus_stops ON bus_stops.id = bus_stop_visits.bus_stop_id
 `;
 const GET_CURRENT_TRIP = `
 WITH last_terminal_exit AS (
@@ -41,6 +41,7 @@ type Status =
   | {
       isInTerminal: false,
       tripId: number,
+      currentBusStopId: ?number,
       confidence: number
     };
 
@@ -48,13 +49,12 @@ export default async function estimateVehicleStatus(
   vehicleId: number,
   beforeTimestamp: string = DateTime.local().toSQL()
 ) {
-  const isInTerminal = await database
-    .query<{ isTerminal: boolean }>(VEHICLE_IS_IN_TERMINAL, [
-      vehicleId,
-      beforeTimestamp
-    ])
-    .then(results => results.rows)
-    .then(rows => !!rows.length && rows[0].isTerminal);
+  const { currentBusStopId, isInTerminal } = await database
+    .query<{ currentBusStopId: ?number, isInTerminal: boolean }>(
+      GET_CURRENT_BUS_STOP,
+      [vehicleId, beforeTimestamp]
+    )
+    .then(results => results.rows[0]);
   if (isInTerminal) return { isInTerminal };
 
   const trips = await database
@@ -67,5 +67,5 @@ export default async function estimateVehicleStatus(
   const confidence =
     trips.length > 1 ? 1 - trips[0].delta / trips[1].delta / 2 : 1;
 
-  return { isInTerminal, tripId, confidence };
+  return { isInTerminal, tripId, currentBusStopId, confidence };
 }
