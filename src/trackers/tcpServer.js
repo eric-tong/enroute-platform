@@ -6,6 +6,7 @@ import { imeiIsValid } from "../resolvers/vehicles";
 import net from "net";
 import parseCodec8Stream from "./codec8Parser";
 import save from "../database/avlSaver";
+import updateStatus from "../predictor/updateStatus";
 
 type Client = {|
   name: string,
@@ -76,6 +77,8 @@ const server = net.createServer((socket: Socket) => {
     socket.write(message);
   }
 });
+
+setInterval(updateStatus, 15000);
 
 server.listen(port, () =>
   console.log(`EnRoute TCP Platform successfully started at port ${port}.`)

@@ -95,11 +95,12 @@ export default async function estimateVehicleStatus(
 
   function getCurrentBusStop() {
     return database
-      .query<{ currentBusStopId: ?number, isInTerminal: boolean }>(
+      .query<{ currentBusStopId: ?number, isInTerminal: ?boolean }>(
         GET_CURRENT_BUS_STOP,
         [vehicleId, beforeTimestamp]
       )
-      .then(results => results.rows[0]);
+      .then(results => results.rows[0])
+      .then(busStop => ({ ...busStop, isInTerminal: !!isInTerminal }));
   }
 
   function getCurrentTrip() {
