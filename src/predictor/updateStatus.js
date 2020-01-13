@@ -7,8 +7,10 @@ import { vehicleStatusCache } from "../config";
 export default function updateStatus() {
   getVehicles().then(vehicles =>
     vehicles.map(({ id }) =>
-      estimateVehicleStatus(id).then(vehicleStatus =>
-        vehicleStatusCache.set(id, vehicleStatus)
+      estimateVehicleStatus(id).then(
+        vehicleStatus =>
+          console.log(id, vehicleStatus) ||
+          vehicleStatusCache.set(id, vehicleStatus)
       )
     )
   );
