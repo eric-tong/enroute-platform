@@ -3,7 +3,7 @@
 import type { BusStop } from "../resolvers/busStops";
 import NodeCache from "node-cache";
 import fetch from "node-fetch";
-import { getBusStopsInOrder } from "./busStops";
+import { getBusStopsInTrip } from "./busStops";
 import { getTripIdWithNearestStartTime } from "./trips";
 import util from "util";
 
@@ -14,8 +14,7 @@ export async function getRouteCoords(tripId?: number) {
   if (routeByTripCache.has(trip)) {
     return routeByTripCache.get(trip);
   } else {
-    // $FlowFixMe
-    const busStops = await getBusStopsInOrder(trip);
+    const busStops = await getBusStopsInTrip(trip);
     const route = await downloadDirections(busStops);
     const routeCoords = route.geometry.coordinates.map(
       ([longitude, latitude]) => ({
@@ -28,24 +27,25 @@ export async function getRouteCoords(tripId?: number) {
   }
 }
 
-export async function downloadDirections(
-  coordsList: { longitude: number, latitude: number }[]
-) {
-  const url = await getURL(coordsList);
+export async function downloadDirections(busStops: BusStop[]) {
+  const url = await getURL(busStops);
   const params: { [string]: string } = {
     geometries: "geojson",
     overview: "full",
+    approaches: "curb;".repeat(busStops.length).slice(0, -1),
+    bearings: busStops
+      .map(busStop => busStop.roadAngle && `${busStop.roadAngle},45`)
+      .join(";"),
     access_token: process.env.MAPBOX_ACCESS_TOKEN ?? ""
   };
   Object.keys(params).forEach(key => url.searchParams.set(key, params[key]));
-
   return fetch(url)
     .then(response => response.json())
-    .then(result => result.routes[0])
+    .then(result => console.log(result) || result.routes[0])
     .catch(console.log);
 }
 
-async function getURL(busStops: { longitude: number, latitude: number }[]) {
+async function getURL(busStops: BusStop[]) {
   const coords = busStops.reduce(
     (total, current) =>
       total +

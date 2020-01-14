@@ -1,5 +1,6 @@
 // @flow
 
+import type { BusStop } from "../resolvers/busStops";
 import { DateTime } from "luxon";
 import type { Status } from "./vehicleStatus";
 import { downloadDirections } from "../resolvers/routes";
@@ -14,16 +15,13 @@ export type BusStopsArrival = {
 export async function getBusArrivalPredictions(
   tripId: number,
   busStopsVisited: number[],
-  vehicleCoords: { longitude: number, latitude: number }
+  vehicle: BusStop
 ) {
   const upcomingBusStops = await getUpcomingBusStopsOfTrip(
     tripId,
     busStopsVisited
   );
-  const directions = await downloadDirections([
-    vehicleCoords,
-    ...upcomingBusStops
-  ]);
+  const directions = await downloadDirections([vehicle, ...upcomingBusStops]);
   const durations: number[] = directions.legs.map(leg => leg.duration);
   const now = DateTime.local();
 

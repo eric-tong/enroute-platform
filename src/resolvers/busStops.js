@@ -10,12 +10,13 @@ export type BusStop = {|
   street: string,
   longitude: number,
   latitude: number,
-  icon: string
+  icon: string,
+  roadAngle: number
 |};
 
 const GET_ALL_BUS_STOPS = `SELECT * FROM bus_stops ORDER BY display_position`;
-const GET_ALL_BUS_STOPS_IN_ORDER = `
-SELECT * FROM bus_stops INNER JOIN departures 
+const GET_BUS_STOPS_IN_TRIP = `
+SELECT *, road_angle as "roadAngle" FROM bus_stops INNER JOIN departures 
   ON bus_stops.id = departures.bus_stop_id
   WHERE departures.trip_id = $1
   ORDER BY time
@@ -59,9 +60,9 @@ export function getBusStops() {
     .then(results => results.rows);
 }
 
-export function getBusStopsInOrder(tripId: number) {
+export function getBusStopsInTrip(tripId: number) {
   return database
-    .query<BusStop>(GET_ALL_BUS_STOPS_IN_ORDER, [tripId])
+    .query<BusStop>(GET_BUS_STOPS_IN_TRIP, [tripId])
     .then(results => results.rows);
 }
 
@@ -69,7 +70,7 @@ export async function getUpcomingBusStopsOfTrip(
   tripId: number,
   visitedBusStopIds: number[]
 ): Promise<BusStop[]> {
-  const tripBusStops = await getBusStopsInOrder(tripId);
+  const tripBusStops = await getBusStopsInTrip(tripId);
   const tripBusStopIds = tripBusStops.map(busStop => busStop.id);
 
   // Find last bus stop id in the visited set that matches any bus stops defined in the trip.

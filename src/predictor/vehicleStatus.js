@@ -5,6 +5,7 @@ import {
   getCurrentBusStopOfVehicle
 } from "../resolvers/busStops";
 
+import type { AVL } from "../resolvers/avl";
 import type { BusStopsArrival } from "./busArrivalPredictor";
 import { DateTime } from "luxon";
 import NodeCache from "node-cache";
@@ -23,9 +24,9 @@ export type Status =
       tripId: number,
       confidence: number,
       currentBusStopId: ?number,
-      coords: { longitude: number, latitude: number },
       busStopsVisited: number[],
-      predictedArrivals: BusStopsArrival[]
+      predictedArrivals: BusStopsArrival[],
+      avl: AVL
     };
 
 export const vehicleStatusCache = new NodeCache();
@@ -49,13 +50,13 @@ async function estimateVehicleStatus(
   const [
     { currentBusStopId, isInTerminal },
     { tripId, confidence },
-    { longitude, latitude },
-    busStopsVisited
+    busStopsVisited,
+    avl
   ] = await Promise.all([
     getCurrentBusStopOfVehicle(vehicle.id, beforeTimestamp),
     getCurrentTripIdOfVehicle(vehicle.id, beforeTimestamp),
-    getLatestAvlOfVehicle(vehicle),
-    getBusStopsVisitedByVehicle(vehicle.id, beforeTimestamp)
+    getBusStopsVisitedByVehicle(vehicle.id, beforeTimestamp),
+    getLatestAvlOfVehicle(vehicle)
   ]);
 
   return isInTerminal
@@ -65,14 +66,19 @@ async function estimateVehicleStatus(
         tripId,
         confidence,
         currentBusStopId,
-        coords: { longitude, latitude },
         busStopsVisited,
+        avl,
         predictedArrivals: await getBusArrivalPredictions(
           tripId,
           busStopsVisited,
           {
-            longitude,
-            latitude
+            longitude: avl.latitude,
+            latitude: avl.longitude,
+            roadAngle: avl.angle,
+            name: `Vehicle ${avl.vehicleId}`,
+            street: "",
+            icon: "",
+            id: 0
           }
         )
       };
