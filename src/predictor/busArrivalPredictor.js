@@ -76,7 +76,7 @@ async function getBusArrivalPredictions(
     return {
       busStopId: busStop.id,
       busStopName: busStop.name,
-      arrivalTime: cumulativeTime.toSQL()
+      arrivalTime: predictedTime.toSQL()
     };
   });
 }
