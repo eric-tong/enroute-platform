@@ -6,6 +6,7 @@ import type { BusStop } from "../resolvers/busStops";
 import { DateTime } from "luxon";
 import type { Status } from "./vehicleStatus";
 import { downloadDirections } from "../resolvers/routes";
+import { getDeparturesInTrip } from "../resolvers/departures";
 import { getUpcomingBusStopsOfTrip } from "../resolvers/busStops";
 
 export type BusStopsArrival = {
@@ -33,10 +34,12 @@ export async function updateBusArrivalPredictions() {
       },
       DateTime.fromJSDate(status.avl.timestamp)
     );
-    vehicleStatusCache.set(vehicleId, {
-      ...status,
-      predictedArrivals
-    });
+
+    if (predictedArrivals)
+      vehicleStatusCache.set(vehicleId, {
+        ...status,
+        predictedArrivals
+      });
   }
 }
 
@@ -50,14 +53,30 @@ async function getBusArrivalPredictions(
     tripId,
     busStopsVisited
   );
-  const directions = await downloadDirections([vehicle, ...upcomingBusStops]);
-  let cumulativeDuration = 0;
-  const durations: number[] = directions.legs.map(
-    leg => (cumulativeDuration += leg.duration)
-  );
-  return upcomingBusStops.map<BusStopsArrival>((busStop, i) => ({
-    busStopId: busStop.id,
-    busStopName: busStop.name,
-    arrivalTime: timeOfDataCapture.plus({ seconds: durations[i - 1] }).toSQL()
-  }));
+  const [directions, departures] = await Promise.all([
+    downloadDirections([vehicle, ...upcomingBusStops]),
+    getDeparturesInTrip(tripId)
+  ]);
+
+  if (!directions || !directions.legs) {
+    console.error("No directions returned from API");
+    return;
+  }
+  const durations: number[] = directions.legs.map(leg => leg.duration);
+  const upcomingDepartures = departures.slice(-1 * durations.length);
+  let cumulativeTime = timeOfDataCapture;
+
+  return upcomingBusStops.map<BusStopsArrival>((busStop, i) => {
+    const predictedTime = cumulativeTime.plus({ seconds: durations[i - 1] });
+    cumulativeTime =
+      upcomingDepartures[i].time.valueOf() > predictedTime.valueOf()
+        ? upcomingDepartures[i]
+        : predictedTime;
+
+    return {
+      busStopId: busStop.id,
+      busStopName: busStop.name,
+      arrivalTime: cumulativeTime.toSQL()
+    };
+  });
 }

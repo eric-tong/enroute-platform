@@ -15,6 +15,7 @@ SELECT time, trip_id as "tripId" FROM (
   AND stops_from_terminal > 1
   ORDER BY time
 `;
+const GET_DEPARTURES_IN_TRIP = `SELECT time, bus_stop_id AS "busStopId" FROM departures WHERE trip_id = $1 ORDER BY time`;
 
 export async function getDeparturesFromBusStop(
   busStop: BusStop,
@@ -81,6 +82,21 @@ export async function getDeparturesFromBusStop(
       }
     }
   }
+}
+
+export function getDeparturesInTrip(tripId: number) {
+  return database
+    .query<{ time: number, busStopId: number }>(GET_DEPARTURES_IN_TRIP, [
+      tripId
+    ])
+    .then(results => results.rows)
+    .then(departures =>
+      // $FlowFixMe map type error
+      departures.map<{ time: DateTime, busStopId: number }>(departure => ({
+        time: toActualTime(departure.time),
+        busStopId: departure.busStopId
+      }))
+    );
 }
 
 function toActualTime(minuteOfDay: number) {

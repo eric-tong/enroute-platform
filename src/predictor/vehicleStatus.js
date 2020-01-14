@@ -70,8 +70,10 @@ async function estimateVehicleStatus(
         currentBusStopId,
         busStopsVisited,
         avl,
-        predictedArrivals: vehicleStatusCache.has(vehicle.id)
-          ? vehicleStatusCache.get(vehicle.id).predictedArrivals
-          : []
+        predictedArrivals:
+          vehicleStatusCache.has(vehicle.id) &&
+          vehicleStatusCache.get(vehicle.id).predictedArrivals
+            ? vehicleStatusCache.get(vehicle.id).predictedArrivals
+            : []
       };
 }
