@@ -5,6 +5,7 @@ import { DateTime } from "luxon";
 import type { Status } from "./vehicleStatus";
 import { downloadDirections } from "../resolvers/routes";
 import { getUpcomingBusStopsOfTrip } from "../resolvers/busStops";
+import { vehicleStatusCache } from "./vehicleStatus";
 
 export type BusStopsArrival = {
   busStopId: number,
@@ -12,7 +13,24 @@ export type BusStopsArrival = {
   arrivalTime: string
 };
 
-export async function getBusArrivalPredictions(
+export async function updateBusArrivalPredictions() {
+  for (const key of vehicleStatusCache.keys()) {
+    const status: Status = vehicleStatusCache.get(key);
+    if (status.isInTerminal) continue;
+
+    getBusArrivalPredictions(status.tripId, status.busStopsVisited, {
+      longitude: status.avl.latitude,
+      latitude: status.avl.longitude,
+      roadAngle: status.avl.angle,
+      name: `Vehicle ${status.avl.vehicleId}`,
+      street: "",
+      icon: "",
+      id: 0
+    });
+  }
+}
+
+async function getBusArrivalPredictions(
   tripId: number,
   busStopsVisited: number[],
   vehicle: BusStop

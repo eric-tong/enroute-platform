@@ -10,7 +10,6 @@ import type { BusStopsArrival } from "./busArrivalPredictor";
 import { DateTime } from "luxon";
 import NodeCache from "node-cache";
 import type { Vehicle } from "../resolvers/vehicles";
-import { getBusArrivalPredictions } from "./busArrivalPredictor";
 import { getCurrentTripIdOfVehicle } from "../resolvers/trips";
 import { getLatestAvlOfVehicle } from "../resolvers/avl";
 import { getVehicles } from "../resolvers/vehicles";
@@ -31,16 +30,13 @@ export type Status =
 
 export const vehicleStatusCache = new NodeCache();
 
-export function updateVehicleStatus() {
-  getVehicles().then(vehicles =>
-    vehicles.map(vehicle =>
-      estimateVehicleStatus(vehicle).then(
-        vehicleStatus =>
-          console.log(vehicle.id, vehicleStatus) ||
-          vehicleStatusCache.set(vehicle.id, vehicleStatus)
-      )
-    )
-  );
+export async function updateVehicleStatus() {
+  const vehicles = await getVehicles();
+  for (const vehicle of vehicles) {
+    const status = await estimateVehicleStatus(vehicle);
+    vehicleStatusCache.set(vehicle.id, status);
+    console.log(vehicle.id, status);
+  }
 }
 
 async function estimateVehicleStatus(
@@ -68,18 +64,8 @@ async function estimateVehicleStatus(
         currentBusStopId,
         busStopsVisited,
         avl,
-        predictedArrivals: await getBusArrivalPredictions(
-          tripId,
-          busStopsVisited,
-          {
-            longitude: avl.latitude,
-            latitude: avl.longitude,
-            roadAngle: avl.angle,
-            name: `Vehicle ${avl.vehicleId}`,
-            street: "",
-            icon: "",
-            id: 0
-          }
-        )
+        predictedArrivals: vehicleStatusCache.has(vehicle.id)
+          ? vehicleStatusCache.get(vehicle.id).predictedArrivals
+          : []
       };
 }
