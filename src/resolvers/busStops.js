@@ -53,6 +53,29 @@ SELECT bus_stops.id, ROW_NUMBER() OVER (PARTITION BY bus_stops.id ORDER BY avl.t
 
 SELECT id FROM visited_bus_stops_in_current_trip WHERE id_within_bus_stop = 1
 `;
+const BUS_STOP_PROXIES_VISITED = `
+WITH last_terminal_exit AS (
+  SELECT avl.timestamp FROM avl
+      INNER JOIN bus_stop_visits ON bus_stop_visits.avl_id = avl.id
+      INNER JOIN bus_stops ON bus_stops.id = bus_stop_visits.bus_stop_id
+      WHERE vehicle_id = $1
+      AND avl.timestamp <= $2
+      AND bus_stops.is_terminal
+      ORDER BY avl.timestamp DESC
+      LIMIT 1
+),
+visited_bus_stops_in_current_trip AS (
+SELECT bus_stop_proxies.id, ROW_NUMBER() OVER (PARTITION BY bus_stop_proxies.id ORDER BY avl.timestamp) AS id_within_bus_stop FROM avl
+    INNER JOIN bus_stop_visits ON bus_stop_visits.avl_id = avl.id
+    INNER JOIN bus_stop_proxies ON bus_stop_proxies.id = bus_stop_visits.bus_stop_id
+    WHERE avl.vehicle_id = $1
+    AND avl.timestamp >= (SELECT timestamp FROM last_terminal_exit)
+    AND avl.timestamp <= $2
+    ORDER BY avl.timestamp
+)
+
+SELECT id FROM visited_bus_stops_in_current_trip WHERE id_within_bus_stop = 1
+`;
 
 export function getBusStops() {
   return database
@@ -68,10 +91,12 @@ export function getBusStopsInTrip(tripId: number) {
 
 export async function getUpcomingBusStopsOfTrip(
   tripId: number,
-  visitedBusStopIds: number[]
+  visitedBusStopIds: number[],
+  busStopProxiesVisited: number[]
 ): Promise<BusStop[]> {
   const tripBusStops = await getBusStopsInTrip(tripId);
   const tripBusStopIds = tripBusStops.map(busStop => busStop.id);
+  const proxiesSet = new Set(busStopProxiesVisited);
 
   // Find last bus stop id in the visited set that matches any bus stops defined in the trip.
   // The upcoming bus stops are the ones that follow it as defined in the trip.
@@ -84,7 +109,9 @@ export async function getUpcomingBusStopsOfTrip(
     }
   });
 
-  return tripBusStops.slice(tripIndex);
+  return tripBusStops
+    .filter(busStop => !proxiesSet.has(busStop.id))
+    .slice(tripIndex);
 }
 
 export function getCurrentBusStopOfVehicle(
@@ -106,5 +133,17 @@ export function getBusStopsVisitedByVehicle(
 ) {
   return database
     .query<{ id: number }>(BUS_STOPS_VISITED, [vehicleId, beforeTimestamp])
+    .then(results => results.rows.map<number>(row => row.id));
+}
+
+export function getBusStopProxiesVisitedByVehicle(
+  vehicleId: number,
+  beforeTimestamp: string = DateTime.local().toSQL()
+) {
+  return database
+    .query<{ id: number }>(BUS_STOP_PROXIES_VISITED, [
+      vehicleId,
+      beforeTimestamp
+    ])
     .then(results => results.rows.map<number>(row => row.id));
 }
