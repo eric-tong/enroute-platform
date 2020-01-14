@@ -28,7 +28,7 @@ export type Status =
       avl: AVL
     };
 
-const vehicleStatusCache = new NodeCache();
+export const vehicleStatusCache = new NodeCache();
 
 export async function updateVehicleStatus() {
   const vehicles = await getVehicles();

@@ -44,6 +44,8 @@ export async function getDeparturesFromBusStop(
 
   const relevantDepartures: { scheduled: string, predicted: ?string }[] = [];
   for (const departure of scheduledDepartures) {
+    if (relevantDepartures.length >= maxLength) break;
+
     const predictedArrival = tripIdToArrivals.get(departure.tripId);
     if (
       predictedArrival ||
@@ -56,8 +58,7 @@ export async function getDeparturesFromBusStop(
     }
   }
 
-  // $FlowFixMe
-  return relevantDepartures.slice(0, maxLength);
+  return relevantDepartures;
 
   function toMap(status) {
     if (status.isInTerminal) {
@@ -69,9 +70,9 @@ export async function getDeparturesFromBusStop(
       // $FlowFixMe status definitely exists here
       status.tripIdConfidence > tripIdToArrivals.get(status.tripId).confidence
     ) {
-      const arrivalAtBusStop = status.predictedArrivals.find(
-        predictedArrival => predictedArrival.busStopId === busStop.id
-      );
+      const arrivalAtBusStop = status.predictedArrivals
+        .slice(0, -1)
+        .find(predictedArrival => predictedArrival.busStopId === busStop.id);
       if (arrivalAtBusStop) {
         tripIdToArrivals.set(status.tripId, {
           dateTime: DateTime.fromSQL(arrivalAtBusStop.arrivalTime),

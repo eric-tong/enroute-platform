@@ -1,10 +1,11 @@
 // @flow
 
+import { getAllVehicleStatuses, vehicleStatusCache } from "./vehicleStatus";
+
 import type { BusStop } from "../resolvers/busStops";
 import { DateTime } from "luxon";
 import type { Status } from "./vehicleStatus";
 import { downloadDirections } from "../resolvers/routes";
-import { getAllVehicleStatuses } from "./vehicleStatus";
 import { getUpcomingBusStopsOfTrip } from "../resolvers/busStops";
 
 export type BusStopsArrival = {
@@ -17,15 +18,20 @@ export async function updateBusArrivalPredictions() {
   for (const status of getAllVehicleStatuses()) {
     if (status.isInTerminal) continue;
 
-    getBusArrivalPredictions(status.tripId, status.busStopsVisited, {
-      longitude: status.avl.latitude,
-      latitude: status.avl.longitude,
-      roadAngle: status.avl.angle,
-      name: `Vehicle ${status.avl.vehicleId}`,
-      street: "",
-      icon: "",
-      id: 0
-    });
+    const predictedArrivals = await getBusArrivalPredictions(
+      status.tripId,
+      status.busStopsVisited,
+      {
+        longitude: status.avl.longitude,
+        latitude: status.avl.latitude,
+        roadAngle: status.avl.angle,
+        name: `Vehicle ${status.avl.vehicleId}`,
+        street: "",
+        icon: "",
+        id: 0
+      }
+    );
+    vehicleStatusCache.set(status.tripId, { ...status, predictedArrivals });
   }
 }
 

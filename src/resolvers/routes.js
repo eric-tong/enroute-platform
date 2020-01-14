@@ -41,8 +41,11 @@ export async function downloadDirections(busStops: BusStop[]) {
   Object.keys(params).forEach(key => url.searchParams.set(key, params[key]));
   return fetch(url)
     .then(response => response.json())
-    .then(result => result.routes[0])
-    .catch(console.log);
+    .then(result => {
+      if (result.code !== "Ok") throw result;
+      return result.routes[0];
+    })
+    .catch(console.error);
 }
 
 async function getURL(busStops: BusStop[]) {
