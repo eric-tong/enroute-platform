@@ -51,7 +51,10 @@ async function getBusArrivalPredictions(
     busStopsVisited
   );
   const directions = await downloadDirections([vehicle, ...upcomingBusStops]);
-  const durations: number[] = directions.legs.map(leg => leg.duration);
+  let cumulativeDuration = 0;
+  const durations: number[] = directions.legs.map(
+    leg => (cumulativeDuration += leg.duration)
+  );
   return upcomingBusStops.map<BusStopsArrival>((busStop, i) => ({
     busStopId: busStop.id,
     busStopName: busStop.name,
