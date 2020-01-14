@@ -7,7 +7,7 @@ import database from "../database/database";
 export type AVL = {|
   id: number,
   vehicleId: number,
-  timestamp: DateTime,
+  timestamp: Date,
   longitude: number,
   latitude: number,
   angle: number,

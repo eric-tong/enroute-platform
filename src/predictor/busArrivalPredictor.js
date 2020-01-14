@@ -15,7 +15,8 @@ export type BusStopsArrival = {
 };
 
 export async function updateBusArrivalPredictions() {
-  for (const status of getAllVehicleStatuses()) {
+  for (const vehicleId of vehicleStatusCache.keys()) {
+    const status = vehicleStatusCache.get(vehicleId);
     if (status.isInTerminal) continue;
 
     const predictedArrivals = await getBusArrivalPredictions(
@@ -25,20 +26,25 @@ export async function updateBusArrivalPredictions() {
         longitude: status.avl.longitude,
         latitude: status.avl.latitude,
         roadAngle: status.avl.angle,
-        name: `Vehicle ${status.avl.vehicleId}`,
+        name: `Vehicle ${vehicleId}`,
         street: "",
         icon: "",
         id: 0
-      }
+      },
+      DateTime.fromJSDate(status.avl.timestamp)
     );
-    vehicleStatusCache.set(status.tripId, { ...status, predictedArrivals });
+    vehicleStatusCache.set(vehicleId, {
+      ...status,
+      predictedArrivals
+    });
   }
 }
 
 async function getBusArrivalPredictions(
   tripId: number,
   busStopsVisited: number[],
-  vehicle: BusStop
+  vehicle: BusStop,
+  timeOfDataCapture: DateTime
 ) {
   const upcomingBusStops = await getUpcomingBusStopsOfTrip(
     tripId,
@@ -46,11 +52,9 @@ async function getBusArrivalPredictions(
   );
   const directions = await downloadDirections([vehicle, ...upcomingBusStops]);
   const durations: number[] = directions.legs.map(leg => leg.duration);
-  const now = DateTime.local();
-
   return upcomingBusStops.map<BusStopsArrival>((busStop, i) => ({
     busStopId: busStop.id,
     busStopName: busStop.name,
-    arrivalTime: now.plus({ seconds: durations[i - 1] }).toSQL()
+    arrivalTime: timeOfDataCapture.plus({ seconds: durations[i - 1] }).toSQL()
   }));
 }
