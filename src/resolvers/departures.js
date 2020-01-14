@@ -91,7 +91,6 @@ export function getDeparturesInTrip(tripId: number) {
     ])
     .then(results => results.rows)
     .then(departures =>
-      // $FlowFixMe map type error
       departures.map<{ time: DateTime, busStopId: number }>(departure => ({
         time: toActualTime(departure.time),
         busStopId: departure.busStopId

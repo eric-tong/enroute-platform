@@ -70,7 +70,7 @@ async function getBusArrivalPredictions(
     const predictedTime = cumulativeTime.plus({ seconds: durations[i - 1] });
     cumulativeTime =
       upcomingDepartures[i].time.valueOf() > predictedTime.valueOf()
-        ? upcomingDepartures[i]
+        ? upcomingDepartures[i].time
         : predictedTime;
 
     return {
