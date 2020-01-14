@@ -4,8 +4,8 @@ import type { BusStop } from "../resolvers/busStops";
 import { DateTime } from "luxon";
 import type { Status } from "./vehicleStatus";
 import { downloadDirections } from "../resolvers/routes";
+import { getAllVehicleStatuses } from "./vehicleStatus";
 import { getUpcomingBusStopsOfTrip } from "../resolvers/busStops";
-import { vehicleStatusCache } from "./vehicleStatus";
 
 export type BusStopsArrival = {
   busStopId: number,
@@ -14,8 +14,7 @@ export type BusStopsArrival = {
 };
 
 export async function updateBusArrivalPredictions() {
-  for (const key of vehicleStatusCache.keys()) {
-    const status: Status = vehicleStatusCache.get(key);
+  for (const status of getAllVehicleStatuses()) {
     if (status.isInTerminal) continue;
 
     getBusArrivalPredictions(status.tripId, status.busStopsVisited, {

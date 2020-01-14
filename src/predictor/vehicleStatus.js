@@ -21,14 +21,14 @@ export type Status =
   | {
       isInTerminal: false,
       tripId: number,
-      confidence: number,
+      tripIdConfidence: number,
       currentBusStopId: ?number,
       busStopsVisited: number[],
       predictedArrivals: BusStopsArrival[],
       avl: AVL
     };
 
-export const vehicleStatusCache = new NodeCache();
+const vehicleStatusCache = new NodeCache();
 
 export async function updateVehicleStatus() {
   const vehicles = await getVehicles();
@@ -39,13 +39,19 @@ export async function updateVehicleStatus() {
   }
 }
 
+export function getAllVehicleStatuses(): Status[] {
+  return vehicleStatusCache
+    .keys()
+    .map<Status>(key => vehicleStatusCache.get(key));
+}
+
 async function estimateVehicleStatus(
   vehicle: Vehicle,
   beforeTimestamp: string = DateTime.local().toSQL()
 ): Promise<Status> {
   const [
     { currentBusStopId, isInTerminal },
-    { tripId, confidence },
+    { tripId, tripIdConfidence },
     busStopsVisited,
     avl
   ] = await Promise.all([
@@ -60,7 +66,7 @@ async function estimateVehicleStatus(
     : {
         isInTerminal: false,
         tripId,
-        confidence,
+        tripIdConfidence,
         currentBusStopId,
         busStopsVisited,
         avl,

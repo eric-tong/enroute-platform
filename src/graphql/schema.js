@@ -66,6 +66,15 @@ const AVLType = new GraphQLObjectType({
   }
 });
 
+const DepartureType = new GraphQLObjectType({
+  name: "DepartureType",
+  description: "Scheduled and predicted departure times of the vehicle",
+  fields: {
+    scheduled: { type: GraphQLString },
+    predicted: { type: GraphQLString }
+  }
+});
+
 const VehicleType = new GraphQLObjectType({
   name: "VehicleType",
   description: "Vehicle id with timestamped coordinates",
@@ -88,7 +97,7 @@ const BusStopType = new GraphQLObjectType({
     icon: { type: GraphQLString },
     direction: { type: GraphQLString },
     departures: {
-      type: new GraphQLList(GraphQLString),
+      type: new GraphQLList(DepartureType),
       args: { maxLength: { type: GraphQLInt } },
       resolve: getDeparturesFromBusStop
     },

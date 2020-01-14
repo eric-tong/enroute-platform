@@ -53,8 +53,8 @@ export function getCurrentTripIdOfVehicle(
     .then(results => results.rows)
     .then(trips => {
       const tripId = trips.length > 0 ? trips[0].tripId : 0;
-      const confidence =
+      const tripIdConfidence =
         trips.length > 1 ? 1 - trips[0].delta / trips[1].delta / 2 : 1;
-      return { tripId, confidence };
+      return { tripId, tripIdConfidence };
     });
 }
