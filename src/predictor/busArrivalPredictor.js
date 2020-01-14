@@ -23,7 +23,6 @@ export async function updateBusArrivalPredictions() {
     const predictedArrivals = await getBusArrivalPredictions(
       status.tripId,
       status.busStopsVisited,
-      status.busStopProxiesVisited,
       {
         longitude: status.avl.longitude,
         latitude: status.avl.latitude,
@@ -47,14 +46,12 @@ export async function updateBusArrivalPredictions() {
 async function getBusArrivalPredictions(
   tripId: number,
   busStopsVisited: number[],
-  busStopProxiesVisited: number[],
   vehicle: BusStop,
   timeOfDataCapture: DateTime
 ) {
   const upcomingBusStops = await getUpcomingBusStopsOfTrip(
     tripId,
-    busStopsVisited,
-    busStopProxiesVisited
+    busStopsVisited
   );
   const [directions, departures] = await Promise.all([
     downloadDirections([vehicle, ...upcomingBusStops]),

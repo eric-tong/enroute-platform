@@ -1,7 +1,6 @@
 // @flow
 
 import {
-  getBusStopProxiesVisitedByVehicle,
   getBusStopsVisitedByVehicle,
   getCurrentBusStopOfVehicle
 } from "../resolvers/busStops";
@@ -25,7 +24,6 @@ export type Status =
       tripIdConfidence: number,
       currentBusStopId: ?number,
       busStopsVisited: number[],
-      busStopProxiesVisited: number[],
       predictedArrivals: BusStopsArrival[],
       avl: AVL
     };
@@ -55,13 +53,11 @@ async function estimateVehicleStatus(
     { currentBusStopId, isInTerminal },
     { tripId, tripIdConfidence },
     busStopsVisited,
-    busStopProxiesVisited,
     avl
   ] = await Promise.all([
     getCurrentBusStopOfVehicle(vehicle.id, beforeTimestamp),
     getCurrentTripIdOfVehicle(vehicle.id, beforeTimestamp),
     getBusStopsVisitedByVehicle(vehicle.id, beforeTimestamp),
-    getBusStopProxiesVisitedByVehicle(vehicle.id, beforeTimestamp),
     getLatestAvlOfVehicle(vehicle)
   ]);
 
@@ -73,7 +69,6 @@ async function estimateVehicleStatus(
         tripIdConfidence,
         currentBusStopId,
         busStopsVisited,
-        busStopProxiesVisited,
         avl,
         predictedArrivals:
           vehicleStatusCache.has(vehicle.id) &&

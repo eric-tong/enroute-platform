@@ -26,7 +26,7 @@ WITH avl AS (
 )
 
 INSERT INTO bus_stop_visits
-SELECT avl.id as avl_id, bus_stop_proxies.id as bus_stop_id, true as is_proxy
+SELECT avl.id as avl_id, bus_stop_proxies.bus_stop_id, true as is_proxy
     FROM bus_stop_proxies CROSS JOIN avl
     WHERE CIRCLE(POINT(bus_stop_proxies.longitude, bus_stop_proxies.latitude), ${GEOFENCE_RADIUS}) @> POINT(avl.longitude, avl.latitude)
     AND (

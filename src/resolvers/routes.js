@@ -33,7 +33,9 @@ export async function downloadDirections(busStops: BusStop[]) {
     geometries: "geojson",
     overview: "full",
     approaches: "curb;".repeat(busStops.length).slice(0, -1),
-    bearings: busStops.map(busStop => `${busStop.roadAngle},45`).join(";"),
+    bearings: busStops
+      .map(busStop => (busStop.roadAngle ? `${busStop.roadAngle},45` : ""))
+      .join(";"),
     access_token: process.env.MAPBOX_ACCESS_TOKEN ?? ""
   };
   Object.keys(params).forEach(key => url.searchParams.set(key, params[key]));
