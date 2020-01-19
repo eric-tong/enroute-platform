@@ -4,6 +4,7 @@ import {
   GraphQLBoolean,
   GraphQLFloat,
   GraphQLID,
+  GraphQLInputObjectType,
   GraphQLInt,
   GraphQLInterfaceType,
   GraphQLList,
@@ -11,10 +12,10 @@ import {
   GraphQLSchema,
   GraphQLString
 } from "graphql";
+import { createCheckIn, getDepartments } from "../resolvers/checkIn";
 import { getAvl, getLatestAvlOfVehicle } from "../resolvers/avl";
 
 import { getBusStops } from "../resolvers/busStops";
-import { getDepartments } from "../resolvers/checkIn";
 import { getDeparturesFromBusStop } from "../resolvers/departures";
 import { getIoFromAvl } from "../resolvers/io";
 import { getRouteCoords } from "../resolvers/routes";
@@ -111,8 +112,8 @@ const DepartmentType = new GraphQLObjectType({
   name: "DepartmentType",
   description: "Deparment with name and id",
   fields: {
-    id: { type: GraphQLID },
-    name: { type: GraphQLString }
+    name: { type: GraphQLString },
+    type: { type: GraphQLString }
   }
 });
 
@@ -150,13 +151,29 @@ const departments = {
   resolve: getDepartments
 };
 
+const createNewCheckIn = {
+  description: "Create a new check in instance",
+  type: GraphQLInt,
+  args: {
+    userType: { type: GraphQLString },
+    vehicleRegistration: { type: GraphQLString }
+  },
+  resolve: createCheckIn
+};
+
+const MutationType = new GraphQLObjectType({
+  name: "MutationType",
+  fields: { createNewCheckIn }
+});
+
 const RootQueryType = new GraphQLObjectType({
   name: "RootQueryType",
   fields: { vehicles, busStops, route, avls, departments }
 });
 
 const schema = new GraphQLSchema({
-  query: RootQueryType
+  query: RootQueryType,
+  mutation: MutationType
 });
 
 export default schema;
