@@ -14,6 +14,7 @@ import {
 import { getAvl, getLatestAvlOfVehicle } from "../resolvers/avl";
 
 import { getBusStops } from "../resolvers/busStops";
+import { getDepartments } from "../resolvers/checkIn";
 import { getDeparturesFromBusStop } from "../resolvers/departures";
 import { getIoFromAvl } from "../resolvers/io";
 import { getRouteCoords } from "../resolvers/routes";
@@ -106,6 +107,15 @@ const BusStopType = new GraphQLObjectType({
   }
 });
 
+const DepartmentType = new GraphQLObjectType({
+  name: "DepartmentType",
+  description: "Deparment with name and id",
+  fields: {
+    id: { type: GraphQLID },
+    name: { type: GraphQLString }
+  }
+});
+
 const vehicles = {
   description: "Query for all vehicles",
   type: new GraphQLList(VehicleType),
@@ -134,9 +144,15 @@ const avls = {
   resolve: getAvl
 };
 
+const departments = {
+  description: "Get departments",
+  type: new GraphQLList(DepartmentType),
+  resolve: getDepartments
+};
+
 const RootQueryType = new GraphQLObjectType({
   name: "RootQueryType",
-  fields: { vehicles, busStops, route, avls }
+  fields: { vehicles, busStops, route, avls, departments }
 });
 
 const schema = new GraphQLSchema({
