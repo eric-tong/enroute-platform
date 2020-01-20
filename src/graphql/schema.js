@@ -12,7 +12,11 @@ import {
   GraphQLSchema,
   GraphQLString
 } from "graphql";
-import { createCheckIn, getDepartments } from "../resolvers/checkIn";
+import {
+  checkOutWithId,
+  createCheckIn,
+  getDepartments
+} from "../resolvers/checkIn";
 import { getAvl, getLatestAvlOfVehicle } from "../resolvers/avl";
 
 import { getBusStops } from "../resolvers/busStops";
@@ -161,9 +165,18 @@ const createNewCheckIn = {
   resolve: createCheckIn
 };
 
+const checkOut = {
+  description: "Remove a check in instance",
+  type: GraphQLInt,
+  args: {
+    id: { type: GraphQLInt }
+  },
+  resolve: checkOutWithId
+};
+
 const MutationType = new GraphQLObjectType({
   name: "MutationType",
-  fields: { createNewCheckIn }
+  fields: { createNewCheckIn, checkOut }
 });
 
 const RootQueryType = new GraphQLObjectType({
