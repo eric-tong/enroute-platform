@@ -18,8 +18,8 @@ import {
   getDepartments
 } from "../resolvers/checkIn";
 import { getAvl, getLatestAvlOfVehicle } from "../resolvers/avl";
+import { getBusStopFromUrl, getBusStops } from "../resolvers/busStops";
 
-import { getBusStops } from "../resolvers/busStops";
 import { getDeparturesFromBusStop } from "../resolvers/departures";
 import { getIoFromAvl } from "../resolvers/io";
 import { getRouteCoords } from "../resolvers/routes";
@@ -101,6 +101,7 @@ const BusStopType = new GraphQLObjectType({
     name: { type: GraphQLString },
     street: { type: GraphQLString },
     icon: { type: GraphQLString },
+    url: { type: GraphQLString },
     direction: { type: GraphQLString },
     departures: {
       type: new GraphQLList(DepartureType),
@@ -130,7 +131,15 @@ const vehicles = {
 const busStops = {
   description: "Get bus stops and their locations",
   type: new GraphQLList(BusStopType),
+
   resolve: getBusStops
+};
+
+const busStop = {
+  description: "Get one bus stop with its unique url",
+  type: BusStopType,
+  args: { url: { type: GraphQLString } },
+  resolve: getBusStopFromUrl
 };
 
 const route = {
@@ -181,7 +190,7 @@ const MutationType = new GraphQLObjectType({
 
 const RootQueryType = new GraphQLObjectType({
   name: "RootQueryType",
-  fields: { vehicles, busStops, route, avls, departments }
+  fields: { vehicles, busStops, busStop, route, avls, departments }
 });
 
 const schema = new GraphQLSchema({
