@@ -155,7 +155,7 @@ const createNewCheckIn = {
   description: "Create a new check in instance",
   type: GraphQLInt,
   args: {
-    userType: { type: GraphQLString },
+    departmentType: { type: GraphQLString },
     vehicleRegistration: { type: GraphQLString }
   },
   resolve: createCheckIn

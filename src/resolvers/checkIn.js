@@ -12,9 +12,9 @@ export function getDepartments() {
 export function createCheckIn(
   _: void,
   {
-    userType,
+    departmentType,
     vehicleRegistration
-  }: { userType: string, vehicleRegistration: string }
+  }: { departmentType: string, vehicleRegistration: string }
 ) {
   const CREATE_CHECK_IN = `
   WITH department AS (SELECT * FROM departments WHERE type = $1),
@@ -24,6 +24,9 @@ export function createCheckIn(
       SELECT NOW() as timestamp, vehicle.id AS vehicle_id, department.id AS department_id FROM department CROSS JOIN vehicle
       RETURNING id;`;
   return database
-    .query<{ id: number }>(CREATE_CHECK_IN, [userType, vehicleRegistration])
-    .then(results => results.rows.length && results.rows[0].id);
+    .query<{ id: number }>(CREATE_CHECK_IN, [
+      departmentType,
+      vehicleRegistration
+    ])
+    .then(results => (results.rows.length ? results.rows[0].id : -1));
 }
