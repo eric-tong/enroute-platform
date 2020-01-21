@@ -8,8 +8,14 @@ import {
 } from "graphql";
 
 import { AvlType } from "./AvlSchema";
+import { getAllVehicles } from "../resolvers/VehicleResolver";
 import { getLatestAvlOfVehicle } from "../resolvers/AvlResolver";
-import { getVehicles } from "../resolvers/VehicleResolver";
+
+export type Vehicle = {|
+  id: number,
+  registration: string,
+  imei: string
+|};
 
 const VehicleType = new GraphQLObjectType({
   name: "VehicleType",
@@ -25,5 +31,5 @@ const VehicleType = new GraphQLObjectType({
 export const VehicleQuery = {
   description: "Query for all vehicles",
   type: new GraphQLList(VehicleType),
-  resolve: getVehicles
+  resolve: getAllVehicles
 };

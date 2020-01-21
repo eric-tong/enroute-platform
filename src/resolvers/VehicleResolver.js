@@ -1,17 +1,12 @@
 // @flow
 
+import type { Vehicle } from "../graphql/VehicleSchema";
 import database from "../database/database";
 
-export type Vehicle = {|
-  id: number,
-  registration: string,
-  imei: string
-|};
-
-const GET_ALL_VEHICLES = `SELECT * FROM vehicles`;
 const SELECT_VEHICLE_WITH_IMEI = `SELECT imei FROM vehicles WHERE imei = $1`;
 
-export function getVehicles() {
+export function getAllVehicles() {
+  const GET_ALL_VEHICLES = "SELECT * FROM vehicles";
   return database
     .query<Vehicle>(GET_ALL_VEHICLES)
     .then(results => results.rows);

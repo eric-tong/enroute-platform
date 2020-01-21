@@ -14,7 +14,6 @@ import {
   getBusStopFromUrl
 } from "../resolvers/BusStopResolver";
 
-import type { Departure } from "./DepartureSchema";
 import { DepartureType } from "./DepartureSchema";
 import { getDeparturesFromBusStop } from "../resolvers/DepartureResolver";
 
@@ -27,8 +26,7 @@ export type BusStop = {|
   direction: string,
   latitude: number,
   longitude: number,
-  roadAngle: number,
-  departures: Departure[]
+  roadAngle: number
 |};
 
 export const BusStopType = new GraphQLObjectType({

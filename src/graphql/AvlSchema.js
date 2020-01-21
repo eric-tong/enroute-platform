@@ -25,8 +25,7 @@ export type AVL = {|
   angle: number,
   satellites: number,
   speed: number,
-  vehicleId: number,
-  io: IO[]
+  vehicleId: number
 |};
 
 export const AvlType = new GraphQLObjectType({

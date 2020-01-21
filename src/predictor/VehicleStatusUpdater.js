@@ -9,10 +9,10 @@ import type { AVL } from "../graphql/AvlSchema";
 import type { BusStopsArrival } from "./busArrivalPredictor";
 import { DateTime } from "luxon";
 import NodeCache from "node-cache";
-import type { Vehicle } from "../resolvers/VehicleResolver";
+import type { Vehicle } from "../graphql/VehicleSchema";
+import { getAllVehicles } from "../resolvers/VehicleResolver";
 import { getCurrentTripIdOfVehicle } from "../resolvers/TripResolver";
 import { getLatestAvlOfVehicle } from "../resolvers/AvlResolver";
-import { getVehicles } from "../resolvers/VehicleResolver";
 
 export type Status =
   | {
@@ -31,7 +31,7 @@ export type Status =
 export const vehicleStatusCache = new NodeCache();
 
 export async function updateVehicleStatus() {
-  const vehicles = await getVehicles();
+  const vehicles = await getAllVehicles();
   for (const vehicle of vehicles) {
     const status = await estimateVehicleStatus(vehicle);
     vehicleStatusCache.set(vehicle.id, status);
