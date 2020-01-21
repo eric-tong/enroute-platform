@@ -9,7 +9,7 @@ import util from "util";
 
 export const routeByTripCache = new NodeCache({ stdTTL: 6000 });
 
-export async function getRouteCoords(tripId?: number) {
+export async function getRouteFromTripId(tripId?: number) {
   const trip = tripId ?? (await getTripIdWithNearestStartTime());
   if (routeByTripCache.has(trip)) {
     return routeByTripCache.get(trip);

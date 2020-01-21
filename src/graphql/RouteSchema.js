@@ -2,7 +2,7 @@
 
 import { GraphQLFloat, GraphQLList, GraphQLObjectType } from "graphql";
 
-import { getRouteCoords } from "../resolvers/RouteResolver";
+import { getRouteFromTripId } from "../resolvers/RouteResolver";
 
 const LocationType = new GraphQLObjectType({
   name: "LocationType",
@@ -16,5 +16,5 @@ const LocationType = new GraphQLObjectType({
 export const RouteQuery = {
   description: "Get coordinates along route of bus",
   type: new GraphQLList(LocationType),
-  resolve: getRouteCoords
+  resolve: getRouteFromTripId
 };
