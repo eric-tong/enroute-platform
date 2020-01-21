@@ -1,14 +1,6 @@
 // @flow
 
-import { data, stringify } from "node-persist";
-
 import database from "../database/database";
-
-export function getDepartments() {
-  return database
-    .query<{ id: number, name: string }>("SELECT * FROM departments")
-    .then(results => results.rows);
-}
 
 export function createCheckIn(
   _: void,
@@ -32,7 +24,7 @@ export function createCheckIn(
     .then(results => (results.rows.length ? results.rows[0].id : -1));
 }
 
-export function checkOutWithId(_: void, { id }: { id: number }) {
+export function checkOutFromCheckInId(_: void, { id }: { id: number }) {
   const CHECK_OUT = "DELETE FROM check_ins WHERE id = $1 RETURNING id";
   return database
     .query<{ id: number }>(CHECK_OUT, [id])

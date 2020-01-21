@@ -2,7 +2,7 @@
 
 import { GraphQLList, GraphQLObjectType, GraphQLString } from "graphql";
 
-import { getDepartments } from "../resolvers/CheckInResolver";
+import { getDepartments } from "../resolvers/DepartmentResolver";
 
 const DepartmentType = new GraphQLObjectType({
   name: "DepartmentType",

@@ -1,7 +1,10 @@
 // @flow
 
 import { GraphQLInt, GraphQLString } from "graphql";
-import { checkOutWithId, createCheckIn } from "../resolvers/CheckInResolver";
+import {
+  checkOutFromCheckInId,
+  createCheckIn
+} from "../resolvers/CheckInResolver";
 
 export const CreateNewCheckInMutation = {
   description: "Create a new check in instance",
@@ -19,5 +22,5 @@ export const CheckOutMutation = {
   args: {
     id: { type: GraphQLInt }
   },
-  resolve: checkOutWithId
+  resolve: checkOutFromCheckInId
 };
