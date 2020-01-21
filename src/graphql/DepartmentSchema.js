@@ -1,20 +1,32 @@
 // @flow
 
-import { GraphQLList, GraphQLObjectType, GraphQLString } from "graphql";
+import {
+  GraphQLID,
+  GraphQLList,
+  GraphQLObjectType,
+  GraphQLString
+} from "graphql";
 
-import { getDepartments } from "../resolvers/DepartmentResolver";
+import { getAllDepartments } from "../resolvers/DepartmentResolver";
+
+export type Department = {|
+  id: number,
+  name: string,
+  type: string
+|};
 
 const DepartmentType = new GraphQLObjectType({
   name: "DepartmentType",
-  description: "Deparment with name and id",
+  description: "Department with name and id",
   fields: {
+    id: { type: GraphQLID },
     name: { type: GraphQLString },
     type: { type: GraphQLString }
   }
 });
 
 export const DepartmentsQuery = {
-  description: "Get departments",
+  description: "Get all departments",
   type: new GraphQLList(DepartmentType),
-  resolve: getDepartments
+  resolve: getAllDepartments
 };
