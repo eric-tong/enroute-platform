@@ -54,7 +54,10 @@ export async function getDeparturesFromBusStop(
     ) {
       relevantDepartures.push({
         scheduled: departure.dateTime.toSQL(),
-        predicted: predictedArrival && predictedArrival.dateTime.toSQL()
+        predicted: (predictedArrival
+          ? predictedArrival
+          : departure
+        ).dateTime.toSQL()
       });
     }
   }
