@@ -1,6 +1,6 @@
 // @flow
 
-import type { BusStop } from "../resolvers/BusStopResolver";
+import type { BusStop } from "../graphql/BusStopSchema";
 import NodeCache from "node-cache";
 import fetch from "node-fetch";
 import { getBusStopsInTrip } from "./BusStopResolver";

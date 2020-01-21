@@ -5,7 +5,7 @@ import {
   vehicleStatusCache
 } from "./VehicleStatusUpdater";
 
-import type { BusStop } from "../resolvers/BusStopResolver";
+import type { BusStop } from "../graphql/BusStopSchema";
 import { DateTime } from "luxon";
 import type { Status } from "./VehicleStatusUpdater";
 import { downloadDirections } from "../resolvers/RouteResolver";
@@ -31,9 +31,12 @@ export async function updateBusArrivalPredictions() {
         latitude: status.avl.latitude,
         roadAngle: status.avl.angle,
         name: `Vehicle ${vehicleId}`,
+        url: "",
+        direction: "",
         street: "",
         icon: "",
-        id: 0
+        id: 0,
+        departures: []
       },
       DateTime.fromJSDate(status.avl.timestamp)
     );

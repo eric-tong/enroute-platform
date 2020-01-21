@@ -1,6 +1,6 @@
 // @flow
 
-import type { BusStop } from "./BusStopResolver";
+import type { BusStop } from "../graphql/BusStopSchema";
 import { DateTime } from "luxon";
 import database from "../database/database";
 import { getAllVehicleStatuses } from "../predictor/VehicleStatusUpdater";

@@ -1,20 +1,10 @@
 // @flow
 
+import type { BusStop } from "../graphql/BusStopSchema";
 import { DateTime } from "luxon";
 import type { Status } from "../predictor/VehicleStatusUpdater";
 import database from "../database/database";
 
-export type BusStop = {|
-  id: number,
-  name: string,
-  street: string,
-  longitude: number,
-  latitude: number,
-  icon: string,
-  roadAngle: number
-|};
-
-const GET_ALL_BUS_STOPS = `SELECT * FROM bus_stops ORDER BY display_position`;
 const GET_BUS_STOPS_IN_TRIP = `
 SELECT *, road_angle as "roadAngle" FROM bus_stops INNER JOIN departures 
   ON bus_stops.id = departures.bus_stop_id
@@ -54,7 +44,11 @@ SELECT bus_stops.id, ROW_NUMBER() OVER (PARTITION BY bus_stops.id ORDER BY avl.t
 SELECT id FROM visited_bus_stops_in_current_trip WHERE id_within_bus_stop = 1
 `;
 
-export function getBusStops() {
+export function getAllBusStops() {
+  const GET_ALL_BUS_STOPS = `
+  SELECT *, road_angle AS "roadAngle" FROM bus_stops 
+    ORDER BY display_position
+  `;
   return database
     .query<BusStop>(GET_ALL_BUS_STOPS)
     .then(results => results.rows);

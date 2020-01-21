@@ -9,10 +9,27 @@ import {
   GraphQLObjectType,
   GraphQLString
 } from "graphql";
-import { getBusStopFromUrl, getBusStops } from "../resolvers/BusStopResolver";
+import {
+  getAllBusStops,
+  getBusStopFromUrl
+} from "../resolvers/BusStopResolver";
 
+import type { Departure } from "./DepartureSchema";
 import { DepartureType } from "./DepartureSchema";
 import { getDeparturesFromBusStop } from "../resolvers/DepartureResolver";
+
+export type BusStop = {|
+  id: number,
+  name: string,
+  street: string,
+  icon: string,
+  url: string,
+  direction: string,
+  latitude: number,
+  longitude: number,
+  roadAngle: number,
+  departures: Departure[]
+|};
 
 export const BusStopType = new GraphQLObjectType({
   name: "BusStopType",
@@ -24,21 +41,21 @@ export const BusStopType = new GraphQLObjectType({
     icon: { type: GraphQLString },
     url: { type: GraphQLString },
     direction: { type: GraphQLString },
+    latitude: { type: GraphQLFloat },
+    longitude: { type: GraphQLFloat },
+    roadAngle: { type: GraphQLFloat },
     departures: {
       type: new GraphQLList(DepartureType),
       args: { maxLength: { type: GraphQLInt } },
       resolve: getDeparturesFromBusStop
-    },
-    latitude: { type: GraphQLFloat },
-    longitude: { type: GraphQLFloat }
+    }
   })
 });
 
 export const BusStopsQuery = {
   description: "Get bus stops and their locations",
   type: new GraphQLList(BusStopType),
-
-  resolve: getBusStops
+  resolve: getAllBusStops
 };
 
 export const BusStopQuery = {
