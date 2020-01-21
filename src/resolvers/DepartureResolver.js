@@ -102,7 +102,7 @@ export function getScheduledDeparturesFromTripId(tripId: number) {
     .query<{ time: number, busStopId: number }>(GET_DEPARTURES_IN_TRIP, [
       tripId
     ])
-    .then(results => console.log(results) || results.rows)
+    .then(results => results.rows)
     .then(departures =>
       departures.map<{ time: DateTime, busStopId: number }>(departure => ({
         time: toActualTime(departure.time),

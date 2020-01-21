@@ -2,7 +2,7 @@
 
 import { GraphQLObjectType, GraphQLString } from "graphql";
 
-import { BusStopType } from "./GraphQLSchema";
+import { BusStopType } from "./BusStopSchema";
 import { TripType } from "./TripSchema";
 import { getBusStopFromId } from "../resolvers/BusStopResolver";
 
