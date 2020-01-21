@@ -1,107 +1,85 @@
 // @flow
 
+import type { Departure, ScheduledDeparture } from "../graphql/DepartureSchema";
+
+import type { BusArrival } from "../vehicleStatus/vehicleStatusUpdater";
 import type { BusStop } from "../graphql/BusStopSchema";
 import { DateTime } from "luxon";
 import database from "../database/database";
-import { getAllVehicleStatuses } from "../vehicleStatus/VehicleStatusGetter";
+import { getAllPredictedBusArrivals } from "../vehicleStatus/VehicleStatusGetter";
 
 const DEPARTURE_BUFFER = 60 * 1000;
-const GET_DEPARTURE_TIMES_WITH_BUS_STOP_ID = `
-SELECT time, trip_id as "tripId", bus_stop_id as "busStopId" FROM (
-  SELECT *, ROW_NUMBER() OVER (PARTITION BY trip_id ORDER BY trip_id, time DESC) as stops_from_terminal
-    FROM departures
-) as departures
-  WHERE bus_stop_id = $1
-  AND stops_from_terminal > 1
-  ORDER BY time
-`;
-const GET_DEPARTURES_IN_TRIP = `SELECT time, bus_stop_id AS "busStopId" FROM departures WHERE trip_id = $1 ORDER BY time`;
 
 export async function getDeparturesFromBusStop(
   busStop: BusStop,
   { maxLength = Number.MAX_SAFE_INTEGER }: { maxLength: number }
 ) {
   const now = DateTime.local();
-  const statuses = getAllVehicleStatuses();
-  const tripIdToArrivals = new Map<
-    number,
-    { dateTime: DateTime, confidence: number }
-  >();
-  statuses.forEach(toMap);
+  const predictedDepartures = getAllPredictedBusArrivals();
+  const scheduledDepartures = await getScheduledDeparturesFromBusStop(busStop);
 
-  const scheduledDepartures = await database
-    .query<{ time: number, tripId: number, busStopId: number }>(
-      GET_DEPARTURE_TIMES_WITH_BUS_STOP_ID,
-      [busStop.id]
-    )
-    .then(results =>
-      results.rows.map<{
-        dateTime: DateTime,
-        tripId: number,
-        busStopId: number
-      }>(({ time, tripId, busStopId }) => ({
-        dateTime: toActualTime(time),
-        tripId,
-        busStopId
-      }))
-    );
-
-  const relevantDepartures: {
-    scheduled: string,
-    predicted: ?string,
-    tripId: number,
-    busStopId: number
-  }[] = [];
-  for (const departure of scheduledDepartures) {
+  const relevantDepartures: Departure[] = [];
+  for (const scheduledDeparture of scheduledDepartures) {
     if (relevantDepartures.length >= maxLength) break;
 
-    const predictedArrival = tripIdToArrivals.get(departure.tripId);
+    const predictedArrival = predictedDepartures.find(
+      predictedDeparture =>
+        predictedDeparture.tripId === scheduledDeparture.tripId &&
+        predictedDeparture.busStopId === scheduledDeparture.busStopId
+    );
     if (
       predictedArrival ||
-      departure.dateTime.valueOf() + DEPARTURE_BUFFER >= now.valueOf()
+      scheduledDeparture.dateTime.valueOf() + DEPARTURE_BUFFER >= now.valueOf()
     ) {
       relevantDepartures.push({
-        scheduled: departure.dateTime.toSQL(),
+        scheduled: scheduledDeparture.dateTime.toSQL(),
         predicted: (predictedArrival
           ? predictedArrival
-          : departure
+          : scheduledDeparture
         ).dateTime.toSQL(),
-        tripId: departure.tripId,
-        busStopId: departure.busStopId
+        tripId: scheduledDeparture.tripId,
+        busStopId: scheduledDeparture.busStopId
       });
     }
   }
 
   return relevantDepartures;
+}
 
-  function toMap(status) {
-    if (status.isInTerminal) {
-      return;
-    } else if (status.currentBusStopId === busStop.id) {
-      tripIdToArrivals.set(status.tripId, { dateTime: now, confidence: 1 });
-    } else if (
-      !tripIdToArrivals.has(status.tripId) ||
-      // $FlowFixMe status definitely exists here
-      status.tripIdConfidence > tripIdToArrivals.get(status.tripId).confidence
-    ) {
-      const arrivalAtBusStop = status.predictedArrivals
-        .slice(0, -1)
-        .find(predictedArrival => predictedArrival.busStopId === busStop.id);
-      if (arrivalAtBusStop) {
-        tripIdToArrivals.set(status.tripId, {
-          dateTime: DateTime.fromSQL(arrivalAtBusStop.arrivalTime),
-          confidence: status.tripIdConfidence
-        });
-      }
-    }
-  }
+function getScheduledDeparturesFromBusStop(busStop: BusStop) {
+  const GET_SCHEDULED_DEPARTURES_FROM_BUS_STOP_ID = `
+  SELECT time, trip_id as "tripId", bus_stop_id as "busStopId" FROM (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY trip_id ORDER BY trip_id, time DESC) as stops_from_terminal
+      FROM departures
+  ) as departures
+    WHERE bus_stop_id = $1
+    AND stops_from_terminal > 1
+    ORDER BY time
+  `;
+
+  return database
+    .query<ScheduledDeparture>(GET_SCHEDULED_DEPARTURES_FROM_BUS_STOP_ID, [
+      busStop.id
+    ])
+    .then(results =>
+      results.rows.map<BusArrival>(({ time, tripId, busStopId }) => ({
+        dateTime: toActualTime(time),
+        tripId,
+        busStopId: busStop.id,
+        busStopName: busStop.name
+      }))
+    );
 }
 
 export function getScheduledDeparturesFromTripId(tripId: number) {
+  const GET_SCHEDULED_DEPARTURES_FROM_TRIP_ID = `
+  SELECT time, bus_stop_id AS "busStopId", trip_id AS "tripId" FROM departures 
+    WHERE trip_id = $1 
+    ORDER BY time
+  `;
+
   return database
-    .query<{ time: number, busStopId: number }>(GET_DEPARTURES_IN_TRIP, [
-      tripId
-    ])
+    .query<ScheduledDeparture>(GET_SCHEDULED_DEPARTURES_FROM_TRIP_ID, [tripId])
     .then(results => results.rows)
     .then(departures =>
       departures.map<{ time: DateTime, busStopId: number }>(departure => ({

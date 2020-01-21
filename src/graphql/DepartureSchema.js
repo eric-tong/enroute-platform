@@ -9,7 +9,15 @@ import { stringify } from "node-persist";
 
 export type Departure = {|
   scheduled: string,
-  predicted: string
+  predicted: string,
+  tripId: number,
+  busStopId: number
+|};
+
+export type ScheduledDeparture = {|
+  time: number,
+  tripId: number,
+  busStopId: number
 |};
 
 export const DepartureType = new GraphQLObjectType({

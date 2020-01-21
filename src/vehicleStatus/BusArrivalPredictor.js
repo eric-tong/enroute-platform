@@ -1,5 +1,6 @@
 // @flow
 
+import type { BusArrival } from "./VehicleStatusUpdater";
 import type { BusStop } from "../graphql/BusStopSchema";
 import { DateTime } from "luxon";
 import type { Status } from "./VehicleStatusUpdater";
@@ -7,12 +8,6 @@ import { downloadDirections } from "../resolvers/RouteResolver";
 import { getScheduledDeparturesFromTripId } from "../resolvers/DepartureResolver";
 import { getUpcomingBusStopsFromTripId } from "../resolvers/BusStopResolver";
 import { vehicleStatusCache } from "./VehicleStatusUpdater";
-
-export type BusStopsArrival = {
-  busStopId: number,
-  busStopName: string,
-  arrivalTime: string
-};
 
 export async function updateBusArrivalPredictions() {
   for (const vehicleId of vehicleStatusCache.keys()) {
@@ -67,7 +62,7 @@ async function getBusArrivalPredictions(
   const upcomingDepartures = departures.slice(-1 * durations.length);
   let cumulativeTime = timeOfDataCapture;
 
-  return upcomingBusStops.map<BusStopsArrival>((busStop, i) => {
+  return upcomingBusStops.map<BusArrival>((busStop, i) => {
     const predictedTime = cumulativeTime.plus({ seconds: durations[i - 1] });
     cumulativeTime =
       upcomingDepartures[i].time.valueOf() > predictedTime.valueOf()
@@ -75,9 +70,10 @@ async function getBusArrivalPredictions(
         : predictedTime;
 
     return {
+      tripId,
       busStopId: busStop.id,
       busStopName: busStop.name,
-      arrivalTime: predictedTime.toSQL()
+      dateTime: predictedTime
     };
   });
 }

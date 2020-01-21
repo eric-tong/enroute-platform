@@ -1,10 +1,26 @@
 // @flow
 
-import type { Status } from "./VehicleStatusUpdater";
+import type {
+  BusStopsArrival,
+  NonTerminalStatus,
+  Status
+} from "./VehicleStatusUpdater";
+
+import { DateTime } from "luxon";
 import { vehicleStatusCache } from "./VehicleStatusUpdater";
 
-export function getAllVehicleStatuses(): Status[] {
+export function getAllActiveVehicleStatuses(): NonTerminalStatus[] {
   return vehicleStatusCache
     .keys()
-    .map<Status>(key => vehicleStatusCache.get(key));
+    .map<Status>(key => vehicleStatusCache.get(key))
+    .filter(status => !status.isInTerminal);
+}
+
+export function getAllPredictedBusArrivals(): BusStopsArrival[] {
+  return getAllActiveVehicleStatuses()
+    .sort((s1, s2) => s2.tripIdConfidence - s1.tripIdConfidence)
+    .reduce(
+      (array, status) => [...array, ...status.predictedArrivals.slice(0, -1)],
+      []
+    );
 }
