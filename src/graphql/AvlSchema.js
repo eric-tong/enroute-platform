@@ -11,8 +11,18 @@ import {
 } from "graphql";
 
 import { IoType } from "./IoSchema";
-import { getAvl } from "../resolvers/AvlResolver";
-import { getIoFromAvl } from "../resolvers/IoResolver";
+import { getAllAvlsFromDate } from "../resolvers/AvlResolver";
+import { getIoFromAvlId } from "../resolvers/IoResolver";
+
+export type AVL = {|
+  id: number,
+  vehicleId: number,
+  timestamp: Date,
+  longitude: number,
+  latitude: number,
+  angle: number,
+  speed: number
+|};
 
 export const AvlType = new GraphQLObjectType({
   name: "AVLType",
@@ -28,7 +38,10 @@ export const AvlType = new GraphQLObjectType({
     satellites: { type: GraphQLInt },
     speed: { type: GraphQLInt },
     vehicleId: { type: GraphQLInt },
-    io: { type: new GraphQLList(IoType), resolve: getIoFromAvl }
+    io: {
+      type: new GraphQLList(IoType),
+      resolve: avl => getIoFromAvlId(avl.id)
+    }
   })
 });
 
@@ -36,8 +49,7 @@ export const AvlQuery = {
   description: "Get AVL data",
   type: new GraphQLList(AvlType),
   args: {
-    date: { type: GraphQLString },
-    full: { type: GraphQLBoolean }
+    date: { type: GraphQLString }
   },
-  resolve: getAvl
+  resolve: getAllAvlsFromDate
 };

@@ -1,12 +1,8 @@
 // @flow
 
-import type { AVL } from "./AvlResolver";
+import type { AVL } from "../graphql/AvlSchema";
+import type { IO } from "../graphql/IoSchema";
 import database from "../database/database";
-
-export type IO = {|
-  name: string,
-  value: number
-|};
 
 const GET_IO_WITH_AVL_ID = `
 SELECT io_names.value AS name, io.value 
@@ -14,8 +10,8 @@ SELECT io_names.value AS name, io.value
   WHERE io.avl_id = $1
 `;
 
-export function getIoFromAvl(avl: AVL) {
+export function getIoFromAvlId(avlId: number) {
   return database
-    .query<IO>(GET_IO_WITH_AVL_ID, [avl.id])
+    .query<IO>(GET_IO_WITH_AVL_ID, [avlId])
     .then(results => results.rows);
 }

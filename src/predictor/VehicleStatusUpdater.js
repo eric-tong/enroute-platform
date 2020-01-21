@@ -5,7 +5,7 @@ import {
   getCurrentBusStopOfVehicle
 } from "../resolvers/BusStopResolver";
 
-import type { AVL } from "../resolvers/AvlResolver";
+import type { AVL } from "../graphql/AvlSchema";
 import type { BusStopsArrival } from "./busArrivalPredictor";
 import { DateTime } from "luxon";
 import NodeCache from "node-cache";
