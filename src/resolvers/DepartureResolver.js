@@ -14,36 +14,14 @@ export async function getDeparturesFromBusStop(
   busStop: BusStop,
   { maxLength = Number.MAX_SAFE_INTEGER }: { maxLength: number }
 ) {
-  const now = DateTime.local();
   const predictedDepartures = getAllPredictedBusArrivals();
   const scheduledDepartures = await getScheduledDeparturesFromBusStop(busStop);
 
-  const relevantDepartures: Departure[] = [];
-  for (const scheduledDeparture of scheduledDepartures) {
-    if (relevantDepartures.length >= maxLength) break;
-
-    const predictedArrival = predictedDepartures.find(
-      predictedDeparture =>
-        predictedDeparture.tripId === scheduledDeparture.tripId &&
-        predictedDeparture.busStopId === scheduledDeparture.busStopId
-    );
-    if (
-      predictedArrival ||
-      scheduledDeparture.dateTime.valueOf() + DEPARTURE_BUFFER >= now.valueOf()
-    ) {
-      relevantDepartures.push({
-        scheduled: scheduledDeparture.dateTime.toSQL(),
-        predicted: (predictedArrival
-          ? predictedArrival
-          : scheduledDeparture
-        ).dateTime.toSQL(),
-        tripId: scheduledDeparture.tripId,
-        busStopId: scheduledDeparture.busStopId
-      });
-    }
-  }
-
-  return relevantDepartures;
+  return getRelevantDepartures(
+    predictedDepartures,
+    scheduledDepartures,
+    maxLength
+  );
 }
 
 function getScheduledDeparturesFromBusStop(busStop: BusStop) {
@@ -71,6 +49,20 @@ function getScheduledDeparturesFromBusStop(busStop: BusStop) {
     );
 }
 
+export async function getDeparturesFromTripId(
+  tripId: number,
+  { maxLength = Number.MAX_SAFE_INTEGER }: { maxLength: number }
+) {
+  const predictedDepartures = getAllPredictedBusArrivals();
+  const scheduledDepartures = await getScheduledDeparturesFromTripId(tripId);
+
+  return getRelevantDepartures(
+    predictedDepartures,
+    scheduledDepartures,
+    maxLength
+  );
+}
+
 export function getScheduledDeparturesFromTripId(tripId: number) {
   const GET_SCHEDULED_DEPARTURES_FROM_TRIP_ID = `
   SELECT time, bus_stop_id AS "busStopId", trip_id AS "tripId" FROM departures 
@@ -80,13 +72,49 @@ export function getScheduledDeparturesFromTripId(tripId: number) {
 
   return database
     .query<ScheduledDeparture>(GET_SCHEDULED_DEPARTURES_FROM_TRIP_ID, [tripId])
-    .then(results => results.rows)
-    .then(departures =>
-      departures.map<{ time: DateTime, busStopId: number }>(departure => ({
-        time: toActualTime(departure.time),
-        busStopId: departure.busStopId
+    .then(results =>
+      results.rows.map<BusArrival>(({ time, tripId, busStopId }) => ({
+        dateTime: toActualTime(time),
+        tripId,
+        busStopId: busStopId,
+        // TODO add name or remove entirely from type
+        busStopName: ""
       }))
     );
+}
+
+function getRelevantDepartures(
+  predictedDepartures: BusArrival[],
+  scheduledDepartures: BusArrival[],
+  maxLength: number
+) {
+  const now = DateTime.local();
+  const relevantDepartures: Departure[] = [];
+  for (const scheduledDeparture of scheduledDepartures) {
+    if (relevantDepartures.length >= maxLength) break;
+
+    const predictedArrival = predictedDepartures.find(
+      predictedDeparture =>
+        predictedDeparture.tripId === scheduledDeparture.tripId &&
+        predictedDeparture.busStopId === scheduledDeparture.busStopId
+    );
+    if (
+      predictedArrival ||
+      scheduledDeparture.dateTime.valueOf() + DEPARTURE_BUFFER >= now.valueOf()
+    ) {
+      relevantDepartures.push({
+        scheduled: scheduledDeparture.dateTime.toSQL(),
+        predicted: (predictedArrival
+          ? predictedArrival
+          : scheduledDeparture
+        ).dateTime.toSQL(),
+        tripId: scheduledDeparture.tripId,
+        busStopId: scheduledDeparture.busStopId
+      });
+    }
+  }
+
+  return relevantDepartures;
 }
 
 function toActualTime(minuteOfDay: number) {

@@ -65,8 +65,8 @@ async function getBusArrivalPredictions(
   return upcomingBusStops.map<BusArrival>((busStop, i) => {
     const predictedTime = cumulativeTime.plus({ seconds: durations[i - 1] });
     cumulativeTime =
-      upcomingDepartures[i].time.valueOf() > predictedTime.valueOf()
-        ? upcomingDepartures[i].time
+      upcomingDepartures[i].dateTime.valueOf() > predictedTime.valueOf()
+        ? upcomingDepartures[i].dateTime
         : predictedTime;
 
     return {
