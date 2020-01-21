@@ -1,7 +1,7 @@
 // @flow
 
 import type {
-  BusStopsArrival,
+  BusArrival,
   NonTerminalStatus,
   Status
 } from "./VehicleStatusUpdater";
@@ -16,7 +16,7 @@ export function getAllActiveVehicleStatuses(): NonTerminalStatus[] {
     .filter(status => !status.isInTerminal);
 }
 
-export function getAllPredictedBusArrivals(): BusStopsArrival[] {
+export function getAllPredictedBusArrivals(): BusArrival[] {
   return getAllActiveVehicleStatuses()
     .sort((s1, s2) => s2.tripIdConfidence - s1.tripIdConfidence)
     .reduce(
