@@ -19,7 +19,7 @@ const GET_DEPARTURES_IN_TRIP = `SELECT time, bus_stop_id AS "busStopId" FROM dep
 
 export async function getDeparturesFromBusStop(
   busStop: BusStop,
-  { maxLength = 5 }: { maxLength: number }
+  { maxLength = Number.MAX_SAFE_INTEGER }: { maxLength: number }
 ) {
   const now = DateTime.local();
   const statuses = getAllVehicleStatuses();
