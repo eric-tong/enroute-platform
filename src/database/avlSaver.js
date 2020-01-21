@@ -4,7 +4,7 @@ import type { AVLData, Codec8Data } from "../trackers/codec8Schema";
 import {
   saveBusStopProxyVisits,
   saveBusStopVisits
-} from "../predictor/BusStopVisitDetector";
+} from "../vehicleStatus/BusStopVisitDetector";
 
 import database from "./database";
 

@@ -39,12 +39,6 @@ export async function updateVehicleStatus() {
   }
 }
 
-export function getAllVehicleStatuses(): Status[] {
-  return vehicleStatusCache
-    .keys()
-    .map<Status>(key => vehicleStatusCache.get(key));
-}
-
 async function estimateVehicleStatus(
   vehicle: Vehicle,
   beforeTimestamp: string = DateTime.local().toSQL()

@@ -2,7 +2,7 @@
 
 import type { BusStop } from "../graphql/BusStopSchema";
 import { DateTime } from "luxon";
-import type { Status } from "../predictor/VehicleStatusUpdater";
+import type { Status } from "../vehicleStatus/VehicleStatusUpdater";
 import database from "../database/database";
 
 const GET_BUS_STOPS_IN_TRIP = `

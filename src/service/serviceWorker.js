@@ -1,8 +1,8 @@
 // @flow
 
 import { DateTime } from "luxon";
-import { updateBusArrivalPredictions } from "../predictor/BusArrivalPredictor";
-import { updateVehicleStatus } from "../predictor/VehicleStatusUpdater";
+import { updateBusArrivalPredictions } from "../vehicleStatus/BusArrivalPredictor";
+import { updateVehicleStatus } from "../vehicleStatus/VehicleStatusUpdater";
 
 const TASKS = [
   {
