@@ -20,6 +20,8 @@ import {
 import { getAvl, getLatestAvlOfVehicle } from "../resolvers/avl";
 import { getBusStopFromUrl, getBusStops } from "../resolvers/busStops";
 
+import { DepartureType } from "./DepartureType";
+import { TripType } from "./TripType";
 import { getDeparturesFromBusStop } from "../resolvers/departures";
 import { getIoFromAvl } from "../resolvers/io";
 import { getRouteCoords } from "../resolvers/routes";
@@ -72,15 +74,6 @@ const AVLType = new GraphQLObjectType({
   }
 });
 
-const DepartureType = new GraphQLObjectType({
-  name: "DepartureType",
-  description: "Scheduled and predicted departure times of the vehicle",
-  fields: {
-    scheduled: { type: GraphQLString },
-    predicted: { type: GraphQLString }
-  }
-});
-
 const VehicleType = new GraphQLObjectType({
   name: "VehicleType",
   description: "Vehicle id with timestamped coordinates",
@@ -92,7 +85,7 @@ const VehicleType = new GraphQLObjectType({
   }
 });
 
-const BusStopType = new GraphQLObjectType({
+export const BusStopType = new GraphQLObjectType({
   name: "BusStopType",
   description: "Bus stop with location",
   interfaces: [LocationInterface],

@@ -6,7 +6,7 @@ import type { BusStop } from "../resolvers/busStops";
 import { DateTime } from "luxon";
 import type { Status } from "./vehicleStatus";
 import { downloadDirections } from "../resolvers/routes";
-import { getDeparturesInTrip } from "../resolvers/departures";
+import { getScheduledDeparturesFromTripId } from "../resolvers/departures";
 import { getUpcomingBusStopsOfTrip } from "../resolvers/busStops";
 
 export type BusStopsArrival = {
@@ -55,7 +55,7 @@ async function getBusArrivalPredictions(
   );
   const [directions, departures] = await Promise.all([
     downloadDirections([vehicle, ...upcomingBusStops]),
-    getDeparturesInTrip(tripId)
+    getScheduledDeparturesFromTripId(tripId)
   ]);
 
   if (!directions || !directions.legs) {

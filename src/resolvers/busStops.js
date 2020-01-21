@@ -68,6 +68,13 @@ export function getBusStopFromUrl(_: void, { url }: { url: string }) {
     .then(results => results.rows.length && results.rows[0]);
 }
 
+export function getBusStopFromId(busStopId: number) {
+  const GET_BUS_STOP_FROM_ID = "SELECT * FROM bus_stops WHERE id = $1";
+  return database
+    .query<BusStop>(GET_BUS_STOP_FROM_ID, [busStopId])
+    .then(results => results.rows.length && results.rows[0]);
+}
+
 export function getBusStopsInTrip(tripId: number) {
   return database
     .query<BusStop>(GET_BUS_STOPS_IN_TRIP, [tripId])

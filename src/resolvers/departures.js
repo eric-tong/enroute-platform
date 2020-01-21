@@ -7,7 +7,7 @@ import { getAllVehicleStatuses } from "../predictor/vehicleStatus";
 
 const DEPARTURE_BUFFER = 60 * 1000;
 const GET_DEPARTURE_TIMES_WITH_BUS_STOP_ID = `
-SELECT time, trip_id as "tripId" FROM (
+SELECT time, trip_id as "tripId", bus_stop_id as "busStopId" FROM (
   SELECT *, ROW_NUMBER() OVER (PARTITION BY trip_id ORDER BY trip_id, time DESC) as stops_from_terminal
     FROM departures
 ) as departures
@@ -30,20 +30,28 @@ export async function getDeparturesFromBusStop(
   statuses.forEach(toMap);
 
   const scheduledDepartures = await database
-    .query<{ time: number, tripId: number }>(
+    .query<{ time: number, tripId: number, busStopId: number }>(
       GET_DEPARTURE_TIMES_WITH_BUS_STOP_ID,
       [busStop.id]
     )
     .then(results =>
-      results.rows.map<{ dateTime: DateTime, tripId: number }>(
-        ({ time, tripId }) => ({
-          dateTime: toActualTime(time),
-          tripId: tripId
-        })
-      )
+      results.rows.map<{
+        dateTime: DateTime,
+        tripId: number,
+        busStopId: number
+      }>(({ time, tripId, busStopId }) => ({
+        dateTime: toActualTime(time),
+        tripId,
+        busStopId
+      }))
     );
 
-  const relevantDepartures: { scheduled: string, predicted: ?string }[] = [];
+  const relevantDepartures: {
+    scheduled: string,
+    predicted: ?string,
+    tripId: number,
+    busStopId: number
+  }[] = [];
   for (const departure of scheduledDepartures) {
     if (relevantDepartures.length >= maxLength) break;
 
@@ -57,7 +65,9 @@ export async function getDeparturesFromBusStop(
         predicted: (predictedArrival
           ? predictedArrival
           : departure
-        ).dateTime.toSQL()
+        ).dateTime.toSQL(),
+        tripId: departure.tripId,
+        busStopId: departure.busStopId
       });
     }
   }
@@ -87,12 +97,12 @@ export async function getDeparturesFromBusStop(
   }
 }
 
-export function getDeparturesInTrip(tripId: number) {
+export function getScheduledDeparturesFromTripId(tripId: number) {
   return database
     .query<{ time: number, busStopId: number }>(GET_DEPARTURES_IN_TRIP, [
       tripId
     ])
-    .then(results => results.rows)
+    .then(results => console.log(results) || results.rows)
     .then(departures =>
       departures.map<{ time: DateTime, busStopId: number }>(departure => ({
         time: toActualTime(departure.time),
