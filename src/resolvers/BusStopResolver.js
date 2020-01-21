@@ -69,17 +69,17 @@ export function getBusStopFromId(busStopId: number) {
     .then(results => results.rows.length && results.rows[0]);
 }
 
-export function getBusStopsInTrip(tripId: number) {
+export function getBusStopsFromTripId(tripId: number) {
   return database
     .query<BusStop>(GET_BUS_STOPS_IN_TRIP, [tripId])
     .then(results => results.rows);
 }
 
-export async function getUpcomingBusStopsOfTrip(
+export async function getUpcomingBusStopsFromTripId(
   tripId: number,
   visitedBusStopIds: number[]
 ): Promise<BusStop[]> {
-  const tripBusStops = await getBusStopsInTrip(tripId);
+  const tripBusStops = await getBusStopsFromTripId(tripId);
   const tripBusStopIds = tripBusStops.map(busStop => busStop.id);
 
   // Find last bus stop id in the visited set that matches any bus stops defined in the trip.
@@ -96,7 +96,7 @@ export async function getUpcomingBusStopsOfTrip(
   return tripBusStops.slice(tripIndex);
 }
 
-export function getCurrentBusStopOfVehicle(
+export function getCurrentBusStopFromVehicleId(
   vehicleId: number,
   beforeTimestamp: string = DateTime.local().toSQL()
 ) {

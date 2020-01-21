@@ -2,7 +2,7 @@
 
 import {
   getBusStopsVisitedByVehicle,
-  getCurrentBusStopOfVehicle
+  getCurrentBusStopFromVehicleId
 } from "../resolvers/BusStopResolver";
 
 import type { AVL } from "../graphql/AvlSchema";
@@ -11,7 +11,7 @@ import { DateTime } from "luxon";
 import NodeCache from "node-cache";
 import type { Vehicle } from "../graphql/VehicleSchema";
 import { getAllVehicles } from "../resolvers/VehicleResolver";
-import { getCurrentTripIdOfVehicle } from "../resolvers/TripResolver";
+import { getCurrentTripIdFromVehicleId } from "../resolvers/TripResolver";
 import { getLatestAvlOfVehicle } from "../resolvers/AvlResolver";
 
 export type Status =
@@ -55,8 +55,8 @@ async function estimateVehicleStatus(
     busStopsVisited,
     avl
   ] = await Promise.all([
-    getCurrentBusStopOfVehicle(vehicle.id, beforeTimestamp),
-    getCurrentTripIdOfVehicle(vehicle.id, beforeTimestamp),
+    getCurrentBusStopFromVehicleId(vehicle.id, beforeTimestamp),
+    getCurrentTripIdFromVehicleId(vehicle.id, beforeTimestamp),
     getBusStopsVisitedByVehicle(vehicle.id, beforeTimestamp),
     getLatestAvlOfVehicle(vehicle)
   ]);

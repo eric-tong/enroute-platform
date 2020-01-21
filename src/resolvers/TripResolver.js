@@ -41,7 +41,7 @@ export function getTripIdWithNearestStartTime() {
     .then(results => results.rows[0].tripId);
 }
 
-export function getCurrentTripIdOfVehicle(
+export function getCurrentTripIdFromVehicleId(
   vehicleId: number,
   beforeTimestamp: string = DateTime.local().toSQL()
 ) {

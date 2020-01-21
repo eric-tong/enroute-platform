@@ -10,7 +10,7 @@ import { DateTime } from "luxon";
 import type { Status } from "./VehicleStatusUpdater";
 import { downloadDirections } from "../resolvers/RouteResolver";
 import { getScheduledDeparturesFromTripId } from "../resolvers/DepartureResolver";
-import { getUpcomingBusStopsOfTrip } from "../resolvers/BusStopResolver";
+import { getUpcomingBusStopsFromTripId } from "../resolvers/BusStopResolver";
 
 export type BusStopsArrival = {
   busStopId: number,
@@ -54,7 +54,7 @@ async function getBusArrivalPredictions(
   vehicle: BusStop,
   timeOfDataCapture: DateTime
 ) {
-  const upcomingBusStops = await getUpcomingBusStopsOfTrip(
+  const upcomingBusStops = await getUpcomingBusStopsFromTripId(
     tripId,
     busStopsVisited
   );

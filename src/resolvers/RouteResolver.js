@@ -3,7 +3,7 @@
 import type { BusStop } from "../graphql/BusStopSchema";
 import NodeCache from "node-cache";
 import fetch from "node-fetch";
-import { getBusStopsInTrip } from "./BusStopResolver";
+import { getBusStopsFromTripId } from "./BusStopResolver";
 import { getTripIdWithNearestStartTime } from "./TripResolver";
 import util from "util";
 
@@ -14,7 +14,7 @@ export async function getRouteFromTripId(tripId?: number) {
   if (routeByTripCache.has(trip)) {
     return routeByTripCache.get(trip);
   } else {
-    const busStops = await getBusStopsInTrip(trip);
+    const busStops = await getBusStopsFromTripId(trip);
     const route = await downloadDirections(busStops);
     const routeCoords = route.geometry.coordinates.map(
       ([longitude, latitude]) => ({
