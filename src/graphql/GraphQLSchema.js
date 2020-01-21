@@ -16,16 +16,16 @@ import {
   checkOutWithId,
   createCheckIn,
   getDepartments
-} from "../resolvers/checkIn";
-import { getAvl, getLatestAvlOfVehicle } from "../resolvers/avl";
-import { getBusStopFromUrl, getBusStops } from "../resolvers/busStops";
+} from "../resolvers/CheckInResolver";
+import { getAvl, getLatestAvlOfVehicle } from "../resolvers/AvlResolver";
+import { getBusStopFromUrl, getBusStops } from "../resolvers/BusStopResolver";
 
-import { DepartureType } from "./DepartureType";
-import { TripType } from "./TripType";
-import { getDeparturesFromBusStop } from "../resolvers/departures";
-import { getIoFromAvl } from "../resolvers/io";
-import { getRouteCoords } from "../resolvers/routes";
-import { getVehicles } from "../resolvers/vehicles";
+import { DepartureType } from "./DepartureSchema";
+import { TripType } from "./TripSchema";
+import { getDeparturesFromBusStop } from "../resolvers/DepartureResolver";
+import { getIoFromAvl } from "../resolvers/IoResolver";
+import { getRouteCoords } from "../resolvers/RouteResolver";
+import { getVehicles } from "../resolvers/VehicleResolver";
 
 const LocationInterface = new GraphQLInterfaceType({
   name: "LocationInterface",

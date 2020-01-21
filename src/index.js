@@ -6,7 +6,7 @@ import "./service/serviceWorker";
 import cors from "cors";
 import express from "express";
 import graphqlHTTP from "express-graphql";
-import schema from "./graphql/schema";
+import schema from "./graphql/GraphQLSchema";
 import storage from "node-persist";
 import { updateVehicleStatus } from "./predictor/vehicleStatus";
 

@@ -1,10 +1,10 @@
 // @flow
 
-import type { BusStop } from "../resolvers/busStops";
+import type { BusStop } from "../resolvers/BusStopResolver";
 import NodeCache from "node-cache";
 import fetch from "node-fetch";
-import { getBusStopsInTrip } from "./busStops";
-import { getTripIdWithNearestStartTime } from "./trips";
+import { getBusStopsInTrip } from "./BusStopResolver";
+import { getTripIdWithNearestStartTime } from "./TripResolver";
 import util from "util";
 
 export const routeByTripCache = new NodeCache({ stdTTL: 6000 });

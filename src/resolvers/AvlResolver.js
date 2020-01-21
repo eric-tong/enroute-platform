@@ -1,7 +1,7 @@
 // @flow
 
 import { DateTime } from "luxon";
-import type { Vehicle } from "./vehicles";
+import type { Vehicle } from "./VehicleResolver";
 import database from "../database/database";
 
 export type AVL = {|

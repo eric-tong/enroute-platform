@@ -1,7 +1,7 @@
 // @flow
 
 import { DateTime } from "luxon";
-import type { Status } from "../predictor/vehicleStatus";
+import type { Status } from "../predictor/VehicleStatusUpdater";
 import database from "../database/database";
 
 export type BusStop = {|

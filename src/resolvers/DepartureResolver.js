@@ -1,9 +1,9 @@
 // @flow
 
-import type { BusStop } from "./busStops";
+import type { BusStop } from "./BusStopResolver";
 import { DateTime } from "luxon";
 import database from "../database/database";
-import { getAllVehicleStatuses } from "../predictor/vehicleStatus";
+import { getAllVehicleStatuses } from "../predictor/VehicleStatusUpdater";
 
 const DEPARTURE_BUFFER = 60 * 1000;
 const GET_DEPARTURE_TIMES_WITH_BUS_STOP_ID = `

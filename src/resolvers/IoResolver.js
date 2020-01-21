@@ -1,11 +1,11 @@
 // @flow
 
-import type { AVL } from "./avl";
+import type { AVL } from "./AvlResolver";
 import database from "../database/database";
 
 export type IO = {|
   name: string,
-  value: number,
+  value: number
 |};
 
 const GET_IO_WITH_AVL_ID = `

@@ -3,16 +3,16 @@
 import {
   getBusStopsVisitedByVehicle,
   getCurrentBusStopOfVehicle
-} from "../resolvers/busStops";
+} from "../resolvers/BusStopResolver";
 
-import type { AVL } from "../resolvers/avl";
+import type { AVL } from "../resolvers/AvlResolver";
 import type { BusStopsArrival } from "./busArrivalPredictor";
 import { DateTime } from "luxon";
 import NodeCache from "node-cache";
-import type { Vehicle } from "../resolvers/vehicles";
-import { getCurrentTripIdOfVehicle } from "../resolvers/trips";
-import { getLatestAvlOfVehicle } from "../resolvers/avl";
-import { getVehicles } from "../resolvers/vehicles";
+import type { Vehicle } from "../resolvers/VehicleResolver";
+import { getCurrentTripIdOfVehicle } from "../resolvers/TripResolver";
+import { getLatestAvlOfVehicle } from "../resolvers/AvlResolver";
+import { getVehicles } from "../resolvers/VehicleResolver";
 
 export type Status =
   | {

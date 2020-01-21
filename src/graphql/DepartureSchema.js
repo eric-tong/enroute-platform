@@ -2,9 +2,9 @@
 
 import { GraphQLObjectType, GraphQLString } from "graphql";
 
-import { BusStopType } from "./schema";
-import { TripType } from "./TripType";
-import { getBusStopFromId } from "../resolvers/busStops";
+import { BusStopType } from "./GraphQLSchema";
+import { TripType } from "./TripSchema";
+import { getBusStopFromId } from "../resolvers/BusStopResolver";
 
 export const DepartureType = new GraphQLObjectType({
   name: "DepartureType",

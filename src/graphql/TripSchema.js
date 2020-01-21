@@ -2,8 +2,8 @@
 
 import { GraphQLInt, GraphQLList, GraphQLObjectType } from "graphql";
 
-import { DepartureType } from "./DepartureType";
-import { getScheduledDeparturesFromTripId } from "../resolvers/departures";
+import { DepartureType } from "./DepartureSchema";
+import { getScheduledDeparturesFromTripId } from "../resolvers/DepartureResolver";
 
 export const TripType = new GraphQLObjectType({
   name: "TripType",
