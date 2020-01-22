@@ -12,7 +12,7 @@ export const TripType = new GraphQLObjectType({
     id: { type: GraphQLInt },
     departures: {
       type: new GraphQLList(DepartureType),
-      resolve: getDeparturesFromTripId
+      resolve: (trip, options) => getDeparturesFromTripId(trip.id, options)
     }
   })
 });
