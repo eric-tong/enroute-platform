@@ -8,7 +8,7 @@ import express from "express";
 import graphqlHTTP from "express-graphql";
 import schema from "./graphql/GraphQLSchema";
 import storage from "node-persist";
-import { updateVehicleStatus } from "./predictor/VehicleStatusUpdater";
+import { updateVehicleStatus } from "./vehicleStatus/VehicleStatusUpdater";
 
 const app = express();
 const port = process.env.PORT || 5000;
