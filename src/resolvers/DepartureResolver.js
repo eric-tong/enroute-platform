@@ -59,7 +59,8 @@ export async function getDeparturesFromTripId(
   return getRelevantDepartures(
     predictedDepartures,
     scheduledDepartures,
-    maxLength
+    maxLength,
+    false
   );
 }
 
@@ -86,7 +87,8 @@ export function getScheduledDeparturesFromTripId(tripId: number) {
 function getRelevantDepartures(
   predictedDepartures: BusArrival[],
   scheduledDepartures: BusArrival[],
-  maxLength: number
+  maxLength: number,
+  upcomingOnly: boolean = true
 ) {
   const now = DateTime.local();
   const relevantDepartures: Departure[] = [];
@@ -100,6 +102,7 @@ function getRelevantDepartures(
     );
     if (
       predictedArrival ||
+      !upcomingOnly ||
       scheduledDeparture.dateTime.valueOf() + DEPARTURE_BUFFER >= now.valueOf()
     ) {
       relevantDepartures.push({
