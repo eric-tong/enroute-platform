@@ -1,11 +1,11 @@
 // @flow
 
 import type { Socket } from "net";
-import crcIsValid from "./crc16Checker";
+import crcIsValid from "./Crc16Checker";
 import { imeiIsValid } from "../resolvers/VehicleResolver";
 import net from "net";
-import parseCodec8Stream from "./codec8Parser";
-import save from "../database/avlSaver";
+import parseCodec8Stream from "./Codec8Parser";
+import save from "../database/AvlSaver";
 
 type Client = {|
   name: string,
@@ -49,7 +49,7 @@ const server = net.createServer((socket: Socket) => {
     } else if (client.imei && crcIsValid(stream)) {
       const imei = client.imei;
       const data: any = parseCodec8Stream(stream.toString("hex"));
-      console.log("Valid CRC", data);
+      // console.log("Valid CRC", data);
       save(data, imei);
       write(Buffer.from([0, 0, 0, data.avlDataCount]));
     } else {
@@ -63,11 +63,13 @@ const server = net.createServer((socket: Socket) => {
   async function setImei(stream: string | Buffer) {
     const imei = stream.slice(2).toString();
     if (imeiIsValid(imei)) {
+      console.log(`Valid IMEI ${imei}`);
       client.imei = imei;
       write(REPLY.ACCEPT);
     } else {
       write(REPLY.REJECT);
       console.log(`Invalid IMEI ${imei}`);
+      socket.end();
     }
   }
 
