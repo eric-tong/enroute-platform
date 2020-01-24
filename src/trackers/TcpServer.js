@@ -62,7 +62,7 @@ const server = net.createServer((socket: Socket) => {
 
   async function setImei(stream: string | Buffer) {
     const imei = stream.slice(2).toString();
-    if (imeiIsValid(imei)) {
+    if (await imeiIsValid(imei)) {
       console.log(`Valid IMEI ${imei}`);
       client.imei = imei;
       write(REPLY.ACCEPT);
