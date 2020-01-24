@@ -31,7 +31,7 @@ export default function saveAVLData(data: Codec8Data, imei: string) {
           updateIoTable(avlData, avlId);
           return avlId;
         })
-        .catch(console.log)
+        .catch(console.error)
     )
   ).then(avlIds =>
     avlIds.forEach(avlId => {

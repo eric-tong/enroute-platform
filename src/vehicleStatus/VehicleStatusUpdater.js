@@ -42,7 +42,6 @@ export async function updateVehicleStatus() {
   for (const vehicle of vehicles) {
     const status = await estimateVehicleStatus(vehicle);
     vehicleStatusCache.set(vehicle.id, status);
-    if (!status.isInTerminal) console.log(vehicle.id, status);
   }
 }
 

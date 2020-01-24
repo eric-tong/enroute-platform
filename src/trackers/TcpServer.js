@@ -27,13 +27,6 @@ const server = net.createServer((socket: Socket) => {
   console.log(`Connected to ${client.name}`);
 
   socket.on("data", (stream: Buffer) => {
-    console.log({
-      stream:
-        !client.header || !client.imei
-          ? stream.toString()
-          : stream.toString("hex")
-    });
-
     if (!client.header) {
       const [header, imei] = stream.toString().split("\n");
       if (header.startsWith("PROXY TCP4")) {
@@ -42,18 +35,15 @@ const server = net.createServer((socket: Socket) => {
         else setImei(imei);
       } else {
         write(REPLY.REJECT);
-        console.log("Invalid header");
       }
     } else if (!client.imei) {
       setImei(stream);
     } else if (client.imei && crcIsValid(stream)) {
       const imei = client.imei;
       const data: any = parseCodec8Stream(stream.toString("hex"));
-      // console.log("Valid CRC", data);
       save(data, imei);
       write(Buffer.from([0, 0, 0, data.avlDataCount]));
     } else {
-      console.log("Invalid CRC");
       write(REPLY.REJECT);
     }
   });

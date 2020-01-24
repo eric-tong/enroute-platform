@@ -41,18 +41,14 @@ const GET_AVL_ID_IN_DATE =
 
 export function saveBusStopVisits(avlId: number) {
   return database
-    .query(SAVE_BUS_STOP_VISIT_FROM_AVL_ID, [avlId])
-    .then(result => result.rows)
-    .then(rows => console.log("Bus stop visits", rows))
-    .catch(console.log);
+    .query<{}>(SAVE_BUS_STOP_VISIT_FROM_AVL_ID, [avlId])
+    .catch(console.error);
 }
 
 export function saveBusStopProxyVisits(avlId: number) {
   return database
-    .query(SAVE_BUS_STOP_PROXY_VISIT_FROM_AVL_ID, [avlId])
-    .then(result => result.rows)
-    .then(rows => console.log("Bus stop proxy visits", rows))
-    .catch(console.log);
+    .query<{}>(SAVE_BUS_STOP_PROXY_VISIT_FROM_AVL_ID, [avlId])
+    .catch(console.error);
 }
 
 export function checkVisitsInDate(date: string = DateTime.local().toSQL()) {
@@ -60,5 +56,5 @@ export function checkVisitsInDate(date: string = DateTime.local().toSQL()) {
     .query(GET_AVL_ID_IN_DATE, [date])
     .then(results => results.rows.map(avl => avl.id))
     .then(avlIds => avlIds.forEach(saveBusStopVisits))
-    .catch(console.log);
+    .catch(console.error);
 }
