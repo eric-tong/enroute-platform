@@ -1,7 +1,7 @@
 // @flow
 
 import "./service/config";
-import "./service/serviceWorker";
+import "./service/ServiceWorker";
 
 import cors from "cors";
 import express from "express";
