@@ -72,7 +72,7 @@ export function getBusStopFromId(busStopId: number) {
 export function getBusStopsFromTripId(tripId: number) {
   return database
     .query<BusStop>(GET_BUS_STOPS_IN_TRIP, [tripId])
-    .then(results => console.log(results) || results.rows);
+    .then(results => results.rows);
 }
 
 export async function getUpcomingBusStopsFromTripId(
