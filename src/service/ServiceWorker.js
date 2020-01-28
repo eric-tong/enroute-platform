@@ -22,12 +22,19 @@ function startServiceWorker() {
     task();
     setIntervalWithCheck(task, period);
   });
+  startInitialTasks();
 }
 
 function setIntervalWithCheck(task: () => mixed, periodInSeconds) {
   return setInterval(() => {
     if (shouldRunTasks) task();
   }, periodInSeconds * 1000);
+}
+
+function startInitialTasks() {
+  TASKS.forEach(async ({ task }) => {
+    await task();
+  });
 }
 
 function shouldRunTasks() {
