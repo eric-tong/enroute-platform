@@ -64,7 +64,6 @@ const server = net.createServer((socket: Socket) => {
   }
 
   function write(message: string | Buffer) {
-    console.log("Write", message);
     socket.write(message);
   }
 });

@@ -6,10 +6,10 @@ import type { Status } from "../vehicleStatus/VehicleStatusUpdater";
 import database from "../database/database";
 
 const GET_BUS_STOPS_IN_TRIP = `
-SELECT *, road_angle as "roadAngle" FROM bus_stops INNER JOIN departures 
-  ON bus_stops.id = departures.bus_stop_id
-  WHERE departures.trip_id = $1
-  ORDER BY time
+SELECT *, road_angle as "roadAngle" FROM bus_stops INNER JOIN scheduled_departures 
+  ON bus_stops.id = scheduled_departures.bus_stop_id
+  WHERE scheduled_departures.trip_id = $1
+  ORDER BY minute_of_day
 `;
 const GET_CURRENT_BUS_STOP = `
 WITH latest_avl AS (

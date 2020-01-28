@@ -15,7 +15,7 @@ export type Departure = {|
 |};
 
 export type ScheduledDeparture = {|
-  time: number,
+  minuteOfDay: number,
   tripId: number,
   busStopId: number
 |};

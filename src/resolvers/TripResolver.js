@@ -5,7 +5,7 @@ import database from "../database/database";
 
 const GET_TRIP_ID_WITH_NEAREST_START_TIME = `
 WITH first_stops AS (
-  SELECT trip_id, time, ROW_NUMBER() OVER (PARTITION BY trip_id ORDER BY time) AS stop_number FROM departures
+  SELECT trip_id, minute_of_day, ROW_NUMBER() OVER (PARTITION BY trip_id ORDER BY minute_of_day) AS stop_number FROM scheduled_departures
 )
 
 SELECT trip_id as "tripId" FROM first_stops  
@@ -25,10 +25,10 @@ WITH last_terminal_exit AS (
       LIMIT 1
 ),
 first_stops AS (
-  SELECT trip_id, time, ROW_NUMBER() OVER (PARTITION BY trip_id ORDER BY time) AS stop_number FROM departures
+  SELECT trip_id, minute_of_day, ROW_NUMBER() OVER (PARTITION BY trip_id ORDER BY minute_of_day) AS stop_number FROM scheduled_departures
 )
 
-SELECT trip_id as "tripId", ABS(last_terminal_exit.minute_of_day - first_stops.time) AS delta FROM first_stops 
+SELECT trip_id as "tripId", ABS(last_terminal_exit.minute_of_day - first_stops.minute_of_day) AS delta FROM first_stops 
   CROSS JOIN last_terminal_exit 
   WHERE stop_number = 1
   ORDER BY delta

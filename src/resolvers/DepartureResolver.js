@@ -26,13 +26,13 @@ export async function getDeparturesFromBusStop(
 
 function getScheduledDeparturesFromBusStop(busStop: BusStop) {
   const GET_SCHEDULED_DEPARTURES_FROM_BUS_STOP_ID = `
-  SELECT time, trip_id as "tripId", bus_stop_id as "busStopId" FROM (
-    SELECT *, ROW_NUMBER() OVER (PARTITION BY trip_id ORDER BY trip_id, time DESC) as stops_from_terminal
-      FROM departures
-  ) as departures
+  SELECT minute_of_day as "minuteOfDay", trip_id as "tripId", bus_stop_id as "busStopId" FROM (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY trip_id ORDER BY trip_id, minute_of_day DESC) as stops_from_terminal
+      FROM scheduled_departures
+  ) as scheduled_departures
     WHERE bus_stop_id = $1
     AND stops_from_terminal > 1
-    ORDER BY time
+    ORDER BY "minuteOfDay"
   `;
 
   return database
@@ -40,8 +40,8 @@ function getScheduledDeparturesFromBusStop(busStop: BusStop) {
       busStop.id
     ])
     .then(results =>
-      results.rows.map<BusArrival>(({ time, tripId, busStopId }) => ({
-        dateTime: toActualTime(time),
+      results.rows.map<BusArrival>(({ minuteOfDay, tripId, busStopId }) => ({
+        dateTime: toActualTime(minuteOfDay),
         tripId,
         busStopId: busStop.id,
         busStopName: busStop.name
@@ -66,16 +66,16 @@ export async function getDeparturesFromTripId(
 
 export function getScheduledDeparturesFromTripId(tripId: number) {
   const GET_SCHEDULED_DEPARTURES_FROM_TRIP_ID = `
-  SELECT time, bus_stop_id AS "busStopId", trip_id AS "tripId" FROM departures 
+  SELECT minute_of_day AS "minuteOfDay", bus_stop_id AS "busStopId", trip_id AS "tripId" FROM scheduled_departures 
     WHERE trip_id = $1 
-    ORDER BY time
+    ORDER BY "minuteOfDay"
   `;
 
   return database
     .query<ScheduledDeparture>(GET_SCHEDULED_DEPARTURES_FROM_TRIP_ID, [tripId])
     .then(results =>
-      results.rows.map<BusArrival>(({ time, tripId, busStopId }) => ({
-        dateTime: toActualTime(time),
+      results.rows.map<BusArrival>(({ minuteOfDay, tripId, busStopId }) => ({
+        dateTime: toActualTime(minuteOfDay),
         tripId,
         busStopId: busStopId,
         // TODO add name or remove entirely from type
