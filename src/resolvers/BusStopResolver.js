@@ -6,7 +6,7 @@ import type { Status } from "../vehicleStatus/VehicleStatusUpdater";
 import database from "../database/database";
 
 const GET_BUS_STOPS_IN_TRIP = `
-SELECT *, road_angle as "roadAngle" FROM bus_stops INNER JOIN scheduled_departures 
+SELECT bus_stops.*, road_angle as "roadAngle" FROM bus_stops INNER JOIN scheduled_departures 
   ON bus_stops.id = scheduled_departures.bus_stop_id
   WHERE scheduled_departures.trip_id = $1
   ORDER BY minute_of_day
@@ -72,7 +72,7 @@ export function getBusStopFromId(busStopId: number) {
 export function getBusStopsFromTripId(tripId: number) {
   return database
     .query<BusStop>(GET_BUS_STOPS_IN_TRIP, [tripId])
-    .then(results => results.rows);
+    .then(results => console.log(results) || results.rows);
 }
 
 export async function getUpcomingBusStopsFromTripId(
