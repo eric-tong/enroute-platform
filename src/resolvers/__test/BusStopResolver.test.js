@@ -6,7 +6,7 @@ import {
   getBusStopFromUrl
 } from "../BusStopResolver";
 
-import busStops from "../../__test/models/BusStops";
+import busStops from "../../__test/models/busStops";
 import database from "../../database/database";
 
 describe("bus stop resolver", () => {
