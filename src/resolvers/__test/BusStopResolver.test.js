@@ -3,7 +3,8 @@
 import {
   getAllBusStops,
   getBusStopFromId,
-  getBusStopFromUrl
+  getBusStopFromUrl,
+  getBusStopsFromTripId
 } from "../BusStopResolver";
 
 import busStops from "../../__test/models/busStops";
@@ -33,6 +34,21 @@ describe("bus stop resolver", () => {
 
     const actual = await getBusStopFromId(oxfordTownCentre.id);
     const expected = oxfordTownCentre;
+
+    expect(actual).toEqual(expected);
+  });
+
+  test("gets bus stop from trip id", async () => {
+    const actual = await getBusStopsFromTripId(8);
+    const expected = [
+      busStops.begbrokeSciencePark,
+      busStops.departmentOfMaterialsSouthbound,
+      busStops.oxfordTownCentre,
+      busStops.departmentOfMaterialsNorthbound,
+      busStops.bbcOxford,
+      busStops.parkwayParkAndRideNorthbound,
+      busStops.begbrokeSciencePark
+    ];
 
     expect(actual).toEqual(expected);
   });

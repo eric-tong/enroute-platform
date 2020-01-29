@@ -19,12 +19,6 @@ const BUS_STOP_COLUMNS = [
   .map(column => "bus_stops." + column)
   .join(", ");
 
-const GET_BUS_STOPS_IN_TRIP = `
-SELECT bus_stops.*, road_angle as "roadAngle" FROM bus_stops INNER JOIN scheduled_departures 
-  ON bus_stops.id = scheduled_departures.bus_stop_id
-  WHERE scheduled_departures.trip_id = $1
-  ORDER BY minute_of_day
-`;
 const GET_CURRENT_BUS_STOP = `
 WITH latest_avl AS (
   SELECT * FROM avl WHERE vehicle_id = $1 AND timestamp <= $2 ORDER BY timestamp DESC LIMIT 1
@@ -80,6 +74,13 @@ export function getBusStopFromId(busStopId: number) {
 }
 
 export function getBusStopsFromTripId(tripId: number) {
+  const GET_BUS_STOPS_IN_TRIP = `
+    SELECT ${BUS_STOP_COLUMNS} FROM bus_stops INNER JOIN scheduled_departures 
+      ON bus_stops.id = scheduled_departures.bus_stop_id
+      WHERE scheduled_departures.trip_id = $1
+      ORDER BY minute_of_day
+    `;
+
   return database
     .query<BusStop>(GET_BUS_STOPS_IN_TRIP, [tripId])
     .then(results => results.rows);
