@@ -113,6 +113,22 @@ describe("bus stop resolver", () => {
 
       expect(actual).toEqual(expected);
     });
+
+    test("returns null when avl is not at a bus stup", async () => {
+      const avlId = 1;
+      const busStop = busStops.departmentOfMaterialsSouthbound;
+
+      await database.query("INSERT INTO avl (id) VALUES ($1)", [avlId]);
+      await database.query(
+        "INSERT INTO bus_stop_visits (avl_id, bus_stop_id) VALUES ($1, $2)",
+        [avlId + 10, busStop.id]
+      );
+
+      const actual = await getBusStopFromAvlId(avlId);
+      const expected = null;
+
+      expect(actual).toEqual(expected);
+    });
   });
 
   beforeAll(async () => {
@@ -120,6 +136,11 @@ describe("bus stop resolver", () => {
     await database.query(
       "CREATE TEMP TABLE bus_stop_visits AS TABLE bus_stop_visits WITH NO DATA"
     );
+  });
+
+  beforeEach(async () => {
+    await database.query("DELETE FROM avl");
+    await database.query("DELETE FROM bus_stop_visits");
   });
 
   afterAll(() => database.end());
