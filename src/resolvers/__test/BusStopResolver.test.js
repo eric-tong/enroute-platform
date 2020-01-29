@@ -4,7 +4,8 @@ import {
   getAllBusStops,
   getBusStopFromId,
   getBusStopFromUrl,
-  getBusStopsFromTripId
+  getBusStopsFromTripId,
+  getUpcomingBusStopsFromTripId
 } from "../BusStopResolver";
 
 import busStops from "../../__test/models/busStops";
@@ -51,6 +52,47 @@ describe("bus stop resolver", () => {
     ];
 
     expect(actual).toEqual(expected);
+  });
+
+  describe("gets upcoming bus stops from trip id", () => {
+    test("no bus stops have been visited", async () => {
+      const actual = await getUpcomingBusStopsFromTripId(8, []);
+      const expected = [
+        busStops.begbrokeSciencePark,
+        busStops.departmentOfMaterialsSouthbound,
+        busStops.oxfordTownCentre,
+        busStops.departmentOfMaterialsNorthbound,
+        busStops.bbcOxford,
+        busStops.parkwayParkAndRideNorthbound,
+        busStops.begbrokeSciencePark
+      ];
+
+      expect(actual).toEqual(expected);
+    });
+
+    test("bus stops visited in order", async () => {
+      const actual = await getUpcomingBusStopsFromTripId(8, [7, 4, 5]);
+      const expected = [
+        busStops.departmentOfMaterialsNorthbound,
+        busStops.bbcOxford,
+        busStops.parkwayParkAndRideNorthbound,
+        busStops.begbrokeSciencePark
+      ];
+
+      expect(actual).toEqual(expected);
+    });
+
+    test("bus stops skipped", async () => {
+      const actual = await getUpcomingBusStopsFromTripId(8, [7, 5]);
+      const expected = [
+        busStops.departmentOfMaterialsNorthbound,
+        busStops.bbcOxford,
+        busStops.parkwayParkAndRideNorthbound,
+        busStops.begbrokeSciencePark
+      ];
+
+      expect(actual).toEqual(expected);
+    });
   });
 
   afterAll(() => database.end());
