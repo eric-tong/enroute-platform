@@ -2,21 +2,19 @@
 
 import type { BusStop } from "../../graphql/BusStopSchema";
 
-export const oxfordTownCentre: BusStop = {
-  id: 5,
-  name: "Oxford Town Centre",
-  street: "Broad Street",
-  icon: "T",
-  longitude: -1.255659,
-  latitude: 51.754564,
-  direction: "Begbroke",
-  url: "oxford-town-centre",
-  roadAngle: 80
-};
-
-export const allBusStops: BusStop[] = [
-  oxfordTownCentre,
-  {
+const busStops: { [string]: BusStop } = {
+  oxfordTownCentre: {
+    id: 5,
+    name: "Oxford Town Centre",
+    street: "Broad Street",
+    icon: "T",
+    longitude: -1.255659,
+    latitude: 51.754564,
+    direction: "Begbroke",
+    url: "oxford-town-centre",
+    roadAngle: 80
+  },
+  departmentOfMaterialsNorthbound: {
     id: 2,
     name: "Department of Materials",
     street: "Parks Road",
@@ -27,7 +25,7 @@ export const allBusStops: BusStop[] = [
     url: "department-of-materials-northbound",
     roadAngle: 320
   },
-  {
+  bbcOxford: {
     id: 8,
     name: "BBC Oxford",
     street: "Banbury Road",
@@ -38,7 +36,7 @@ export const allBusStops: BusStop[] = [
     url: "bbc-oxford",
     roadAngle: 345
   },
-  {
+  parkwayParkAndRideNorthbound: {
     id: 3,
     name: "Parkway Park & Ride",
     street: "Oxford Road",
@@ -49,7 +47,7 @@ export const allBusStops: BusStop[] = [
     url: "parkway-park-and-ride-northbound",
     roadAngle: 335
   },
-  {
+  begbrokeSciencePark: {
     id: 7,
     name: "Begbroke Science Park",
     street: "Begbroke Lane",
@@ -60,7 +58,7 @@ export const allBusStops: BusStop[] = [
     url: "begbroke-science-park",
     roadAngle: null
   },
-  {
+  parkwayParkAndRideSouthbound: {
     id: 6,
     name: "Parkway Park & Ride",
     street: "Oxford Road",
@@ -71,7 +69,7 @@ export const allBusStops: BusStop[] = [
     url: "parkway-park-and-ride-southbound",
     roadAngle: 155
   },
-  {
+  summertownShops: {
     id: 1,
     name: "Summertown Shops",
     street: "Banbury Road",
@@ -82,7 +80,7 @@ export const allBusStops: BusStop[] = [
     url: "summertown-shops",
     roadAngle: 165
   },
-  {
+  departmentOfMaterialsSouthbound: {
     id: 4,
     name: "Department of Materials",
     street: "Parks Road",
@@ -93,4 +91,6 @@ export const allBusStops: BusStop[] = [
     url: "department-of-materials-southbound",
     roadAngle: 140
   }
-];
+};
+
+export default busStops;
