@@ -20,15 +20,6 @@ const BUS_STOP_COLUMNS = [
   .map(column => "bus_stops." + column)
   .join(", ");
 
-const GET_CURRENT_BUS_STOP = `
-WITH latest_avl AS (
-  SELECT * FROM avl WHERE vehicle_id = $1 AND timestamp <= $2 ORDER BY timestamp DESC LIMIT 1
-)
-
-SELECT bus_stops.id AS "currentBusStopId", bus_stops.is_terminal AS "isInTerminal" FROM latest_avl
-  LEFT JOIN bus_stop_visits ON bus_stop_visits.avl_id = latest_avl.id
-  LEFT JOIN bus_stops ON bus_stops.id = bus_stop_visits.bus_stop_id
-`;
 const BUS_STOPS_VISITED = `
 WITH last_terminal_exit AS (
   SELECT avl.timestamp FROM avl
@@ -108,17 +99,20 @@ export async function getUpcomingBusStopsFromTripId(
   return tripBusStops.slice(tripIndex);
 }
 
-export function getCurrentBusStopFromVehicleId(
-  vehicleId: number,
-  beforeTimestamp: string = DateTime.local().toSQL()
-) {
-  return database
-    .query<{ currentBusStopId: ?number, isInTerminal: ?boolean }>(
-      GET_CURRENT_BUS_STOP,
-      [vehicleId, beforeTimestamp]
+export function getBusStopFromAvlId(avlId: number) {
+  const GET_BUS_STOP_FROM_AVL_ID = `
+    WITH avl AS (
+      SELECT * FROM avl WHERE id = $1 LIMIT 1
     )
-    .then(results => results.rows[0])
-    .then(busStop => ({ ...busStop, isInTerminal: !!busStop.isInTerminal }));
+    
+    SELECT ${BUS_STOP_COLUMNS} FROM avl
+      LEFT JOIN bus_stop_visits ON bus_stop_visits.avl_id = avl.id
+      LEFT JOIN bus_stops ON bus_stops.id = bus_stop_visits.bus_stop_id
+    `;
+
+  return database
+    .query<BusStop>(GET_BUS_STOP_FROM_AVL_ID, [avlId])
+    .then(results => (results.rows.length ? results.rows[0] : null));
 }
 
 export function getBusStopsVisitedByVehicle(

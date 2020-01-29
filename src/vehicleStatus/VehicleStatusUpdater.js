@@ -1,8 +1,8 @@
 // @flow
 
 import {
-  getBusStopsVisitedByVehicle,
-  getCurrentBusStopFromVehicleId
+  getBusStopFromAvlId,
+  getBusStopsVisitedByVehicle
 } from "../resolvers/BusStopResolver";
 
 import type { AVL } from "../graphql/AvlSchema";
@@ -49,25 +49,24 @@ async function estimateVehicleStatus(
   vehicle: Vehicle,
   beforeTimestamp: string = DateTime.local().toSQL()
 ): Promise<Status> {
+  const avl = await getLatestAvlOfVehicle(vehicle);
   const [
-    { currentBusStopId, isInTerminal },
+    currentBusStop,
     { tripId, tripIdConfidence },
-    busStopsVisited,
-    avl
+    busStopsVisited
   ] = await Promise.all([
-    getCurrentBusStopFromVehicleId(vehicle.id, beforeTimestamp),
+    getBusStopFromAvlId(avl.id),
     getCurrentTripIdFromVehicleId(vehicle.id, beforeTimestamp),
-    getBusStopsVisitedByVehicle(vehicle.id, beforeTimestamp),
-    getLatestAvlOfVehicle(vehicle)
+    getBusStopsVisitedByVehicle(vehicle.id, beforeTimestamp)
   ]);
 
-  return isInTerminal
+  return currentBusStop && currentBusStop.isTerminal
     ? { isInTerminal: true }
     : {
         isInTerminal: false,
         tripId,
         tripIdConfidence,
-        currentBusStopId,
+        currentBusStopId: currentBusStop && currentBusStop.id,
         busStopsVisited,
         avl,
         predictedArrivals:
