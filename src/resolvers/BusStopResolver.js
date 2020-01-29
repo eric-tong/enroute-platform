@@ -69,8 +69,7 @@ export function getAllBusStops() {
 }
 
 export function getBusStopFromUrl(_: void, { url }: { url: string }) {
-  const GET_BUS_STOP_FROM_URL =
-    "SELECT * FROM bus_stops WHERE url = $1 LIMIT 1";
+  const GET_BUS_STOP_FROM_URL = `SELECT ${BUS_STOP_COLUMNS} FROM bus_stops WHERE url = $1 LIMIT 1`;
   return database
     .query<BusStop>(GET_BUS_STOP_FROM_URL, [url])
     .then(results => results.rows.length && results.rows[0]);

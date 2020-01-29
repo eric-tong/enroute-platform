@@ -2,7 +2,7 @@
 
 import type { BusStop } from "../../graphql/BusStopSchema";
 
-const OxfordTownCentre: BusStop = {
+export const oxfordTownCentre: BusStop = {
   id: 5,
   name: "Oxford Town Centre",
   street: "Broad Street",
@@ -14,8 +14,8 @@ const OxfordTownCentre: BusStop = {
   roadAngle: 80
 };
 
-export const AllBusStops: BusStop[] = [
-  OxfordTownCentre,
+export const allBusStops: BusStop[] = [
+  oxfordTownCentre,
   {
     id: 2,
     name: "Department of Materials",
