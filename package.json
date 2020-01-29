@@ -39,6 +39,9 @@
     "testPathIgnorePatterns": [
       "<rootDir>/node_modules/",
       "<rootDir>/lib/"
+    ],
+    "setupFiles": [
+      "./src/service/config.js"
     ]
   }
 }
