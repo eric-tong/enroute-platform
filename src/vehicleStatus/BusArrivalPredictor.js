@@ -26,7 +26,8 @@ export async function updateBusArrivalPredictions() {
         direction: "",
         street: "",
         icon: "",
-        id: 0
+        id: 0,
+        isTerminal: false
       },
       DateTime.fromJSDate(status.avl.timestamp)
     );

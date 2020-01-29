@@ -12,7 +12,8 @@ const busStops: { [string]: BusStop } = {
     latitude: 51.754564,
     direction: "Begbroke",
     url: "oxford-town-centre",
-    roadAngle: 80
+    roadAngle: 80,
+    isTerminal: false
   },
   departmentOfMaterialsNorthbound: {
     id: 2,
@@ -23,7 +24,8 @@ const busStops: { [string]: BusStop } = {
     latitude: 51.760682,
     direction: "Begbroke",
     url: "department-of-materials-northbound",
-    roadAngle: 320
+    roadAngle: 320,
+    isTerminal: false
   },
   bbcOxford: {
     id: 8,
@@ -34,7 +36,8 @@ const busStops: { [string]: BusStop } = {
     latitude: 51.779356,
     direction: "Begbroke",
     url: "bbc-oxford",
-    roadAngle: 345
+    roadAngle: 345,
+    isTerminal: false
   },
   parkwayParkAndRideNorthbound: {
     id: 3,
@@ -45,7 +48,8 @@ const busStops: { [string]: BusStop } = {
     latitude: 51.802707,
     direction: "Begbroke",
     url: "parkway-park-and-ride-northbound",
-    roadAngle: 335
+    roadAngle: 335,
+    isTerminal: false
   },
   begbrokeSciencePark: {
     id: 7,
@@ -56,7 +60,8 @@ const busStops: { [string]: BusStop } = {
     latitude: 51.81798,
     direction: "Town Centre",
     url: "begbroke-science-park",
-    roadAngle: null
+    roadAngle: null,
+    isTerminal: true
   },
   parkwayParkAndRideSouthbound: {
     id: 6,
@@ -67,7 +72,8 @@ const busStops: { [string]: BusStop } = {
     latitude: 51.802281,
     direction: "Town Centre",
     url: "parkway-park-and-ride-southbound",
-    roadAngle: 155
+    roadAngle: 155,
+    isTerminal: false
   },
   summertownShops: {
     id: 1,
@@ -78,7 +84,8 @@ const busStops: { [string]: BusStop } = {
     latitude: 51.777751,
     direction: "Town Centre",
     url: "summertown-shops",
-    roadAngle: 165
+    roadAngle: 165,
+    isTerminal: false
   },
   departmentOfMaterialsSouthbound: {
     id: 4,
@@ -89,7 +96,8 @@ const busStops: { [string]: BusStop } = {
     latitude: 51.760424,
     direction: "Town Centre",
     url: "department-of-materials-southbound",
-    roadAngle: 140
+    roadAngle: 140,
+    isTerminal: false
   }
 };
 
