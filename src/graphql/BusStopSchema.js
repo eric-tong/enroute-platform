@@ -26,7 +26,7 @@ export type BusStop = {|
   direction: string,
   latitude: number,
   longitude: number,
-  roadAngle: number
+  roadAngle: ?number
 |};
 
 export const BusStopType = new GraphQLObjectType({

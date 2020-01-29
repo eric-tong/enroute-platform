@@ -7,7 +7,6 @@ import { getAllBusStops } from "../BusStopResolver";
 describe("bus stop resolver", () => {
   test("gets all bus stops", async () => {
     const actual = await getAllBusStops();
-    console.log(actual);
     expect(actual).toEqual(AllBusStops);
   });
 

@@ -1,20 +1,21 @@
 // @flow
 
-export const AllBusStops = [
-  {
-    id: 5,
-    name: "Oxford Town Centre",
-    street: "Broad Street",
-    icon: "T",
-    longitude: -1.255659,
-    latitude: 51.754564,
-    direction: "Begbroke",
-    display_position: 0,
-    is_terminal: false,
-    road_angle: 80,
-    url: "oxford-town-centre",
-    roadAngle: 80
-  },
+import type { BusStop } from "../../graphql/BusStopSchema";
+
+const OxfordTownCentre: BusStop = {
+  id: 5,
+  name: "Oxford Town Centre",
+  street: "Broad Street",
+  icon: "T",
+  longitude: -1.255659,
+  latitude: 51.754564,
+  direction: "Begbroke",
+  url: "oxford-town-centre",
+  roadAngle: 80
+};
+
+export const AllBusStops: BusStop[] = [
+  OxfordTownCentre,
   {
     id: 2,
     name: "Department of Materials",
@@ -23,9 +24,6 @@ export const AllBusStops = [
     longitude: -1.259159,
     latitude: 51.760682,
     direction: "Begbroke",
-    display_position: 1,
-    is_terminal: false,
-    road_angle: 320,
     url: "department-of-materials-northbound",
     roadAngle: 320
   },
@@ -37,9 +35,6 @@ export const AllBusStops = [
     longitude: -1.265716,
     latitude: 51.779356,
     direction: "Begbroke",
-    display_position: 2,
-    is_terminal: false,
-    road_angle: 345,
     url: "bbc-oxford",
     roadAngle: 345
   },
@@ -51,9 +46,6 @@ export const AllBusStops = [
     longitude: -1.274946,
     latitude: 51.802707,
     direction: "Begbroke",
-    display_position: 3,
-    is_terminal: false,
-    road_angle: 335,
     url: "parkway-park-and-ride-northbound",
     roadAngle: 335
   },
@@ -65,9 +57,6 @@ export const AllBusStops = [
     longitude: -1.306494,
     latitude: 51.81798,
     direction: "Town Centre",
-    display_position: 4,
-    is_terminal: true,
-    road_angle: null,
     url: "begbroke-science-park",
     roadAngle: null
   },
@@ -79,9 +68,6 @@ export const AllBusStops = [
     longitude: -1.274474,
     latitude: 51.802281,
     direction: "Town Centre",
-    display_position: 5,
-    is_terminal: false,
-    road_angle: 155,
     url: "parkway-park-and-ride-southbound",
     roadAngle: 155
   },
@@ -93,9 +79,6 @@ export const AllBusStops = [
     longitude: -1.264919,
     latitude: 51.777751,
     direction: "Town Centre",
-    display_position: 6,
-    is_terminal: false,
-    road_angle: 165,
     url: "summertown-shops",
     roadAngle: 165
   },
@@ -107,9 +90,6 @@ export const AllBusStops = [
     longitude: -1.258587,
     latitude: 51.760424,
     direction: "Town Centre",
-    display_position: 7,
-    is_terminal: false,
-    road_angle: 140,
     url: "department-of-materials-southbound",
     roadAngle: 140
   }

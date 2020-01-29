@@ -5,6 +5,20 @@ import { DateTime } from "luxon";
 import type { Status } from "../vehicleStatus/VehicleStatusUpdater";
 import database from "../database/database";
 
+const BUS_STOP_COLUMNS = [
+  "id",
+  "name",
+  "street",
+  "icon",
+  "url",
+  "direction",
+  "latitude",
+  "longitude",
+  `road_angle AS "roadAngle"`
+]
+  .map(column => "bus_stops." + column)
+  .join(", ");
+
 const GET_BUS_STOPS_IN_TRIP = `
 SELECT bus_stops.*, road_angle as "roadAngle" FROM bus_stops INNER JOIN scheduled_departures 
   ON bus_stops.id = scheduled_departures.bus_stop_id
@@ -46,7 +60,7 @@ SELECT id FROM visited_bus_stops_in_current_trip WHERE id_within_bus_stop = 1
 
 export function getAllBusStops() {
   const GET_ALL_BUS_STOPS = `
-  SELECT *, road_angle AS "roadAngle" FROM bus_stops 
+  SELECT ${BUS_STOP_COLUMNS} FROM bus_stops 
     ORDER BY display_position
   `;
   return database
