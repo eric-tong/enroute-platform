@@ -1,7 +1,11 @@
 // @flow
 
 import { allBusStops, oxfordTownCentre } from "../../__test/models/BusStops";
-import { getAllBusStops, getBusStopFromUrl } from "../BusStopResolver";
+import {
+  getAllBusStops,
+  getBusStopFromId,
+  getBusStopFromUrl
+} from "../BusStopResolver";
 
 import database from "../../database/database";
 
@@ -17,6 +21,13 @@ describe("bus stop resolver", () => {
     const actual = await getBusStopFromUrl(undefined, {
       url: oxfordTownCentre.url
     });
+    const expected = oxfordTownCentre;
+
+    expect(actual).toEqual(expected);
+  });
+
+  test("gets bus stop from id", async () => {
+    const actual = await getBusStopFromId(oxfordTownCentre.id);
     const expected = oxfordTownCentre;
 
     expect(actual).toEqual(expected);

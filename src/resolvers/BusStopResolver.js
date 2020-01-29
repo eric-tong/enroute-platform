@@ -59,10 +59,7 @@ SELECT id FROM visited_bus_stops_in_current_trip WHERE id_within_bus_stop = 1
 `;
 
 export function getAllBusStops() {
-  const GET_ALL_BUS_STOPS = `
-  SELECT ${BUS_STOP_COLUMNS} FROM bus_stops 
-    ORDER BY display_position
-  `;
+  const GET_ALL_BUS_STOPS = `SELECT ${BUS_STOP_COLUMNS} FROM bus_stops ORDER BY display_position`;
   return database
     .query<BusStop>(GET_ALL_BUS_STOPS)
     .then(results => results.rows);
@@ -76,7 +73,7 @@ export function getBusStopFromUrl(_: void, { url }: { url: string }) {
 }
 
 export function getBusStopFromId(busStopId: number) {
-  const GET_BUS_STOP_FROM_ID = "SELECT * FROM bus_stops WHERE id = $1";
+  const GET_BUS_STOP_FROM_ID = `SELECT ${BUS_STOP_COLUMNS} FROM bus_stops WHERE id = $1`;
   return database
     .query<BusStop>(GET_BUS_STOP_FROM_ID, [busStopId])
     .then(results => results.rows.length && results.rows[0]);
