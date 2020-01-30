@@ -11,10 +11,16 @@ import {
 
 import { DateTime } from "luxon";
 import busStops from "../../__test/models/busStops";
+import { clearTables } from "../../__test/testUtils";
 import database from "../../database/database";
+import { insertBusStop } from "../../database/insert";
 
 describe("bus stop resolver", () => {
   test("gets all bus stops", async () => {
+    for (const key of Object.keys(busStops)) {
+      await insertBusStop(busStops[key]);
+    }
+
     const actual = new Set(await getAllBusStops());
     const expected = new Set(Object.values(busStops));
 
@@ -23,6 +29,7 @@ describe("bus stop resolver", () => {
 
   test("gets bus stop from url", async () => {
     const oxfordTownCentre = busStops.oxfordTownCentre;
+    await insertBusStop(oxfordTownCentre);
 
     const actual = await getBusStopFromUrl(undefined, {
       url: oxfordTownCentre.url
@@ -34,6 +41,7 @@ describe("bus stop resolver", () => {
 
   test("gets bus stop from id", async () => {
     const oxfordTownCentre = busStops.oxfordTownCentre;
+    await insertBusStop(oxfordTownCentre);
 
     const actual = await getBusStopFromId(oxfordTownCentre.id);
     const expected = oxfordTownCentre;
@@ -131,17 +139,7 @@ describe("bus stop resolver", () => {
     });
   });
 
-  beforeAll(async () => {
-    await database.query("CREATE TEMP TABLE avl AS TABLE avl WITH NO DATA");
-    await database.query(
-      "CREATE TEMP TABLE bus_stop_visits AS TABLE bus_stop_visits WITH NO DATA"
-    );
-  });
-
-  beforeEach(async () => {
-    await database.query("DELETE FROM avl");
-    await database.query("DELETE FROM bus_stop_visits");
-  });
-
+  beforeAll(clearTables);
+  afterEach(clearTables);
   afterAll(() => database.end());
 });

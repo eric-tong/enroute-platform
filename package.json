@@ -41,7 +41,7 @@
       "<rootDir>/lib/"
     ],
     "setupFiles": [
-      "./src/service/config.js"
+      "./src/__test/setup.js"
     ]
   }
 }

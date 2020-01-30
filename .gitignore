@@ -2,7 +2,7 @@ lib
 node_modules
 yarn-error.log
 *.code-workspace
-.env
+*.env
 .DS_Store
 .node-persist
 *.sh
