@@ -8,12 +8,15 @@ import {
   getBusStopsFromTripId,
   getUpcomingBusStopsFromTripId
 } from "../BusStopResolver";
+import {
+  insertBusStop,
+  insertScheduledDepartures
+} from "../../database/insert";
 
 import { DateTime } from "luxon";
 import busStops from "../../__test/models/busStops";
 import { clearTables } from "../../__test/testUtils";
 import database from "../../database/database";
-import { insertBusStop } from "../../database/insert";
 
 describe("bus stop resolver", () => {
   test("gets all bus stops", async () => {
@@ -49,9 +52,9 @@ describe("bus stop resolver", () => {
     expect(actual).toEqual(expected);
   });
 
-  test("gets bus stop from trip id", async () => {
-    const actual = await getBusStopsFromTripId(8);
-    const expected = [
+  test.only("gets bus stops from trip id", async () => {
+    const tripId = 8;
+    const busStopsInTrip = [
       busStops.begbrokeSciencePark,
       busStops.departmentOfMaterialsSouthbound,
       busStops.oxfordTownCentre,
@@ -60,6 +63,20 @@ describe("bus stop resolver", () => {
       busStops.parkwayParkAndRideNorthbound,
       busStops.begbrokeSciencePark
     ];
+    for (const key of Object.keys(busStops)) {
+      await insertBusStop(busStops[key]);
+    }
+    for (let i = 0; i < busStopsInTrip.length; i++) {
+      await insertScheduledDepartures({
+        id: i,
+        minuteOfDay: i,
+        tripId,
+        busStopId: busStopsInTrip[i].id
+      });
+    }
+
+    const actual = await getBusStopsFromTripId(8);
+    const expected = busStopsInTrip;
 
     expect(actual).toEqual(expected);
   });

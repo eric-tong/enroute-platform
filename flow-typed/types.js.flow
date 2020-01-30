@@ -42,6 +42,7 @@ declare type Departure = {|
 |};
 
 declare type ScheduledDeparture = {|
+  id: number,
   minuteOfDay: number,
   tripId: number,
   busStopId: number

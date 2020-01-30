@@ -21,3 +21,17 @@ export async function insertBusStop(busStop: BusStop) {
     busStop.url
   ]);
 }
+
+export async function insertScheduledDepartures(
+  scheduledDeparture: ScheduledDeparture
+) {
+  const INSERT_INTO_BUS_STOP = `
+  INSERT INTO scheduled_departures (id, minute_of_day, trip_id, bus_stop_id)
+    VALUES($1, $2, $3, $4)`;
+  return database.query<{}>(INSERT_INTO_BUS_STOP, [
+    scheduledDeparture.id,
+    scheduledDeparture.minuteOfDay,
+    scheduledDeparture.tripId,
+    scheduledDeparture.busStopId
+  ]);
+}
