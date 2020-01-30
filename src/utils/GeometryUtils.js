@@ -1,6 +1,6 @@
 // @flow
 
-export type Point = { x: number, y: number };
+type Point = { x: number, y: number };
 
 // This function finds the intersection between a circle and a line
 // between p1 and p2, where only one of the points is inside the circle.

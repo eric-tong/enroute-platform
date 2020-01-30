@@ -1,9 +1,6 @@
 // @flow
 
-import type { BusArrival } from "./VehicleStatusUpdater";
-import type { BusStop } from "../graphql/BusStopSchema";
 import { DateTime } from "luxon";
-import type { Status } from "./VehicleStatusUpdater";
 import { downloadDirections } from "../resolvers/RouteResolver";
 import { getScheduledDeparturesFromTripId } from "../resolvers/DepartureResolver";
 import { getUpcomingBusStopsFromTripId } from "../resolvers/BusStopResolver";

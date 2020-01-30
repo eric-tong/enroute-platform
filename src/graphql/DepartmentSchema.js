@@ -9,12 +9,6 @@ import {
 
 import { getAllDepartments } from "../resolvers/DepartmentResolver";
 
-export type Department = {|
-  id: number,
-  name: string,
-  type: string
-|};
-
 const DepartmentType = new GraphQLObjectType({
   name: "DepartmentType",
   description: "Department with name and id",

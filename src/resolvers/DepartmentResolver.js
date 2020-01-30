@@ -1,6 +1,5 @@
 // @flow
 
-import type { Department } from "../graphql/DepartmentSchema";
 import database from "../database/database";
 
 export function getAllDepartments() {

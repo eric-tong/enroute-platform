@@ -1,8 +1,6 @@
 // @flow
 
-import type { BusStop } from "../graphql/BusStopSchema";
 import { DateTime } from "luxon";
-import type { Status } from "../vehicleStatus/VehicleStatusUpdater";
 import database from "../database/database";
 
 const BUS_STOP_COLUMNS = [
@@ -19,30 +17,6 @@ const BUS_STOP_COLUMNS = [
 ]
   .map(column => "bus_stops." + column)
   .join(", ");
-
-const BUS_STOPS_VISITED = `
-WITH last_terminal_exit AS (
-  SELECT avl.timestamp FROM avl
-      INNER JOIN bus_stop_visits ON bus_stop_visits.avl_id = avl.id
-      INNER JOIN bus_stops ON bus_stops.id = bus_stop_visits.bus_stop_id
-      WHERE vehicle_id = $1
-      AND avl.timestamp <= $2
-      AND bus_stops.is_terminal
-      ORDER BY avl.timestamp DESC
-      LIMIT 1
-),
-visited_bus_stops_in_current_trip AS (
-SELECT bus_stops.id, ROW_NUMBER() OVER (PARTITION BY bus_stops.id ORDER BY avl.timestamp) AS id_within_bus_stop FROM avl
-    INNER JOIN bus_stop_visits ON bus_stop_visits.avl_id = avl.id
-    INNER JOIN bus_stops ON bus_stops.id = bus_stop_visits.bus_stop_id
-    WHERE avl.vehicle_id = $1
-    AND avl.timestamp >= (SELECT timestamp FROM last_terminal_exit)
-    AND avl.timestamp <= $2
-    ORDER BY avl.timestamp
-)
-
-SELECT id FROM visited_bus_stops_in_current_trip WHERE id_within_bus_stop = 1
-`;
 
 export function getAllBusStops() {
   const GET_ALL_BUS_STOPS = `SELECT ${BUS_STOP_COLUMNS} FROM bus_stops ORDER BY display_position`;
@@ -78,15 +52,14 @@ export function getBusStopsFromTripId(tripId: number) {
     .then(results => results.rows);
 }
 
+// Find last bus stop id in the visited set that matches any bus stops defined in the trip.
+// The upcoming bus stops are the ones that follow it as defined in the trip.
 export async function getUpcomingBusStopsFromTripId(
   tripId: number,
   visitedBusStopIds: number[]
 ): Promise<BusStop[]> {
   const tripBusStops = await getBusStopsFromTripId(tripId);
   const tripBusStopIds = tripBusStops.map(busStop => busStop.id);
-
-  // Find last bus stop id in the visited set that matches any bus stops defined in the trip.
-  // The upcoming bus stops are the ones that follow it as defined in the trip.
 
   let tripIndex = 0;
   visitedBusStopIds.forEach(visitedId => {
@@ -119,6 +92,30 @@ export function getBusStopsVisitedByVehicle(
   vehicleId: number,
   beforeTimestamp: string = DateTime.local().toSQL()
 ) {
+  const BUS_STOPS_VISITED = `
+    WITH last_terminal_exit AS (
+      SELECT avl.timestamp FROM avl
+          INNER JOIN bus_stop_visits ON bus_stop_visits.avl_id = avl.id
+          INNER JOIN bus_stops ON bus_stops.id = bus_stop_visits.bus_stop_id
+          WHERE vehicle_id = $1
+          AND avl.timestamp <= $2
+          AND bus_stops.is_terminal
+          ORDER BY avl.timestamp DESC
+          LIMIT 1
+    ),
+    visited_bus_stops_in_current_trip AS (
+    SELECT bus_stops.id, ROW_NUMBER() OVER (PARTITION BY bus_stops.id ORDER BY avl.timestamp) AS id_within_bus_stop FROM avl
+        INNER JOIN bus_stop_visits ON bus_stop_visits.avl_id = avl.id
+        INNER JOIN bus_stops ON bus_stops.id = bus_stop_visits.bus_stop_id
+        WHERE avl.vehicle_id = $1
+        AND avl.timestamp >= (SELECT timestamp FROM last_terminal_exit)
+        AND avl.timestamp <= $2
+        ORDER BY avl.timestamp
+    )
+
+    SELECT id FROM visited_bus_stops_in_current_trip WHERE id_within_bus_stop = 1
+  `;
+
   return database
     .query<{ id: number }>(BUS_STOPS_VISITED, [vehicleId, beforeTimestamp])
     .then(results => results.rows.map<number>(row => row.id));

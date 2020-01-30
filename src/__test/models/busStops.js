@@ -1,7 +1,5 @@
 // @flow
 
-import type { BusStop } from "../../graphql/BusStopSchema";
-
 const busStops: { [string]: BusStop } = {
   oxfordTownCentre: {
     id: 5,

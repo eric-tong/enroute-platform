@@ -1,6 +1,5 @@
 // @flow
 
-import type { Vehicle } from "../graphql/VehicleSchema";
 import database from "../database/database";
 
 const SELECT_VEHICLE_WITH_IMEI = `SELECT imei FROM vehicles WHERE imei = $1`;

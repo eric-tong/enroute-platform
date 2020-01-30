@@ -1,11 +1,5 @@
 // @flow
 
-import type {
-  BusArrival,
-  NonTerminalStatus,
-  Status
-} from "./VehicleStatusUpdater";
-
 import { DateTime } from "luxon";
 import { vehicleStatusCache } from "./VehicleStatusUpdater";
 

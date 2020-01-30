@@ -11,12 +11,6 @@ import { AvlType } from "./AvlSchema";
 import { getAllVehicles } from "../resolvers/VehicleResolver";
 import { getLatestAvlOfVehicle } from "../resolvers/AvlResolver";
 
-export type Vehicle = {|
-  id: number,
-  registration: string,
-  imei: string
-|};
-
 const VehicleType = new GraphQLObjectType({
   name: "VehicleType",
   description: "Vehicle id with timestamped coordinates",

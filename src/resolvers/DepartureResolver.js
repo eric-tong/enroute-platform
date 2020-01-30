@@ -1,9 +1,5 @@
 // @flow
 
-import type { Departure, ScheduledDeparture } from "../graphql/DepartureSchema";
-
-import type { BusArrival } from "../vehicleStatus/vehicleStatusUpdater";
-import type { BusStop } from "../graphql/BusStopSchema";
 import { DateTime } from "luxon";
 import database from "../database/database";
 import { getAllPredictedBusArrivals } from "../vehicleStatus/VehicleStatusGetter";

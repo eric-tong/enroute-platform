@@ -10,23 +10,9 @@ import {
   GraphQLString
 } from "graphql";
 
-import type { IO } from "./IoSchema";
 import { IoType } from "./IoSchema";
 import { getAllAvlsFromDate } from "../resolvers/AvlResolver";
 import { getIoFromAvlId } from "../resolvers/IoResolver";
-
-export type AVL = {|
-  id: number,
-  priority: string,
-  timestamp: number,
-  altitude: number,
-  longitude: number,
-  latitude: number,
-  angle: number,
-  satellites: number,
-  speed: number,
-  vehicleId: number
-|};
 
 export const AvlType = new GraphQLObjectType({
   name: "AVLType",

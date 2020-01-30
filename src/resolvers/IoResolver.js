@@ -1,7 +1,5 @@
 // @flow
 
-import type { AVL } from "../graphql/AvlSchema";
-import type { IO } from "../graphql/IoSchema";
 import database from "../database/database";
 
 const GET_IO_WITH_AVL_ID = `
