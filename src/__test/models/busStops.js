@@ -99,4 +99,14 @@ const busStops: { [string]: BusStop } = {
   }
 };
 
+export const busStopsInTrip = [
+  busStops.begbrokeSciencePark,
+  busStops.departmentOfMaterialsSouthbound,
+  busStops.oxfordTownCentre,
+  busStops.departmentOfMaterialsNorthbound,
+  busStops.bbcOxford,
+  busStops.parkwayParkAndRideNorthbound,
+  busStops.begbrokeSciencePark
+];
+
 export default busStops;

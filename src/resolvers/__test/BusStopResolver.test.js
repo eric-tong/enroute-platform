@@ -1,5 +1,6 @@
 // @flow
 
+import busStops, { busStopsInTrip } from "../../__test/models/busStops";
 import {
   getAllBusStops,
   getBusStopFromAvlId,
@@ -9,14 +10,17 @@ import {
   getUpcomingBusStopsFromTripId
 } from "../BusStopResolver";
 import {
+  insertAvl,
   insertBusStop,
+  insertBusStopVisit,
   insertScheduledDepartures
-} from "../../database/insert";
+} from "../../__test/insert";
 
 import { DateTime } from "luxon";
-import busStops from "../../__test/models/busStops";
 import { clearTables } from "../../__test/testUtils";
 import database from "../../database/database";
+
+const tripId = 8;
 
 describe("bus stop resolver", () => {
   test("gets all bus stops", async () => {
@@ -52,30 +56,10 @@ describe("bus stop resolver", () => {
     expect(actual).toEqual(expected);
   });
 
-  test.only("gets bus stops from trip id", async () => {
-    const tripId = 8;
-    const busStopsInTrip = [
-      busStops.begbrokeSciencePark,
-      busStops.departmentOfMaterialsSouthbound,
-      busStops.oxfordTownCentre,
-      busStops.departmentOfMaterialsNorthbound,
-      busStops.bbcOxford,
-      busStops.parkwayParkAndRideNorthbound,
-      busStops.begbrokeSciencePark
-    ];
-    for (const key of Object.keys(busStops)) {
-      await insertBusStop(busStops[key]);
-    }
-    for (let i = 0; i < busStopsInTrip.length; i++) {
-      await insertScheduledDepartures({
-        id: i,
-        minuteOfDay: i,
-        tripId,
-        busStopId: busStopsInTrip[i].id
-      });
-    }
+  test("gets bus stops from trip id", async () => {
+    await insertTestTrip();
 
-    const actual = await getBusStopsFromTripId(8);
+    const actual = await getBusStopsFromTripId(tripId);
     const expected = busStopsInTrip;
 
     expect(actual).toEqual(expected);
@@ -83,22 +67,18 @@ describe("bus stop resolver", () => {
 
   describe("gets upcoming bus stops from trip id", () => {
     test("no bus stops have been visited", async () => {
-      const actual = await getUpcomingBusStopsFromTripId(8, []);
-      const expected = [
-        busStops.begbrokeSciencePark,
-        busStops.departmentOfMaterialsSouthbound,
-        busStops.oxfordTownCentre,
-        busStops.departmentOfMaterialsNorthbound,
-        busStops.bbcOxford,
-        busStops.parkwayParkAndRideNorthbound,
-        busStops.begbrokeSciencePark
-      ];
+      await insertTestTrip();
+
+      const actual = await getUpcomingBusStopsFromTripId(tripId, []);
+      const expected = busStopsInTrip;
 
       expect(actual).toEqual(expected);
     });
 
     test("bus stops visited in order", async () => {
-      const actual = await getUpcomingBusStopsFromTripId(8, [7, 4, 5]);
+      await insertTestTrip();
+
+      const actual = await getUpcomingBusStopsFromTripId(tripId, [7, 4, 5]);
       const expected = [
         busStops.departmentOfMaterialsNorthbound,
         busStops.bbcOxford,
@@ -110,7 +90,9 @@ describe("bus stop resolver", () => {
     });
 
     test("bus stops skipped", async () => {
-      const actual = await getUpcomingBusStopsFromTripId(8, [7, 5]);
+      await insertTestTrip();
+
+      const actual = await getUpcomingBusStopsFromTripId(tripId, [7, 5]);
       const expected = [
         busStops.departmentOfMaterialsNorthbound,
         busStops.bbcOxford,
@@ -127,11 +109,9 @@ describe("bus stop resolver", () => {
       const avlId = 1;
       const busStop = busStops.departmentOfMaterialsSouthbound;
 
-      await database.query("INSERT INTO avl (id) VALUES ($1)", [avlId]);
-      await database.query(
-        "INSERT INTO bus_stop_visits (avl_id, bus_stop_id) VALUES ($1, $2)",
-        [avlId, busStop.id]
-      );
+      await insertAvl({ id: avlId });
+      await insertBusStop(busStop);
+      await insertBusStopVisit({ avlId, busStopId: busStop.id });
 
       const actual = await getBusStopFromAvlId(avlId);
       const expected = busStop;
@@ -140,14 +120,10 @@ describe("bus stop resolver", () => {
     });
 
     test("returns null when avl is not at a bus stup", async () => {
-      const avlId = 1;
+      const avlId = 88;
       const busStop = busStops.departmentOfMaterialsSouthbound;
 
-      await database.query("INSERT INTO avl (id) VALUES ($1)", [avlId]);
-      await database.query(
-        "INSERT INTO bus_stop_visits (avl_id, bus_stop_id) VALUES ($1, $2)",
-        [avlId + 10, busStop.id]
-      );
+      await insertAvl({ id: avlId });
 
       const actual = await getBusStopFromAvlId(avlId);
       const expected = null;
@@ -160,3 +136,17 @@ describe("bus stop resolver", () => {
   afterEach(clearTables);
   afterAll(() => database.end());
 });
+
+async function insertTestTrip() {
+  for (const key of Object.keys(busStops)) {
+    await insertBusStop(busStops[key]);
+  }
+  for (let i = 0; i < busStopsInTrip.length; i++) {
+    await insertScheduledDepartures({
+      id: i,
+      minuteOfDay: i,
+      tripId,
+      busStopId: busStopsInTrip[i].id
+    });
+  }
+}
