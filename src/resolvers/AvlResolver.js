@@ -59,5 +59,11 @@ export function getAvlOfLastTerminalExitFromVehicleId(vehicleId: number) {
   `;
   return database
     .query<AVL>(GET_AVL_OF_LAST_TERMINAL_EXIT_FROM_VEHICLE_ID, [vehicleId])
-    .then(results => results.rows[0]);
+    .then(results => {
+      if (results.rows.length) {
+        return results.rows[0];
+      } else {
+        throw new Error("No last terminal exit found");
+      }
+    });
 }

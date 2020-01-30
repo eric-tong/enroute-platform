@@ -7,13 +7,15 @@ import {
   getBusStopFromId,
   getBusStopFromUrl,
   getBusStopsFromTripId,
+  getBusStopsVisitedByVehicle,
   getUpcomingBusStopsFromTripId
 } from "../BusStopResolver";
 import {
   insertAvl,
   insertBusStop,
   insertBusStopVisit,
-  insertScheduledDepartures
+  insertScheduledDepartures,
+  insertVehicle
 } from "../../__test/insert";
 
 import { DateTime } from "luxon";
@@ -130,6 +132,37 @@ describe("bus stop resolver", () => {
 
       expect(actual).toEqual(expected);
     });
+  });
+
+  test("get bus stops visited by vehicle", async () => {
+    const vehicleId = 8;
+    const busStopsVisited = [
+      busStops.departmentOfMaterialsSouthbound,
+      busStops.begbrokeSciencePark,
+      busStops.departmentOfMaterialsNorthbound,
+      busStops.bbcOxford,
+      busStops.parkwayParkAndRideNorthbound
+    ];
+
+    await insertVehicle({ id: vehicleId });
+    for (let i = 0; i < 100; i++) {
+      await insertAvl({ id: i, vehicleId });
+    }
+    for (const busStop of busStopsVisited) {
+      console.log(busStop.id);
+      await insertBusStop(busStop);
+    }
+    for (let i = 0; i < busStopsVisited.length; i++) {
+      await insertBusStopVisit({
+        avlId: i * 5 + 1,
+        busStopId: busStopsVisited[i].id
+      });
+    }
+
+    const actual = await getBusStopsVisitedByVehicle(vehicleId);
+    const expected = busStopsVisited.slice(1);
+
+    expect(actual).toEqual(expected);
   });
 
   beforeAll(clearTables);

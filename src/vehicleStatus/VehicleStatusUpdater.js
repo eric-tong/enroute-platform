@@ -33,7 +33,7 @@ async function estimateVehicleStatus(
   ] = await Promise.all([
     getBusStopFromAvlId(avl.id),
     getCurrentTripIdFromVehicleId(vehicle.id, beforeTimestamp),
-    getBusStopsVisitedByVehicle(vehicle.id, beforeTimestamp)
+    getBusStopsVisitedByVehicle(vehicle.id)
   ]);
 
   return currentBusStop && currentBusStop.isTerminal
@@ -43,7 +43,7 @@ async function estimateVehicleStatus(
         tripId,
         tripIdConfidence,
         currentBusStopId: currentBusStop && currentBusStop.id,
-        busStopsVisited,
+        busStopsVisited: busStopsVisited.map(busStop => busStop.id),
         avl,
         predictedArrivals:
           vehicleStatusCache.has(vehicle.id) &&

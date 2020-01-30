@@ -2,6 +2,7 @@
 
 import { DateTime } from "luxon";
 import database from "../database/database";
+import { getAvlOfLastTerminalExitFromVehicleId } from "./AvlResolver";
 
 const BUS_STOP_COLUMNS = [
   "id",
@@ -88,35 +89,26 @@ export function getBusStopFromAvlId(avlId: number) {
     .then(results => (results.rows.length ? results.rows[0] : null));
 }
 
-export function getBusStopsVisitedByVehicle(
-  vehicleId: number,
-  beforeTimestamp: string = DateTime.local().toSQL()
-) {
+export function getBusStopsVisitedByVehicle(vehicleId: number) {
   const BUS_STOPS_VISITED = `
-    WITH last_terminal_exit AS (
-      SELECT avl.timestamp FROM avl
-          INNER JOIN bus_stop_visits ON bus_stop_visits.avl_id = avl.id
-          INNER JOIN bus_stops ON bus_stops.id = bus_stop_visits.bus_stop_id
-          WHERE vehicle_id = $1
-          AND avl.timestamp <= $2
-          AND bus_stops.is_terminal
-          ORDER BY avl.timestamp DESC
-          LIMIT 1
-    ),
-    visited_bus_stops_in_current_trip AS (
-    SELECT bus_stops.id, ROW_NUMBER() OVER (PARTITION BY bus_stops.id ORDER BY avl.timestamp) AS id_within_bus_stop FROM avl
+    WITH bus_stops AS (
+    SELECT bus_stops.*, ROW_NUMBER() OVER (PARTITION BY bus_stops.id ORDER BY avl.timestamp) AS id_within_bus_stop FROM avl
         INNER JOIN bus_stop_visits ON bus_stop_visits.avl_id = avl.id
         INNER JOIN bus_stops ON bus_stops.id = bus_stop_visits.bus_stop_id
         WHERE avl.vehicle_id = $1
-        AND avl.timestamp >= (SELECT timestamp FROM last_terminal_exit)
-        AND avl.timestamp <= $2
+        AND avl.timestamp >= $2
         ORDER BY avl.timestamp
     )
 
-    SELECT id FROM visited_bus_stops_in_current_trip WHERE id_within_bus_stop = 1
+    SELECT ${BUS_STOP_COLUMNS} FROM bus_stops WHERE id_within_bus_stop = 1
   `;
 
-  return database
-    .query<{ id: number }>(BUS_STOPS_VISITED, [vehicleId, beforeTimestamp])
-    .then(results => results.rows.map<number>(row => row.id));
+  return getAvlOfLastTerminalExitFromVehicleId(vehicleId)
+    .then(avl =>
+      database.query<{ id: number }>(BUS_STOPS_VISITED, [
+        vehicleId,
+        avl.timestamp
+      ])
+    )
+    .then(results => results.rows);
 }
