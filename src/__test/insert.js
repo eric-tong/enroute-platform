@@ -89,6 +89,7 @@ export function insertVehicle(
   const INSERT_AVL = `
     INSERT INTO vehicles (id, registration, imei) 
       VALUES ($1, $2, $3)
+      ON CONFLICT DO NOTHING
   `;
   return database.query<{}>(INSERT_AVL, [
     vehicle.id ?? 0,
@@ -122,4 +123,8 @@ export async function insertBusStopVisit(busStopVisit: {|
     "INSERT INTO bus_stop_visits (avl_id, bus_stop_id) VALUES ($1, $2)",
     [busStopVisit.avlId ?? 0, busStopVisit.busStopId ?? 0]
   );
+}
+
+function randomId() {
+  return Math.floor(Math.random() * 100000);
 }

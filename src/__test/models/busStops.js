@@ -1,6 +1,6 @@
 // @flow
 
-const busStops: { [string]: BusStop } = {
+const busStops = {
   oxfordTownCentre: {
     id: 5,
     name: "Oxford Town Centre",
