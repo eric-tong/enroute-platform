@@ -1,9 +1,9 @@
 // @flow
 
 import { clearTables, randomId } from "../../__test/testUtils";
+import { getAllVehicles, imeiIsValid } from "../VehicleResolver";
 
 import database from "../../database/database";
-import { getAllVehicles } from "../VehicleResolver";
 import { insertVehicle } from "../../__test/insert";
 
 describe("vehicle resolver", () => {
@@ -18,6 +18,27 @@ describe("vehicle resolver", () => {
     const expected = vehicles;
 
     expect(actual).toEqual(expected);
+  });
+
+  describe("checks if imei is valid", () => {
+    test("returns true for valid imei", async () => {
+      const imei = randomId().toString();
+      await insertVehicle({ imei });
+
+      const actual = await imeiIsValid(imei);
+      const expected = true;
+
+      expect(actual).toEqual(expected);
+    });
+
+    test("returns false for valid imei", async () => {
+      const imei = randomId().toString();
+
+      const actual = await imeiIsValid(imei);
+      const expected = false;
+
+      expect(actual).toEqual(expected);
+    });
   });
 
   beforeAll(clearTables);
