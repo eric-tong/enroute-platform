@@ -11,10 +11,8 @@ export function getAllActiveVehicleStatuses(): NonTerminalStatus[] {
 }
 
 export function getAllPredictedBusArrivals(): BusArrival[] {
-  return getAllActiveVehicleStatuses()
-    .sort((s1, s2) => s2.tripIdConfidence - s1.tripIdConfidence)
-    .reduce(
-      (array, status) => [...array, ...status.predictedArrivals.slice(0, -1)],
-      []
-    );
+  return getAllActiveVehicleStatuses().reduce(
+    (array, status) => [...array, ...status.predictedArrivals.slice(0, -1)],
+    []
+  );
 }
