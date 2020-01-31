@@ -4,6 +4,15 @@ import { DateTime } from "luxon";
 import database from "../database/database";
 import { getAllPredictedBusArrivals } from "../vehicleStatus/VehicleStatusGetter";
 
+export const SCHEDULED_DEPARTURE_COLUMNS = [
+  "id",
+  `minute_of_day AS "minuteOfDay"`,
+  `trip_id AS "tripId"`,
+  `bus_stop_id AS "busStopId"`
+]
+  .map(column => "scheduled_departures." + column)
+  .join(", ");
+
 const DEPARTURE_BUFFER = 60 * 1000;
 
 export async function getDeparturesFromBusStop(
@@ -11,7 +20,9 @@ export async function getDeparturesFromBusStop(
   { maxLength = Number.MAX_SAFE_INTEGER }: { maxLength: number }
 ) {
   const predictedDepartures = getAllPredictedBusArrivals();
-  const scheduledDepartures = await getScheduledDeparturesFromBusStop(busStop);
+  const scheduledDepartures = await getScheduledDeparturesFromBusStopId(
+    busStop.id
+  );
 
   return getRelevantDepartures(
     predictedDepartures,
@@ -20,9 +31,9 @@ export async function getDeparturesFromBusStop(
   );
 }
 
-function getScheduledDeparturesFromBusStop(busStop: BusStop) {
+export function getScheduledDeparturesFromBusStopId(busStopId: number) {
   const GET_SCHEDULED_DEPARTURES_FROM_BUS_STOP_ID = `
-  SELECT id, minute_of_day as "minuteOfDay", trip_id as "tripId", bus_stop_id as "busStopId" FROM (
+  SELECT ${SCHEDULED_DEPARTURE_COLUMNS} FROM (
     SELECT *, ROW_NUMBER() OVER (PARTITION BY trip_id ORDER BY trip_id, minute_of_day DESC) as stops_from_terminal
       FROM scheduled_departures
   ) as scheduled_departures
@@ -33,19 +44,9 @@ function getScheduledDeparturesFromBusStop(busStop: BusStop) {
 
   return database
     .query<ScheduledDeparture>(GET_SCHEDULED_DEPARTURES_FROM_BUS_STOP_ID, [
-      busStop.id
+      busStopId
     ])
-    .then(results =>
-      results.rows.map<BusArrival>(
-        ({ minuteOfDay, tripId, busStopId, id }) => ({
-          dateTime: toActualTime(minuteOfDay),
-          tripId,
-          busStopId: busStop.id,
-          busStopName: busStop.name,
-          scheduledDepartureId: id
-        })
-      )
-    );
+    .then(results => results.rows);
 }
 
 export async function getDeparturesFromTripId(
@@ -72,23 +73,12 @@ export function getScheduledDeparturesFromTripId(tripId: number) {
 
   return database
     .query<ScheduledDeparture>(GET_SCHEDULED_DEPARTURES_FROM_TRIP_ID, [tripId])
-    .then(results =>
-      results.rows.map<BusArrival>(
-        ({ minuteOfDay, tripId, busStopId, id }) => ({
-          dateTime: toActualTime(minuteOfDay),
-          tripId,
-          busStopId: busStopId,
-          // TODO add name or remove entirely from type
-          busStopName: "",
-          scheduledDepartureId: id
-        })
-      )
-    );
+    .then(results => results.rows);
 }
 
 function getRelevantDepartures(
   predictedDepartures: BusArrival[],
-  scheduledDepartures: BusArrival[],
+  scheduledDepartures: ScheduledDeparture[],
   maxLength: number,
   upcomingOnly: boolean = true
 ) {
@@ -96,7 +86,7 @@ function getRelevantDepartures(
   const relevantDepartures: Departure[] = [];
   for (const scheduledDeparture of scheduledDepartures) {
     if (relevantDepartures.length >= maxLength) break;
-
+    const scheduledTime = toActualTime(scheduledDeparture.minuteOfDay);
     const predictedArrival = predictedDepartures.find(
       predictedDeparture =>
         predictedDeparture.tripId === scheduledDeparture.tripId &&
@@ -105,14 +95,14 @@ function getRelevantDepartures(
     if (
       predictedArrival ||
       !upcomingOnly ||
-      scheduledDeparture.dateTime.valueOf() + DEPARTURE_BUFFER >= now.valueOf()
+      scheduledTime.valueOf() + DEPARTURE_BUFFER >= now.valueOf()
     ) {
       relevantDepartures.push({
-        scheduled: scheduledDeparture.dateTime.toSQL(),
+        scheduled: scheduledTime.toSQL(),
         predicted: (predictedArrival
-          ? predictedArrival
-          : scheduledDeparture
-        ).dateTime.toSQL(),
+          ? predictedArrival.dateTime
+          : scheduledTime
+        ).toSQL(),
         tripId: scheduledDeparture.tripId,
         busStopId: scheduledDeparture.busStopId
       });
@@ -122,7 +112,7 @@ function getRelevantDepartures(
   return relevantDepartures;
 }
 
-function toActualTime(minuteOfDay: number) {
+export function toActualTime(minuteOfDay: number) {
   return DateTime.local()
     .startOf("day")
     .plus({ minute: minuteOfDay });

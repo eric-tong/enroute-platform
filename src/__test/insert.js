@@ -2,6 +2,7 @@
 
 import { AVL_COLUMNS } from "../resolvers/AvlResolver";
 import { DateTime } from "luxon";
+import { SCHEDULED_DEPARTURE_COLUMNS } from "../resolvers/DepartureResolver";
 import database from "../database/database";
 
 export async function insertAvl(
@@ -119,13 +120,16 @@ export function insertScheduledDepartures(
 ) {
   const INSERT_INTO_BUS_STOP = `
   INSERT INTO scheduled_departures (id, minute_of_day, trip_id, bus_stop_id)
-    VALUES($1, $2, $3, $4)`;
-  return database.query<{}>(INSERT_INTO_BUS_STOP, [
-    scheduledDeparture.id,
-    scheduledDeparture.minuteOfDay,
-    scheduledDeparture.tripId,
-    scheduledDeparture.busStopId
-  ]);
+    VALUES($1, $2, $3, $4)
+    RETURNING ${SCHEDULED_DEPARTURE_COLUMNS}`;
+  return database
+    .query<ScheduledDeparture>(INSERT_INTO_BUS_STOP, [
+      scheduledDeparture.id,
+      scheduledDeparture.minuteOfDay,
+      scheduledDeparture.tripId,
+      scheduledDeparture.busStopId
+    ])
+    .then(results => results.rows[0]);
 }
 
 export function insertVehicle(

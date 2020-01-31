@@ -56,7 +56,7 @@ describe("avl resolver", () => {
     expect(actual).toEqual(expected);
   });
 
-  test("get latest avl from vehicle id", async () => {
+  test("gets latest avl from vehicle id", async () => {
     const vehicleId = 8;
     const time = DateTime.local();
     await insertVehicle({ id: vehicleId });

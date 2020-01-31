@@ -5,6 +5,7 @@ import database from "../database/database";
 import { downloadDirections } from "../resolvers/RouteResolver";
 import { getScheduledDeparturesFromTripId } from "../resolvers/DepartureResolver";
 import { getUpcomingBusStopsFromTripId } from "../resolvers/BusStopResolver";
+import { toActualTime } from "../resolvers/DepartureResolver";
 import { vehicleStatusCache } from "./VehicleStatusUpdater";
 
 export async function updateBusArrivalPredictions() {
@@ -74,9 +75,10 @@ async function getBusArrivalPredictions(
 
   return upcomingBusStops.map<BusArrival>((busStop, i) => {
     const predictedTime = cumulativeTime.plus({ seconds: durations[i - 1] });
+    const upcomingTime = toActualTime(upcomingDepartures[i].minuteOfDay);
     cumulativeTime =
-      upcomingDepartures[i].dateTime.valueOf() > predictedTime.valueOf()
-        ? upcomingDepartures[i].dateTime
+      upcomingTime.valueOf() > predictedTime.valueOf()
+        ? upcomingTime
         : predictedTime;
 
     return {
@@ -84,7 +86,7 @@ async function getBusArrivalPredictions(
       busStopId: busStop.id,
       busStopName: busStop.name,
       dateTime: predictedTime,
-      scheduledDepartureId: upcomingDepartures[i].scheduledDepartureId
+      scheduledDepartureId: upcomingDepartures[i].id
     };
   });
 }
