@@ -1,22 +1,8 @@
 // @flow
 
 import { checkOutFromCheckInId, createCheckIn } from "../CheckInResolver";
-import {
-  getAvlFromAvlId,
-  getAvlOfLastTerminalExitFromVehicleId,
-  getAvlsFromDate,
-  getLatestAvlFromVehicleId
-} from "../AvlResolver";
-import {
-  insertAvl,
-  insertBusStop,
-  insertBusStopVisit,
-  insertDepartment,
-  insertVehicle
-} from "../../__test/insert";
+import { insertDepartment, insertVehicle } from "../../__test/insert";
 
-import { DateTime } from "luxon";
-import busStops from "../../__test/models/busStops";
 import { clearTables } from "../../__test/testUtils";
 import database from "../../database/database";
 
