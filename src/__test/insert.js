@@ -2,7 +2,7 @@
 
 import { AVL_COLUMNS } from "../resolvers/AvlResolver";
 import { DateTime } from "luxon";
-import { SCHEDULED_DEPARTURE_COLUMNS } from "../resolvers/DepartureResolver";
+import { SCHEDULED_DEPARTURE_COLUMNS } from "../resolvers/ScheduledDepartureResolver";
 import database from "../database/database";
 
 export async function insertAvl(

@@ -3,7 +3,7 @@
 import {
   getScheduledDeparturesFromBusStopId,
   getScheduledDeparturesFromTripId
-} from "../DepartureResolver";
+} from "../ScheduledDepartureResolver";
 import { insertBusStop, insertScheduledDepartures } from "../../__test/insert";
 
 import { clearTables } from "../../__test/testUtils";

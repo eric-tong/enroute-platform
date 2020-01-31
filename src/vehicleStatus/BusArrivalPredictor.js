@@ -3,9 +3,9 @@
 import { DateTime } from "luxon";
 import database from "../database/database";
 import { downloadDirections } from "../resolvers/RouteResolver";
-import { getScheduledDeparturesFromTripId } from "../resolvers/DepartureResolver";
+import { getScheduledDeparturesFromTripId } from "../resolvers/ScheduledDepartureResolver";
 import { getUpcomingBusStopsFromTripId } from "../resolvers/BusStopResolver";
-import { toActualTime } from "../resolvers/DepartureResolver";
+import { toActualTime } from "../resolvers/ScheduledDepartureResolver";
 import { vehicleStatusCache } from "./VehicleStatusUpdater";
 
 export async function updateBusArrivalPredictions() {
