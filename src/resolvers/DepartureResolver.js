@@ -22,7 +22,7 @@ export async function getDeparturesFromBusStop(
 
 function getScheduledDeparturesFromBusStop(busStop: BusStop) {
   const GET_SCHEDULED_DEPARTURES_FROM_BUS_STOP_ID = `
-  SELECT minute_of_day as "minuteOfDay", trip_id as "tripId", bus_stop_id as "busStopId" FROM (
+  SELECT id, minute_of_day as "minuteOfDay", trip_id as "tripId", bus_stop_id as "busStopId" FROM (
     SELECT *, ROW_NUMBER() OVER (PARTITION BY trip_id ORDER BY trip_id, minute_of_day DESC) as stops_from_terminal
       FROM scheduled_departures
   ) as scheduled_departures
@@ -36,12 +36,15 @@ function getScheduledDeparturesFromBusStop(busStop: BusStop) {
       busStop.id
     ])
     .then(results =>
-      results.rows.map<BusArrival>(({ minuteOfDay, tripId, busStopId }) => ({
-        dateTime: toActualTime(minuteOfDay),
-        tripId,
-        busStopId: busStop.id,
-        busStopName: busStop.name
-      }))
+      results.rows.map<BusArrival>(
+        ({ minuteOfDay, tripId, busStopId, id }) => ({
+          dateTime: toActualTime(minuteOfDay),
+          tripId,
+          busStopId: busStop.id,
+          busStopName: busStop.name,
+          scheduledDepartureId: id
+        })
+      )
     );
 }
 
@@ -62,7 +65,7 @@ export async function getDeparturesFromTripId(
 
 export function getScheduledDeparturesFromTripId(tripId: number) {
   const GET_SCHEDULED_DEPARTURES_FROM_TRIP_ID = `
-  SELECT minute_of_day AS "minuteOfDay", bus_stop_id AS "busStopId", trip_id AS "tripId" FROM scheduled_departures 
+  SELECT id, minute_of_day AS "minuteOfDay", bus_stop_id AS "busStopId", trip_id AS "tripId" FROM scheduled_departures 
     WHERE trip_id = $1 
     ORDER BY "minuteOfDay"
   `;
@@ -70,13 +73,16 @@ export function getScheduledDeparturesFromTripId(tripId: number) {
   return database
     .query<ScheduledDeparture>(GET_SCHEDULED_DEPARTURES_FROM_TRIP_ID, [tripId])
     .then(results =>
-      results.rows.map<BusArrival>(({ minuteOfDay, tripId, busStopId }) => ({
-        dateTime: toActualTime(minuteOfDay),
-        tripId,
-        busStopId: busStopId,
-        // TODO add name or remove entirely from type
-        busStopName: ""
-      }))
+      results.rows.map<BusArrival>(
+        ({ minuteOfDay, tripId, busStopId, id }) => ({
+          dateTime: toActualTime(minuteOfDay),
+          tripId,
+          busStopId: busStopId,
+          // TODO add name or remove entirely from type
+          busStopName: "",
+          scheduledDepartureId: id
+        })
+      )
     );
 }
 

@@ -69,6 +69,7 @@ declare type Status =
   | NonTerminalStatus;
 
 declare type BusArrival = {
+  scheduledDepartureId: number,
   tripId: number,
   busStopId: number,
   busStopName: string,

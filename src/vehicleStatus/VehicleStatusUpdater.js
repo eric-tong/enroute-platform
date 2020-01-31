@@ -26,6 +26,7 @@ async function estimateVehicleStatus(
   beforeTimestamp: string = DateTime.local().toSQL()
 ): Promise<Status> {
   const avl = await getLatestAvlOfVehicle(vehicle);
+  if (!avl) return { isInTerminal: true };
   const [
     currentBusStop,
     { tripId, tripIdConfidence },

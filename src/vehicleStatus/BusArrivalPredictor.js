@@ -1,6 +1,7 @@
 // @flow
 
 import { DateTime } from "luxon";
+import database from "../database/database";
 import { downloadDirections } from "../resolvers/RouteResolver";
 import { getScheduledDeparturesFromTripId } from "../resolvers/DepartureResolver";
 import { getUpcomingBusStopsFromTripId } from "../resolvers/BusStopResolver";
@@ -8,7 +9,7 @@ import { vehicleStatusCache } from "./VehicleStatusUpdater";
 
 export async function updateBusArrivalPredictions() {
   for (const vehicleId of vehicleStatusCache.keys()) {
-    const status = vehicleStatusCache.get(vehicleId);
+    const status: Status = vehicleStatusCache.get(vehicleId);
     if (status.isInTerminal) continue;
 
     const predictedArrivals = await getBusArrivalPredictions(
@@ -29,11 +30,22 @@ export async function updateBusArrivalPredictions() {
       DateTime.fromJSDate(status.avl.timestamp)
     );
 
-    if (predictedArrivals)
+    if (predictedArrivals) {
       vehicleStatusCache.set(vehicleId, {
         ...status,
         predictedArrivals
       });
+      predictedArrivals.forEach(predictedArrival => {
+        database.query(
+          "INSERT INTO predicted_departures(scheduled_departure_id, avl_id, predicted_timestamp) VALUES($1, $2, $3)",
+          [
+            predictedArrival.scheduledDepartureId,
+            status.avl.id,
+            predictedArrival.dateTime.toSQL()
+          ]
+        );
+      });
+    }
   }
 }
 
@@ -47,7 +59,7 @@ async function getBusArrivalPredictions(
     tripId,
     busStopsVisited
   );
-  const [directions, departures] = await Promise.all([
+  const [directions, scheduledDepartures] = await Promise.all([
     downloadDirections([vehicle, ...upcomingBusStops]),
     getScheduledDeparturesFromTripId(tripId)
   ]);
@@ -57,7 +69,7 @@ async function getBusArrivalPredictions(
     return;
   }
   const durations: number[] = directions.legs.map(leg => leg.duration);
-  const upcomingDepartures = departures.slice(-1 * durations.length);
+  const upcomingDepartures = scheduledDepartures.slice(-1 * durations.length);
   let cumulativeTime = timeOfDataCapture;
 
   return upcomingBusStops.map<BusArrival>((busStop, i) => {
@@ -71,7 +83,8 @@ async function getBusArrivalPredictions(
       tripId,
       busStopId: busStop.id,
       busStopName: busStop.name,
-      dateTime: predictedTime
+      dateTime: predictedTime,
+      scheduledDepartureId: upcomingDepartures[i].scheduledDepartureId
     };
   });
 }
