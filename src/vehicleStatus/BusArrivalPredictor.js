@@ -2,7 +2,7 @@
 
 import { DateTime } from "luxon";
 import database from "../database/database";
-import { downloadDirections } from "../resolvers/RouteResolver";
+import { downloadDirections } from "../utils/MapboxUtils";
 import { getScheduledDeparturesFromTripId } from "../resolvers/ScheduledDepartureResolver";
 import { getUpcomingBusStopsFromTripId } from "../resolvers/BusStopResolver";
 import { toActualTime } from "../resolvers/ScheduledDepartureResolver";
