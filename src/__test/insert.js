@@ -115,6 +115,15 @@ export function insertDepartment(
     .then(results => results.rows[0]);
 }
 
+export async function insertIo(io: IO, avlId: number) {
+  const ioNameId = randomId();
+  const INSERT_IO_NAME = "INSERT INTO io_names (id, value) VALUES($1, $2)";
+  const INSERT_IO = "INSERT INTO io (avl_id, id, value) VALUES($1, $2, $3)";
+
+  await database.query(INSERT_IO_NAME, [ioNameId, io.name]);
+  await database.query(INSERT_IO, [avlId, ioNameId, io.value]);
+}
+
 export function insertScheduledDepartures(
   scheduledDeparture: ScheduledDeparture
 ) {
@@ -156,5 +165,5 @@ export function insertVehicle(
 }
 
 function randomId() {
-  return Math.floor(Math.random() * 100000);
+  return Math.floor(Math.random() * 32000);
 }
