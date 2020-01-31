@@ -9,7 +9,7 @@ import { DateTime } from "luxon";
 import NodeCache from "node-cache";
 import { getAllVehicles } from "../resolvers/VehicleResolver";
 import { getCurrentTripIdFromVehicleId } from "../resolvers/TripResolver";
-import { getLatestAvlOfVehicle } from "../resolvers/AvlResolver";
+import { getLatestAvlFromVehicleId } from "../resolvers/AvlResolver";
 
 export const vehicleStatusCache = new NodeCache();
 
@@ -25,7 +25,7 @@ async function estimateVehicleStatus(
   vehicle: Vehicle,
   beforeTimestamp: string = DateTime.local().toSQL()
 ): Promise<Status> {
-  const avl = await getLatestAvlOfVehicle(vehicle);
+  const avl = await getLatestAvlFromVehicleId(vehicle.id);
   if (!avl) return { isInTerminal: true };
   const [
     currentBusStop,

@@ -18,8 +18,6 @@ export const AVL_COLUMNS = [
   .map(column => "avl." + column)
   .join(", ");
 
-const GET_AVL_OF_VEHICLE = `SELECT *, vehicle_id as "vehicleId" FROM avl WHERE vehicle_id = $1 AND satellites > 3 ORDER BY timestamp DESC LIMIT 1`;
-
 export function getAvlsFromDate(
   _: void,
   { date = DateTime.local().toSQL() }: { date: ?string }
@@ -34,9 +32,13 @@ export function getAvlsFromDate(
     .then(results => results.rows);
 }
 
-export function getLatestAvlOfVehicle(vehicle: Vehicle) {
+export function getLatestAvlFromVehicleId(vehicleId: number) {
+  const GET_LATEST_AVL_FROM_VEHICLE_ID = `
+    SELECT ${AVL_COLUMNS} FROM avl WHERE vehicle_id = $1 AND satellites > 3 ORDER BY timestamp DESC LIMIT 1
+  `;
+
   return database
-    .query<AVL>(GET_AVL_OF_VEHICLE, [vehicle.id])
+    .query<AVL>(GET_LATEST_AVL_FROM_VEHICLE_ID, [vehicleId])
     .then(results => results.rows[0]);
 }
 

@@ -9,7 +9,7 @@ import {
 
 import { AvlType } from "./AvlSchema";
 import { getAllVehicles } from "../resolvers/VehicleResolver";
-import { getLatestAvlOfVehicle } from "../resolvers/AvlResolver";
+import { getLatestAvlFromVehicleId } from "../resolvers/AvlResolver";
 
 const VehicleType = new GraphQLObjectType({
   name: "VehicleType",
@@ -18,7 +18,10 @@ const VehicleType = new GraphQLObjectType({
     id: { type: GraphQLInt },
     registration: { type: GraphQLString },
     imei: { type: GraphQLString },
-    avl: { type: AvlType, resolve: getLatestAvlOfVehicle }
+    avl: {
+      type: AvlType,
+      resolve: (vehicle: Vehicle) => getLatestAvlFromVehicleId(vehicle.id)
+    }
   })
 });
 

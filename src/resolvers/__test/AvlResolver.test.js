@@ -3,7 +3,8 @@
 import {
   getAvlFromAvlId,
   getAvlOfLastTerminalExitFromVehicleId,
-  getAvlsFromDate
+  getAvlsFromDate,
+  getLatestAvlFromVehicleId
 } from "../AvlResolver";
 import {
   insertAvl,
@@ -18,26 +19,55 @@ import { clearTables } from "../../__test/testUtils";
 import database from "../../database/database";
 
 describe("avl resolver", () => {
-  test.only("gets avls from date", async () => {
-    const timestamp = DateTime.local()
+  test("gets avls from date", async () => {
+    const time = DateTime.local()
       .minus({ days: 5 })
       .startOf("day");
     const avl = [
       await insertAvl({
         id: 1,
-        timestamp: timestamp.plus({ hours: 6 }).toSQL()
+        timestamp: time.plus({ hours: 6 }).toSQL()
       }),
       await insertAvl({
         id: 2,
-        timestamp: timestamp.plus({ hours: 12 }).toSQL()
+        timestamp: time.plus({ hours: 12 }).toSQL()
       }),
       await insertAvl({
         id: 3,
-        timestamp: timestamp.plus({ hours: 18 }).toSQL()
+        timestamp: time.plus({ hours: 18 }).toSQL()
       })
     ];
 
-    const actual = await getAvlsFromDate(undefined, { date: timestamp });
+    const actual = await getAvlsFromDate(undefined, { date: time.toSQL() });
+    const expected = avl;
+
+    expect(actual).toEqual(expected);
+  });
+
+  test("get latest avl from vehicle id", async () => {
+    const vehicleId = 8;
+    const time = DateTime.local();
+    await insertVehicle({ id: vehicleId });
+    const avl = await insertAvl({
+      id: 100,
+      timestamp: time.toSQL(),
+      satellites: 5,
+      vehicleId: vehicleId
+    });
+    await insertAvl({
+      id: 99,
+      timestamp: time.minus({ hours: 6 }),
+      satellites: 5,
+      vehicleId: vehicleId
+    });
+    await insertAvl({
+      id: 98,
+      timestamp: time.minus({ hours: 12 }),
+      satellites: 5,
+      vehicleId: vehicleId
+    });
+
+    const actual = await getLatestAvlFromVehicleId(vehicleId);
     const expected = avl;
 
     expect(actual).toEqual(expected);
