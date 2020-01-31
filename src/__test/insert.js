@@ -4,6 +4,47 @@ import { AVL_COLUMNS } from "../resolvers/AvlResolver";
 import { DateTime } from "luxon";
 import database from "../database/database";
 
+export async function insertAvl(
+  avl:
+    | AVL
+    | {|
+        id?: number,
+        priority?: string,
+        timestamp?: number,
+        altitude?: number,
+        longitude?: number,
+        latitude?: number,
+        angle?: number,
+        satellites?: number,
+        speed?: number,
+        vehicleId?: number
+      |}
+) {
+  const INSERT_AVL = `
+      INSERT INTO avl (id, timestamp, priority, longitude, latitude, altitude, angle, satellites, speed, vehicle_id, event_io_id) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        RETURNING ${AVL_COLUMNS}
+    `;
+
+  if (!avl.vehicleId) await insertVehicle({ id: 0 });
+
+  return database
+    .query<AVL>(INSERT_AVL, [
+      avl.id ?? 0,
+      avl.timestamp ?? DateTime.local().toSQL(),
+      avl.priority ?? "low",
+      avl.longitude ?? 0,
+      avl.latitude ?? 0,
+      avl.altitude ?? 0,
+      avl.angle ?? 0,
+      avl.satellites ?? 0,
+      avl.speed ?? 0,
+      avl.vehicleId ?? 0,
+      0
+    ])
+    .then(results => results.rows[0]);
+}
+
 export function insertBusStop(
   busStop:
     | BusStop
@@ -39,66 +80,37 @@ export function insertBusStop(
   ]);
 }
 
-export async function insertAvl(
-  avl:
-    | AVL
-    | {|
-        id?: number,
-        priority?: string,
-        timestamp?: number,
-        altitude?: number,
-        longitude?: number,
-        latitude?: number,
-        angle?: number,
-        satellites?: number,
-        speed?: number,
-        vehicleId?: number
-      |}
-) {
-  const INSERT_AVL = `
-    INSERT INTO avl (id, timestamp, priority, longitude, latitude, altitude, angle, satellites, speed, vehicle_id, event_io_id) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-      RETURNING ${AVL_COLUMNS}
-  `;
+export async function insertBusStopVisit(busStopVisit: {|
+  avlId?: number,
+  busStopId?: number
+|}) {
+  if (!busStopVisit.avlId) await insertAvl({ id: 0 });
+  if (!busStopVisit.busStopId) await insertBusStop({ id: 0 });
 
-  if (!avl.vehicleId) await insertVehicle({ id: 0 });
-
-  return database
-    .query<AVL>(INSERT_AVL, [
-      avl.id ?? 0,
-      avl.timestamp ?? DateTime.local().toSQL(),
-      avl.priority ?? "low",
-      avl.longitude ?? 0,
-      avl.latitude ?? 0,
-      avl.altitude ?? 0,
-      avl.angle ?? 0,
-      avl.satellites ?? 0,
-      avl.speed ?? 0,
-      avl.vehicleId ?? 0,
-      0
-    ])
-    .then(results => results.rows[0]);
+  return database.query<{}>(
+    "INSERT INTO bus_stop_visits (avl_id, bus_stop_id) VALUES ($1, $2)",
+    [busStopVisit.avlId ?? 0, busStopVisit.busStopId ?? 0]
+  );
 }
 
-export function insertVehicle(
-  vehicle:
-    | Vehicle
+export function insertDepartment(
+  department:
+    | Department
     | {|
         id?: number,
-        registration?: string,
-        imei?: string
+        name?: string,
+        type?: string
       |}
 ) {
-  const INSERT_AVL = `
-    INSERT INTO vehicles (id, registration, imei) 
-      VALUES ($1, $2, $3)
-      ON CONFLICT DO NOTHING
-  `;
-  return database.query<{}>(INSERT_AVL, [
-    vehicle.id ?? 0,
-    vehicle.registration ?? "",
-    vehicle.imei ?? ""
-  ]);
+  const INSERT_DEPARTMENT =
+    "INSERT INTO departments (id, name, type) VALUES($1, $2, $3) RETURNING *";
+  return database
+    .query<Department>(INSERT_DEPARTMENT, [
+      department.id ?? 0,
+      department.name ?? "",
+      department.type ?? ""
+    ])
+    .then(results => results.rows[0]);
 }
 
 export function insertScheduledDepartures(
@@ -115,17 +127,27 @@ export function insertScheduledDepartures(
   ]);
 }
 
-export async function insertBusStopVisit(busStopVisit: {|
-  avlId?: number,
-  busStopId?: number
-|}) {
-  if (!busStopVisit.avlId) await insertAvl({ id: 0 });
-  if (!busStopVisit.busStopId) await insertBusStop({ id: 0 });
-
-  return database.query<{}>(
-    "INSERT INTO bus_stop_visits (avl_id, bus_stop_id) VALUES ($1, $2)",
-    [busStopVisit.avlId ?? 0, busStopVisit.busStopId ?? 0]
-  );
+export function insertVehicle(
+  vehicle:
+    | Vehicle
+    | {|
+        id?: number,
+        registration?: string,
+        imei?: string
+      |}
+) {
+  const INSERT_AVL = `
+    INSERT INTO vehicles (id, registration, imei) 
+      VALUES ($1, $2, $3)
+      RETURNING *
+  `;
+  return database
+    .query<Vehicle>(INSERT_AVL, [
+      vehicle.id ?? 0,
+      vehicle.registration ?? "",
+      vehicle.imei ?? ""
+    ])
+    .then(results => results.rows[0]);
 }
 
 function randomId() {

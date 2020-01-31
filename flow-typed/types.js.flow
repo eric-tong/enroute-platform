@@ -15,6 +15,14 @@ declare type AVL = {|
   vehicleId: number
 |};
 
+declare type BusArrival = {
+  scheduledDepartureId: number,
+  tripId: number,
+  busStopId: number,
+  busStopName: string,
+  dateTime: DateTime
+};
+
 declare type BusStop = {|
   id: number,
   name: string,
@@ -28,6 +36,13 @@ declare type BusStop = {|
   isTerminal: boolean
 |};
 
+declare type CheckIn = {|
+  id: number,
+  timestamp: string,
+  vehicleId: number,
+  departmentId: number
+|};
+
 declare type Department = {|
   id: number,
   name: string,
@@ -37,13 +52,6 @@ declare type Department = {|
 declare type Departure = {|
   scheduled: string,
   predicted: string,
-  tripId: number,
-  busStopId: number
-|};
-
-declare type ScheduledDeparture = {|
-  id: number,
-  minuteOfDay: number,
   tripId: number,
   busStopId: number
 |};
@@ -62,19 +70,19 @@ declare type NonTerminalStatus = {|
   predictedArrivals: BusArrival[],
   avl: AVL
 |};
+
+declare type ScheduledDeparture = {|
+  id: number,
+  minuteOfDay: number,
+  tripId: number,
+  busStopId: number
+|};
+
 declare type Status =
   | {
       isInTerminal: true
     }
   | NonTerminalStatus;
-
-declare type BusArrival = {
-  scheduledDepartureId: number,
-  tripId: number,
-  busStopId: number,
-  busStopName: string,
-  dateTime: DateTime
-};
 
 declare type Vehicle = {|
   id: number,

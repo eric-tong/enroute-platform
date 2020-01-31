@@ -6,7 +6,7 @@
     "build": "babel src/ -d lib/",
     "prepublish": "yarn run build",
     "start": "node lib/index.js",
-    "test": "jest"
+    "test": "jest --runInBand"
   },
   "dependencies": {
     "@babel/core": "^7.6.4",

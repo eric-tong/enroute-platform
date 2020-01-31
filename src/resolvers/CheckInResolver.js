@@ -2,6 +2,15 @@
 
 import database from "../database/database";
 
+const CHECK_IN_COLUMNS = [
+  "id",
+  "timestamp",
+  `vehicle_id AS "vehicleId"`,
+  `department_id AS "departmentId"`
+]
+  .map(column => "check_ins." + column)
+  .join(", ");
+
 export function createCheckIn(
   _: void,
   {
@@ -15,13 +24,10 @@ export function createCheckIn(
 
   INSERT INTO check_ins (timestamp, vehicle_id, department_id)
       SELECT NOW() as timestamp, vehicle.id AS vehicle_id, department.id AS department_id FROM department CROSS JOIN vehicle
-      RETURNING id;`;
+      RETURNING ${CHECK_IN_COLUMNS};`;
   return database
-    .query<{ id: number }>(CREATE_CHECK_IN, [
-      departmentType,
-      vehicleRegistration
-    ])
-    .then(results => (results.rows.length ? results.rows[0].id : -1));
+    .query<CheckIn>(CREATE_CHECK_IN, [departmentType, vehicleRegistration])
+    .then(results => (results.rows.length ? results.rows[0] : undefined));
 }
 
 export function checkOutFromCheckInId(_: void, { id }: { id: number }) {

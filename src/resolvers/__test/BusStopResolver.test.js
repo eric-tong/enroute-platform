@@ -149,7 +149,6 @@ describe("bus stop resolver", () => {
       await insertAvl({ id: i, vehicleId });
     }
     for (const busStop of busStopsVisited) {
-      console.log(busStop.id);
       await insertBusStop(busStop);
     }
     for (let i = 0; i < busStopsVisited.length; i++) {

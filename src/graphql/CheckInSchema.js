@@ -13,7 +13,8 @@ export const CreateNewCheckInMutation = {
     departmentType: { type: GraphQLString },
     vehicleRegistration: { type: GraphQLString }
   },
-  resolve: createCheckIn
+  resolve: (...args: any) =>
+    createCheckIn(...args).then(checkIn => (checkIn ? checkIn.id : -1))
 };
 
 export const CheckOutMutation = {
