@@ -4,6 +4,7 @@ import { AVL_COLUMNS } from "../resolvers/AvlResolver";
 import { DateTime } from "luxon";
 import { SCHEDULED_DEPARTURE_COLUMNS } from "../resolvers/ScheduledDepartureResolver";
 import database from "../database/database";
+import { randomId } from "./testUtils";
 
 export async function insertAvl(
   avl:
@@ -116,7 +117,7 @@ export function insertDepartment(
 }
 
 export async function insertIo(io: IO, avlId: number) {
-  const ioNameId = randomId();
+  const ioNameId = randomId(32000);
   const INSERT_IO_NAME = "INSERT INTO io_names (id, value) VALUES($1, $2)";
   const INSERT_IO = "INSERT INTO io (avl_id, id, value) VALUES($1, $2, $3)";
 
@@ -162,8 +163,4 @@ export function insertVehicle(
       vehicle.imei ?? ""
     ])
     .then(results => results.rows[0]);
-}
-
-function randomId() {
-  return Math.floor(Math.random() * 32000);
 }

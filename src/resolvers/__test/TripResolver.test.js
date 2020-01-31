@@ -1,11 +1,21 @@
 // @flow
 
-import { insertBusStop, insertScheduledDepartures } from "../../__test/insert";
+import { clearTables, randomId } from "../../__test/testUtils";
+import {
+  getTripIdFromVehicleId,
+  getTripIdWithNearestStartTime
+} from "../TripResolver";
+import {
+  insertAvl,
+  insertBusStop,
+  insertBusStopVisit,
+  insertScheduledDepartures,
+  insertVehicle
+} from "../../__test/insert";
 
 import { DateTime } from "luxon";
-import { clearTables } from "../../__test/testUtils";
+import busStops from "../../__test/models/busStops";
 import database from "../../database/database";
-import { getTripIdWithNearestStartTime } from "../TripResolver";
 
 describe("trip resolver", () => {
   test("gets trip id with nearest start time", async () => {
@@ -34,6 +44,70 @@ describe("trip resolver", () => {
     });
 
     const actual = await getTripIdWithNearestStartTime();
+    const expected = tripId;
+
+    expect(actual).toEqual(expected);
+  });
+
+  test("gets trip id from vehicle id", async () => {
+    const vehicleId = randomId();
+    const tripId = randomId();
+    const terminalBusStopId = randomId();
+    const nonTerminalBusStopId = randomId();
+    const terminalAvlId = randomId();
+    const currentAvlId = randomId();
+
+    const minuteOfDay = 100;
+
+    await insertVehicle({ id: vehicleId });
+    await insertBusStop({ id: terminalBusStopId, isTerminal: true });
+    await insertBusStop({ id: nonTerminalBusStopId, isTerminal: false });
+    await insertScheduledDepartures({
+      id: randomId(),
+      tripId,
+      busStopId: terminalBusStopId,
+      minuteOfDay: minuteOfDay
+    });
+    await insertScheduledDepartures({
+      id: randomId(),
+      tripId: tripId + 1,
+      busStopId: terminalBusStopId,
+      minuteOfDay: minuteOfDay + 50
+    });
+    await insertScheduledDepartures({
+      id: randomId(),
+      tripId,
+      busStopId: nonTerminalBusStopId,
+      minuteOfDay: minuteOfDay + 100
+    });
+
+    await insertAvl({
+      id: terminalAvlId,
+      timestamp: DateTime.local()
+        .startOf("day")
+        .plus({ minutes: minuteOfDay + 5 })
+        .toSQL(),
+      vehicleId
+    });
+    await insertBusStopVisit({
+      avlId: terminalAvlId,
+      busStopId: terminalBusStopId
+    });
+
+    await insertAvl({
+      id: currentAvlId,
+      timestamp: DateTime.local()
+        .startOf("day")
+        .plus({ minutes: minuteOfDay + 55 })
+        .toSQL(),
+      vehicleId
+    });
+    await insertBusStopVisit({
+      avlId: currentAvlId,
+      busStopId: nonTerminalBusStopId
+    });
+
+    const actual = await getTripIdFromVehicleId(vehicleId);
     const expected = tripId;
 
     expect(actual).toEqual(expected);

@@ -8,8 +8,8 @@ import {
 import { DateTime } from "luxon";
 import NodeCache from "node-cache";
 import { getAllVehicles } from "../resolvers/VehicleResolver";
-import { getCurrentTripIdFromVehicleId } from "../resolvers/TripResolver";
 import { getLatestAvlFromVehicleId } from "../resolvers/AvlResolver";
+import { getTripIdFromVehicleId } from "../resolvers/TripResolver";
 
 export const vehicleStatusCache = new NodeCache();
 
@@ -27,13 +27,9 @@ async function estimateVehicleStatus(
 ): Promise<Status> {
   const avl = await getLatestAvlFromVehicleId(vehicle.id);
   if (!avl) return { isInTerminal: true };
-  const [
-    currentBusStop,
-    { tripId, tripIdConfidence },
-    busStopsVisited
-  ] = await Promise.all([
+  const [currentBusStop, tripId, busStopsVisited] = await Promise.all([
     getBusStopFromAvlId(avl.id),
-    getCurrentTripIdFromVehicleId(vehicle.id, beforeTimestamp),
+    getTripIdFromVehicleId(vehicle.id),
     getBusStopsVisitedByVehicle(vehicle.id)
   ]);
 
@@ -42,7 +38,6 @@ async function estimateVehicleStatus(
     : {
         isInTerminal: false,
         tripId,
-        tripIdConfidence,
         currentBusStopId: currentBusStop && currentBusStop.id,
         busStopsVisited: busStopsVisited.map(busStop => busStop.id),
         avl,

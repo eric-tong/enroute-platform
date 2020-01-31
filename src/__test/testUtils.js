@@ -19,3 +19,7 @@ export async function clearTables() {
     await database.query(`DELETE FROM ${name}`);
   }
 }
+
+export function randomId(max?: number = 2e9) {
+  return Math.floor(Math.random() * max);
+}

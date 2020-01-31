@@ -5,7 +5,7 @@ import { DateTime } from "luxon";
 declare type AVL = {|
   id: number,
   priority: string,
-  timestamp: number,
+  timestamp: string,
   altitude: number,
   longitude: number,
   latitude: number,
@@ -64,7 +64,6 @@ declare type IO = {|
 declare type NonTerminalStatus = {|
   isInTerminal: false,
   tripId: number,
-  tripIdConfidence: number,
   currentBusStopId: ?number,
   busStopsVisited: number[],
   predictedArrivals: BusArrival[],
