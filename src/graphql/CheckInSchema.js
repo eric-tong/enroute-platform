@@ -23,5 +23,6 @@ export const CheckOutMutation = {
   args: {
     id: { type: GraphQLInt }
   },
-  resolve: checkOutFromCheckInId
+  resolve: (...args: any) =>
+    checkOutFromCheckInId(...args).then(checkIn => (checkIn ? checkIn.id : -1))
 };

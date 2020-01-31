@@ -1,5 +1,6 @@
 // @flow
 
+import { checkOutFromCheckInId, createCheckIn } from "../CheckInResolver";
 import {
   getAvlFromAvlId,
   getAvlOfLastTerminalExitFromVehicleId,
@@ -17,7 +18,6 @@ import {
 import { DateTime } from "luxon";
 import busStops from "../../__test/models/busStops";
 import { clearTables } from "../../__test/testUtils";
-import { createCheckIn } from "../CheckInResolver";
 import database from "../../database/database";
 
 describe("check in resolver", () => {
@@ -50,6 +50,31 @@ describe("check in resolver", () => {
         departmentType: "invalidDepartment",
         vehicleRegistration: vehicle.registration
       });
+
+      expect(actual).toBeUndefined();
+    });
+  });
+
+  describe("checks out", () => {
+    test("with valid check in id", async () => {
+      const vehicle = await insertVehicle({ registration: "XXXXXXX" });
+      const department = await insertDepartment({
+        id: 200,
+        type: "newDepartment"
+      });
+      const checkIn = await createCheckIn(undefined, {
+        departmentType: department.type,
+        vehicleRegistration: vehicle.registration
+      });
+
+      const actual = await checkOutFromCheckInId(undefined, { id: checkIn.id });
+      const expected = checkIn;
+
+      expect(actual).toEqual(expected);
+    });
+
+    test("returns undefined with invalid check in id", async () => {
+      const actual = await checkOutFromCheckInId(undefined, { id: 500 });
 
       expect(actual).toBeUndefined();
     });

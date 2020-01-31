@@ -27,12 +27,12 @@ export function createCheckIn(
       RETURNING ${CHECK_IN_COLUMNS};`;
   return database
     .query<CheckIn>(CREATE_CHECK_IN, [departmentType, vehicleRegistration])
-    .then(results => (results.rows.length ? results.rows[0] : undefined));
+    .then(results => results.rows[0]);
 }
 
 export function checkOutFromCheckInId(_: void, { id }: { id: number }) {
-  const CHECK_OUT = "DELETE FROM check_ins WHERE id = $1 RETURNING id";
+  const CHECK_OUT = `DELETE FROM check_ins WHERE id = $1 RETURNING ${CHECK_IN_COLUMNS}`;
   return database
-    .query<{ id: number }>(CHECK_OUT, [id])
-    .then(results => (results.rows.length ? results.rows[0].id : -1));
+    .query<CheckIn>(CHECK_OUT, [id])
+    .then(results => results.rows[0]);
 }
