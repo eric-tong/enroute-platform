@@ -26,7 +26,8 @@ export async function insertAvl(
         RETURNING ${AVL_COLUMNS}
     `;
 
-  if (!avl.vehicleId) await insertVehicle({ id: 0 });
+  const mockVehicleId = randomId();
+  if (!avl.vehicleId) await insertVehicle({ id: mockVehicleId });
 
   return database
     .query<AVL>(INSERT_AVL, [
@@ -39,7 +40,7 @@ export async function insertAvl(
       avl.angle ?? 0,
       avl.satellites ?? 0,
       avl.speed ?? 0,
-      avl.vehicleId ?? 0,
+      avl.vehicleId ?? mockVehicleId,
       0
     ])
     .then(results => results.rows[0]);
