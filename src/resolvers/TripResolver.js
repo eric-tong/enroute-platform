@@ -10,7 +10,7 @@ WITH first_stops AS (
 
 SELECT trip_id as "tripId" FROM first_stops  
   WHERE stop_number = 1
-  ORDER BY ABS(EXTRACT(minute FROM NOW()) + EXTRACT(hour FROM NOW()) * 60 - first_stops.time)
+  ORDER BY ABS(EXTRACT(minute FROM NOW()) + EXTRACT(hour FROM NOW()) * 60 - first_stops.minute_of_day)
   LIMIT 1
 `;
 const GET_CURRENT_TRIP_OF_VEHICLE = `
