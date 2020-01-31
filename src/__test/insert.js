@@ -1,5 +1,6 @@
 // @flow
 
+import { AVL_COLUMNS } from "../resolvers/AvlResolver";
 import { DateTime } from "luxon";
 import database from "../database/database";
 
@@ -57,24 +58,26 @@ export async function insertAvl(
   const INSERT_AVL = `
     INSERT INTO avl (id, timestamp, priority, longitude, latitude, altitude, angle, satellites, speed, vehicle_id, event_io_id) 
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-      RETURNING id
+      RETURNING ${AVL_COLUMNS}
   `;
 
   if (!avl.vehicleId) await insertVehicle({ id: 0 });
 
-  return database.query<{ id: number }>(INSERT_AVL, [
-    avl.id ?? 0,
-    avl.timestamp ?? DateTime.local().toSQL(),
-    avl.priority ?? "low",
-    avl.longitude ?? 0,
-    avl.latitude ?? 0,
-    avl.altitude ?? 0,
-    avl.angle ?? 0,
-    avl.satellites ?? 0,
-    avl.speed ?? 0,
-    avl.vehicleId ?? 0,
-    0
-  ]);
+  return database
+    .query<AVL>(INSERT_AVL, [
+      avl.id ?? 0,
+      avl.timestamp ?? DateTime.local().toSQL(),
+      avl.priority ?? "low",
+      avl.longitude ?? 0,
+      avl.latitude ?? 0,
+      avl.altitude ?? 0,
+      avl.angle ?? 0,
+      avl.satellites ?? 0,
+      avl.speed ?? 0,
+      avl.vehicleId ?? 0,
+      0
+    ])
+    .then(results => results.rows[0]);
 }
 
 export function insertVehicle(

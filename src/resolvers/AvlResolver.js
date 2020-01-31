@@ -3,7 +3,7 @@
 import { DateTime } from "luxon";
 import database from "../database/database";
 
-const AVL_COLUMNS = [
+export const AVL_COLUMNS = [
   "id",
   "priority",
   "timestamp",
@@ -20,12 +20,12 @@ const AVL_COLUMNS = [
 
 const GET_AVL_OF_VEHICLE = `SELECT *, vehicle_id as "vehicleId" FROM avl WHERE vehicle_id = $1 AND satellites > 3 ORDER BY timestamp DESC LIMIT 1`;
 
-export function getAllAvlsFromDate(
+export function getAvlsFromDate(
   _: void,
   { date = DateTime.local().toSQL() }: { date: ?string }
 ) {
   const GET_AVLS_WITH_DATE = `
-  SELECT *, vehicle_id as "vehicleId" FROM avl 
+  SELECT ${AVL_COLUMNS} FROM avl 
     WHERE timestamp::DATE = $1::DATE 
     ORDER BY timestamp
   `;

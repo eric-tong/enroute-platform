@@ -2,7 +2,8 @@
 
 import {
   getAvlFromAvlId,
-  getAvlOfLastTerminalExitFromVehicleId
+  getAvlOfLastTerminalExitFromVehicleId,
+  getAvlsFromDate
 } from "../AvlResolver";
 import {
   insertAvl,
@@ -11,11 +12,37 @@ import {
   insertVehicle
 } from "../../__test/insert";
 
+import { DateTime } from "luxon";
 import busStops from "../../__test/models/busStops";
 import { clearTables } from "../../__test/testUtils";
 import database from "../../database/database";
 
 describe("avl resolver", () => {
+  test.only("gets avls from date", async () => {
+    const timestamp = DateTime.local()
+      .minus({ days: 5 })
+      .startOf("day");
+    const avl = [
+      await insertAvl({
+        id: 1,
+        timestamp: timestamp.plus({ hours: 6 }).toSQL()
+      }),
+      await insertAvl({
+        id: 2,
+        timestamp: timestamp.plus({ hours: 12 }).toSQL()
+      }),
+      await insertAvl({
+        id: 3,
+        timestamp: timestamp.plus({ hours: 18 }).toSQL()
+      })
+    ];
+
+    const actual = await getAvlsFromDate(undefined, { date: timestamp });
+    const expected = avl;
+
+    expect(actual).toEqual(expected);
+  });
+
   test("gets avl of last terminal exit from vehicle id", async () => {
     const vehicleId = 8;
     const lastTerminalAvlId = 10;

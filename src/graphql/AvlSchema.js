@@ -11,7 +11,7 @@ import {
 } from "graphql";
 
 import { IoType } from "./IoSchema";
-import { getAllAvlsFromDate } from "../resolvers/AvlResolver";
+import { getAvlsFromDate } from "../resolvers/AvlResolver";
 import { getIoFromAvlId } from "../resolvers/IoResolver";
 
 export const AvlType = new GraphQLObjectType({
@@ -41,5 +41,5 @@ export const AvlQuery = {
   args: {
     date: { type: GraphQLString }
   },
-  resolve: getAllAvlsFromDate
+  resolve: getAvlsFromDate
 };
