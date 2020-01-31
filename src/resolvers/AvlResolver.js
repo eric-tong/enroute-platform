@@ -18,6 +18,13 @@ export const AVL_COLUMNS = [
   .map(column => "avl." + column)
   .join(", ");
 
+export function getAvlFromAvlId(avlId: number) {
+  const GET_AVL_FROM_AVL_ID = `SELECT ${AVL_COLUMNS} FROM AVL WHERE id = $1 LIMIT 1`;
+  return database
+    .query<AVL>(GET_AVL_FROM_AVL_ID, [avlId])
+    .then(results => results.rows[0]);
+}
+
 export function getAvlsFromDate(
   _: void,
   { date = DateTime.local().toSQL() }: { date: ?string }
@@ -39,13 +46,6 @@ export function getLatestAvlFromVehicleId(vehicleId: number) {
 
   return database
     .query<AVL>(GET_LATEST_AVL_FROM_VEHICLE_ID, [vehicleId])
-    .then(results => results.rows[0]);
-}
-
-export function getAvlFromAvlId(avlId: number) {
-  const GET_AVL_FROM_AVL_ID = `SELECT ${AVL_COLUMNS} FROM AVL WHERE id = $1 LIMIT 1`;
-  return database
-    .query<AVL>(GET_AVL_FROM_AVL_ID, [avlId])
     .then(results => results.rows[0]);
 }
 

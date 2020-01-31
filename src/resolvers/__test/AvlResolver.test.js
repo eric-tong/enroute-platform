@@ -19,6 +19,18 @@ import { clearTables } from "../../__test/testUtils";
 import database from "../../database/database";
 
 describe("avl resolver", () => {
+  test("gets avl from avl id", async () => {
+    const avlId = 500;
+    const avl = await insertAvl({ id: avlId });
+    await insertAvl({ id: avlId - 100 });
+    await insertAvl({ id: avlId + 100 });
+
+    const actual = await getAvlFromAvlId(avlId);
+    const expected = avl;
+
+    expect(actual).toEqual(expected);
+  });
+
   test("gets avls from date", async () => {
     const time = DateTime.local()
       .minus({ days: 5 })
