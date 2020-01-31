@@ -1,10 +1,13 @@
 // @flow
 
+import {
+  getScheduledDeparturesFromBusStopId,
+  getScheduledDeparturesFromTripId
+} from "../DepartureResolver";
 import { insertBusStop, insertScheduledDepartures } from "../../__test/insert";
 
 import { clearTables } from "../../__test/testUtils";
 import database from "../../database/database";
-import { getScheduledDeparturesFromBusStopId } from "../DepartureResolver";
 
 describe("departure resolver", () => {
   test("gets scheduled departures from bus stop id", async () => {
@@ -52,6 +55,47 @@ describe("departure resolver", () => {
     });
 
     const actual = await getScheduledDeparturesFromBusStopId(busStopId);
+    const expected = scheduledDepartures;
+
+    expect(actual).toEqual(expected);
+  });
+
+  test("gets scheduled departures from trip id", async () => {
+    const tripId = 8;
+    await insertBusStop({ id: 1 });
+    await insertBusStop({ id: 2 });
+    await insertBusStop({ id: 3 });
+
+    const scheduledDepartures = [
+      await insertScheduledDepartures({
+        id: 1,
+        minuteOfDay: 100,
+        tripId,
+        busStopId: 1
+      }),
+      await insertScheduledDepartures({
+        id: 2,
+        minuteOfDay: 200,
+        tripId,
+        busStopId: 2
+      }),
+      await insertScheduledDepartures({
+        id: 3,
+        minuteOfDay: 300,
+        tripId,
+        busStopId: 3
+      })
+    ];
+
+    await insertBusStop({ id: 4 });
+    await insertScheduledDepartures({
+      id: 4,
+      minuteOfDay: 300,
+      tripId: tripId + 1,
+      busStopId: 4
+    });
+
+    const actual = await getScheduledDeparturesFromTripId(tripId);
     const expected = scheduledDepartures;
 
     expect(actual).toEqual(expected);
