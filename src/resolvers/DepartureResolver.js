@@ -17,24 +17,24 @@ export function getDeparturesFromBusStop(
 ) {
   return getScheduledDeparturesFromBusStopId(busStop.id).then(
     scheduledDepartures =>
-      scheduledDepartures.map<Departure>(scheduledDeparture => ({
-        scheduledDeparture
-      }))
+      scheduledDepartures
+        .slice(0, maxLength)
+        .map<Departure>(scheduledDeparture => ({
+          scheduledDeparture
+        }))
   );
 }
 
 export async function getDeparturesFromTripId(
   tripId: number,
-  { maxLength = Number.MAX_SAFE_INTEGER }: { maxLength: number }
+  { maxLength = Number.MAX_SAFE_INTEGER }: { maxLength?: number }
 ) {
-  const predictedDepartures = getAllPredictedBusArrivals();
-  const scheduledDepartures = await getScheduledDeparturesFromTripId(tripId);
-
-  return getRelevantDepartures(
-    predictedDepartures,
-    scheduledDepartures,
-    maxLength,
-    false
+  return getScheduledDeparturesFromTripId(tripId).then(scheduledDepartures =>
+    scheduledDepartures
+      .slice(0, maxLength)
+      .map<Departure>(scheduledDeparture => ({
+        scheduledDeparture
+      }))
   );
 }
 

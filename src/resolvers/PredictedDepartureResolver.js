@@ -22,8 +22,9 @@ export function getPredictedDepartureTodayFromScheduledDepartureId(
       LIMIT 1
   `;
   return database
-    .query(GET_PREDICTED_DEPARTURE_TODAY_FROM_SCHEDULED_DEPARTURE_ID, [
-      scheduledDepartureId
-    ])
+    .query<?PredictedDeparture>(
+      GET_PREDICTED_DEPARTURE_TODAY_FROM_SCHEDULED_DEPARTURE_ID,
+      [scheduledDepartureId]
+    )
     .then(results => results.rows[0]);
 }
