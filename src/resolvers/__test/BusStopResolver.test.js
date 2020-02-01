@@ -14,7 +14,7 @@ import {
   insertAvl,
   insertBusStop,
   insertBusStopVisit,
-  insertScheduledDepartures,
+  insertScheduledDeparture,
   insertVehicle
 } from "../../__test/insert";
 
@@ -174,7 +174,7 @@ async function insertTestTrip() {
     await insertBusStop(busStops[key]);
   }
   for (let i = 0; i < busStopsInTrip.length; i++) {
-    await insertScheduledDepartures({
+    await insertScheduledDeparture({
       id: i,
       minuteOfDay: i,
       tripId,

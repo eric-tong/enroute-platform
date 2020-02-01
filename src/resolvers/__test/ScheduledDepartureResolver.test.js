@@ -4,7 +4,7 @@ import {
   getScheduledDeparturesFromBusStopId,
   getScheduledDeparturesFromTripId
 } from "../ScheduledDepartureResolver";
-import { insertBusStop, insertScheduledDepartures } from "../../__test/insert";
+import { insertBusStop, insertScheduledDeparture } from "../../__test/insert";
 
 import { clearTables } from "../../__test/testUtils";
 import database from "../../database/database";
@@ -14,19 +14,19 @@ describe("departure resolver", () => {
     const busStopId = 8;
     await insertBusStop({ id: busStopId });
     const scheduledDepartures = [
-      await insertScheduledDepartures({
+      await insertScheduledDeparture({
         id: 1,
         minuteOfDay: 100,
         tripId: 1,
         busStopId
       }),
-      await insertScheduledDepartures({
+      await insertScheduledDeparture({
         id: 2,
         minuteOfDay: 200,
         tripId: 2,
         busStopId
       }),
-      await insertScheduledDepartures({
+      await insertScheduledDeparture({
         id: 3,
         minuteOfDay: 300,
         tripId: 3,
@@ -35,19 +35,19 @@ describe("departure resolver", () => {
     ];
 
     await insertBusStop({ id: busStopId + 1 });
-    await insertScheduledDepartures({
+    await insertScheduledDeparture({
       id: 4,
       minuteOfDay: 400,
       tripId: 1,
       busStopId: busStopId + 1
     });
-    await insertScheduledDepartures({
+    await insertScheduledDeparture({
       id: 5,
       minuteOfDay: 400,
       tripId: 2,
       busStopId: busStopId + 1
     });
-    await insertScheduledDepartures({
+    await insertScheduledDeparture({
       id: 6,
       minuteOfDay: 400,
       tripId: 3,
@@ -67,19 +67,19 @@ describe("departure resolver", () => {
     await insertBusStop({ id: 3 });
 
     const scheduledDepartures = [
-      await insertScheduledDepartures({
+      await insertScheduledDeparture({
         id: 1,
         minuteOfDay: 100,
         tripId,
         busStopId: 1
       }),
-      await insertScheduledDepartures({
+      await insertScheduledDeparture({
         id: 2,
         minuteOfDay: 200,
         tripId,
         busStopId: 2
       }),
-      await insertScheduledDepartures({
+      await insertScheduledDeparture({
         id: 3,
         minuteOfDay: 300,
         tripId,
@@ -88,7 +88,7 @@ describe("departure resolver", () => {
     ];
 
     await insertBusStop({ id: 4 });
-    await insertScheduledDepartures({
+    await insertScheduledDeparture({
       id: 4,
       minuteOfDay: 300,
       tripId: tripId + 1,

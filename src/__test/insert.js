@@ -125,7 +125,9 @@ export async function insertIo(io: IO, avlId: number) {
   await database.query(INSERT_IO, [avlId, ioNameId, io.value]);
 }
 
-export function insertScheduledDepartures(
+export function insertPredictedDeparture() {}
+
+export function insertScheduledDeparture(
   scheduledDeparture: ScheduledDeparture
 ) {
   const INSERT_INTO_BUS_STOP = `

@@ -9,7 +9,7 @@ import {
   insertAvl,
   insertBusStop,
   insertBusStopVisit,
-  insertScheduledDepartures,
+  insertScheduledDeparture,
   insertVehicle
 } from "../../__test/insert";
 
@@ -24,19 +24,19 @@ describe("trip resolver", () => {
     const minuteOfDay = now.hour * 60 + now.minute;
 
     await insertBusStop({ id: 9 });
-    await insertScheduledDepartures({
+    await insertScheduledDeparture({
       id: 100,
       tripId,
       busStopId: 9,
       minuteOfDay: minuteOfDay
     });
-    await insertScheduledDepartures({
+    await insertScheduledDeparture({
       id: 200,
       tripId,
       busStopId: 9,
       minuteOfDay: minuteOfDay - 60
     });
-    await insertScheduledDepartures({
+    await insertScheduledDeparture({
       id: 300,
       tripId,
       busStopId: 9,
@@ -62,19 +62,19 @@ describe("trip resolver", () => {
     await insertVehicle({ id: vehicleId });
     await insertBusStop({ id: terminalBusStopId, isTerminal: true });
     await insertBusStop({ id: nonTerminalBusStopId, isTerminal: false });
-    await insertScheduledDepartures({
+    await insertScheduledDeparture({
       id: randomId(),
       tripId,
       busStopId: terminalBusStopId,
       minuteOfDay: minuteOfDay
     });
-    await insertScheduledDepartures({
+    await insertScheduledDeparture({
       id: randomId(),
       tripId: tripId + 1,
       busStopId: terminalBusStopId,
       minuteOfDay: minuteOfDay + 50
     });
-    await insertScheduledDepartures({
+    await insertScheduledDeparture({
       id: randomId(),
       tripId,
       busStopId: nonTerminalBusStopId,
