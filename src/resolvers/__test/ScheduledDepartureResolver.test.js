@@ -15,19 +15,16 @@ describe("departure resolver", () => {
     await insertBusStop({ id: busStopId });
     const scheduledDepartures = [
       await insertScheduledDeparture({
-        id: 1,
         minuteOfDay: 100,
         tripId: 1,
         busStopId
       }),
       await insertScheduledDeparture({
-        id: 2,
         minuteOfDay: 200,
         tripId: 2,
         busStopId
       }),
       await insertScheduledDeparture({
-        id: 3,
         minuteOfDay: 300,
         tripId: 3,
         busStopId
@@ -36,19 +33,16 @@ describe("departure resolver", () => {
 
     await insertBusStop({ id: busStopId + 1 });
     await insertScheduledDeparture({
-      id: 4,
       minuteOfDay: 400,
       tripId: 1,
       busStopId: busStopId + 1
     });
     await insertScheduledDeparture({
-      id: 5,
       minuteOfDay: 400,
       tripId: 2,
       busStopId: busStopId + 1
     });
     await insertScheduledDeparture({
-      id: 6,
       minuteOfDay: 400,
       tripId: 3,
       busStopId: busStopId + 1
@@ -89,7 +83,6 @@ describe("departure resolver", () => {
 
     await insertBusStop({ id: 4 });
     await insertScheduledDeparture({
-      id: 4,
       minuteOfDay: 300,
       tripId: tripId + 1,
       busStopId: 4

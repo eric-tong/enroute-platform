@@ -14,25 +14,21 @@ describe("route resolver", () => {
     await insertBusStop(busStops.departmentOfMaterialsSouthbound);
     await insertBusStop(busStops.oxfordTownCentre);
     await insertScheduledDeparture({
-      id: 100,
       tripId,
       busStopId: busStops.begbrokeSciencePark.id,
       minuteOfDay: 100
     });
     await insertScheduledDeparture({
-      id: 101,
       tripId,
       busStopId: busStops.departmentOfMaterialsSouthbound.id,
       minuteOfDay: 200
     });
     await insertScheduledDeparture({
-      id: 102,
       tripId,
       busStopId: busStops.oxfordTownCentre.id,
       minuteOfDay: 300
     });
     await insertScheduledDeparture({
-      id: 103,
       tripId,
       busStopId: busStops.begbrokeSciencePark.id,
       minuteOfDay: 400

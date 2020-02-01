@@ -2,6 +2,7 @@
 
 import { AVL_COLUMNS } from "../resolvers/AvlResolver";
 import { DateTime } from "luxon";
+import { PREDICTED_DEPARTURE_COLUMNS } from "../resolvers/PredictedDepartureResolver";
 import { SCHEDULED_DEPARTURE_COLUMNS } from "../resolvers/ScheduledDepartureResolver";
 import database from "../database/database";
 import { randomId } from "./testUtils";
@@ -125,10 +126,40 @@ export async function insertIo(io: IO, avlId: number) {
   await database.query(INSERT_IO, [avlId, ioNameId, io.value]);
 }
 
-export function insertPredictedDeparture() {}
+export function insertPredictedDeparture(
+  predictedDeparture:
+    | PredictedDeparture
+    | {|
+        id?: number,
+        scheduledDepartureId?: number,
+        avlId?: number,
+        predictedTimestamp?: string
+      |}
+) {
+  const INSERT_PREDICTED_DEPARTURE = `
+  INSERT INTO predicted_departures (id, scheduled_departure_id, avl_id, predicted_timestamp)
+    VALUES ($1, $2, $3, $4)
+    RETURNING ${PREDICTED_DEPARTURE_COLUMNS}
+  `;
+  return database
+    .query(PREDICTED_DEPARTURE_COLUMNS, [
+      predictedDeparture.id ?? randomId(),
+      predictedDeparture.scheduledDepartureId ?? 0,
+      predictedDeparture.avlId ?? 0,
+      predictedDeparture.predictedTimestamp ?? DateTime.local().toSQL()
+    ])
+    .then(results => results.rows[0]);
+}
 
 export function insertScheduledDeparture(
-  scheduledDeparture: ScheduledDeparture
+  scheduledDeparture:
+    | ScheduledDeparture
+    | {|
+        id?: number,
+        minuteOfDay?: number,
+        tripId?: number,
+        busStopId?: number
+      |}
 ) {
   const INSERT_INTO_BUS_STOP = `
   INSERT INTO scheduled_departures (id, minute_of_day, trip_id, bus_stop_id)
@@ -136,10 +167,10 @@ export function insertScheduledDeparture(
     RETURNING ${SCHEDULED_DEPARTURE_COLUMNS}`;
   return database
     .query<ScheduledDeparture>(INSERT_INTO_BUS_STOP, [
-      scheduledDeparture.id,
-      scheduledDeparture.minuteOfDay,
-      scheduledDeparture.tripId,
-      scheduledDeparture.busStopId
+      scheduledDeparture.id ?? randomId(),
+      scheduledDeparture.minuteOfDay ?? 0,
+      scheduledDeparture.tripId ?? 0,
+      scheduledDeparture.busStopId ?? 0
     ])
     .then(results => results.rows[0]);
 }

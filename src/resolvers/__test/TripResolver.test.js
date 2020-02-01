@@ -25,19 +25,16 @@ describe("trip resolver", () => {
 
     await insertBusStop({ id: 9 });
     await insertScheduledDeparture({
-      id: 100,
       tripId,
       busStopId: 9,
       minuteOfDay: minuteOfDay
     });
     await insertScheduledDeparture({
-      id: 200,
       tripId,
       busStopId: 9,
       minuteOfDay: minuteOfDay - 60
     });
     await insertScheduledDeparture({
-      id: 300,
       tripId,
       busStopId: 9,
       minuteOfDay: minuteOfDay + 60
@@ -63,19 +60,16 @@ describe("trip resolver", () => {
     await insertBusStop({ id: terminalBusStopId, isTerminal: true });
     await insertBusStop({ id: nonTerminalBusStopId, isTerminal: false });
     await insertScheduledDeparture({
-      id: randomId(),
       tripId,
       busStopId: terminalBusStopId,
       minuteOfDay: minuteOfDay
     });
     await insertScheduledDeparture({
-      id: randomId(),
       tripId: tripId + 1,
       busStopId: terminalBusStopId,
       minuteOfDay: minuteOfDay + 50
     });
     await insertScheduledDeparture({
-      id: randomId(),
       tripId,
       busStopId: nonTerminalBusStopId,
       minuteOfDay: minuteOfDay + 100

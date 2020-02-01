@@ -70,6 +70,13 @@ declare type NonTerminalStatus = {|
   avl: AVL
 |};
 
+declare type PredictedDeparture = {|
+  id: number,
+  scheduledDepartureId: number,
+  avlId: number,
+  predictedTimestamp: string
+|};
+
 declare type ScheduledDeparture = {|
   id: number,
   minuteOfDay: number,

@@ -174,11 +174,13 @@ async function insertTestTrip() {
     await insertBusStop(busStops[key]);
   }
   for (let i = 0; i < busStopsInTrip.length; i++) {
-    await insertScheduledDeparture({
-      id: i,
-      minuteOfDay: i,
-      tripId,
-      busStopId: busStopsInTrip[i].id
-    });
+    await insertScheduledDeparture(
+      ({
+        id: i,
+        minuteOfDay: i,
+        tripId,
+        busStopId: busStopsInTrip[i].id
+      }: ScheduledDeparture)
+    );
   }
 }
