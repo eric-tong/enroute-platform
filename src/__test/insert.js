@@ -138,11 +138,11 @@ export function insertPredictedDeparture(
 ) {
   const INSERT_PREDICTED_DEPARTURE = `
   INSERT INTO predicted_departures (id, scheduled_departure_id, avl_id, predicted_timestamp)
-    VALUES ($1, $2, $3, $4)
+    VALUES($1, $2, $3, $4)
     RETURNING ${PREDICTED_DEPARTURE_COLUMNS}
   `;
   return database
-    .query(PREDICTED_DEPARTURE_COLUMNS, [
+    .query(INSERT_PREDICTED_DEPARTURE, [
       predictedDeparture.id ?? randomId(),
       predictedDeparture.scheduledDepartureId ?? 0,
       predictedDeparture.avlId ?? 0,
@@ -151,7 +151,7 @@ export function insertPredictedDeparture(
     .then(results => results.rows[0]);
 }
 
-export function insertScheduledDeparture(
+export async function insertScheduledDeparture(
   scheduledDeparture:
     | ScheduledDeparture
     | {|
@@ -165,12 +165,16 @@ export function insertScheduledDeparture(
   INSERT INTO scheduled_departures (id, minute_of_day, trip_id, bus_stop_id)
     VALUES($1, $2, $3, $4)
     RETURNING ${SCHEDULED_DEPARTURE_COLUMNS}`;
+
+  const busStopId = randomId();
+  if (!scheduledDeparture.busStopId) await insertBusStop({ id: busStopId });
+
   return database
     .query<ScheduledDeparture>(INSERT_INTO_BUS_STOP, [
       scheduledDeparture.id ?? randomId(),
       scheduledDeparture.minuteOfDay ?? 0,
       scheduledDeparture.tripId ?? 0,
-      scheduledDeparture.busStopId ?? 0
+      scheduledDeparture.busStopId ?? busStopId
     ])
     .then(results => results.rows[0]);
 }

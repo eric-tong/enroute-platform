@@ -1,4 +1,4 @@
-// @flows
+// @flow
 
 import database from "../database/database";
 
@@ -11,8 +11,19 @@ export const PREDICTED_DEPARTURE_COLUMNS = [
   .map(column => "predicted_departures." + column)
   .join(", ");
 
-function getPredictedDepartureTodayFromScheduledDepartureId(
-  scheduledDepartureId
+export function getPredictedDepartureTodayFromScheduledDepartureId(
+  scheduledDepartureId: number
 ) {
-  return database.query();
+  const GET_PREDICTED_DEPARTURE_TODAY_FROM_SCHEDULED_DEPARTURE_ID = `
+    SELECT ${PREDICTED_DEPARTURE_COLUMNS} FROM predicted_departures
+      WHERE scheduled_departure_id = $1
+      AND predicted_timestamp::DATE = NOW()::DATE
+      ORDER BY predicted_timestamp 
+      LIMIT 1
+  `;
+  return database
+    .query(GET_PREDICTED_DEPARTURE_TODAY_FROM_SCHEDULED_DEPARTURE_ID, [
+      scheduledDepartureId
+    ])
+    .then(results => results.rows[0]);
 }
