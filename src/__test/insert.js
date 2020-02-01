@@ -1,6 +1,7 @@
 // @flow
 
 import { AVL_COLUMNS } from "../resolvers/AvlResolver";
+import { BUS_STOP_COLUMNS } from "../resolvers/BusStopResolver";
 import { DateTime } from "luxon";
 import { PREDICTED_DEPARTURE_COLUMNS } from "../resolvers/PredictedDepartureResolver";
 import { SCHEDULED_DEPARTURE_COLUMNS } from "../resolvers/ScheduledDepartureResolver";
@@ -68,20 +69,23 @@ export function insertBusStop(
   const INSERT_INTO_BUS_STOP = `
   INSERT INTO bus_stops (id, name, street, icon, longitude, latitude, direction, 
     display_position, is_terminal, road_angle, url)
-    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
-  return database.query<{}>(INSERT_INTO_BUS_STOP, [
-    busStop.id ?? 0,
-    busStop.name ?? 0,
-    busStop.street ?? 0,
-    busStop.icon ?? 0,
-    busStop.longitude ?? 0,
-    busStop.latitude ?? 0,
-    busStop.direction ?? 0,
-    0,
-    busStop.isTerminal ?? 0,
-    busStop.roadAngle,
-    busStop.url ?? 0
-  ]);
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+    RETURNING ${BUS_STOP_COLUMNS}`;
+  return database
+    .query<BusStop>(INSERT_INTO_BUS_STOP, [
+      busStop.id ?? randomId(),
+      busStop.name ?? 0,
+      busStop.street ?? 0,
+      busStop.icon ?? 0,
+      busStop.longitude ?? 0,
+      busStop.latitude ?? 0,
+      busStop.direction ?? 0,
+      0,
+      busStop.isTerminal ?? 0,
+      busStop.roadAngle,
+      busStop.url ?? 0
+    ])
+    .then(results => results.rows[0]);
 }
 
 export async function insertBusStopVisit(busStopVisit: {|

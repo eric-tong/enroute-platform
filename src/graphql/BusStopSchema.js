@@ -15,7 +15,7 @@ import {
 } from "../resolvers/BusStopResolver";
 
 import { DepartureType } from "./DepartureSchema";
-import { getDeparturesFromBusStop } from "../resolvers/ScheduledDepartureResolver";
+import { getDeparturesFromBusStop } from "../resolvers/DepartureResolver";
 
 export const BusStopType = new GraphQLObjectType({
   name: "BusStopType",

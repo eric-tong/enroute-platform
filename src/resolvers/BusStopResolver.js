@@ -4,7 +4,7 @@ import { DateTime } from "luxon";
 import database from "../database/database";
 import { getAvlOfLastTerminalExitFromVehicleId } from "./AvlResolver";
 
-const BUS_STOP_COLUMNS = [
+export const BUS_STOP_COLUMNS = [
   "id",
   "name",
   "street",

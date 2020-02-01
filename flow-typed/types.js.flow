@@ -50,10 +50,9 @@ declare type Department = {|
 |};
 
 declare type Departure = {|
-  scheduled: string,
-  predicted: string,
-  tripId: number,
-  busStopId: number
+  scheduledDeparture: ScheduledDeparture,
+  scheduled?: string,
+  predicted?: string
 |};
 
 declare type IO = {|
