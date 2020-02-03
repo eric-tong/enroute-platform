@@ -96,13 +96,6 @@ CREATE TABLE "scheduled_departures" (
   "minute_of_day" int NOT NULL
 );
 
-CREATE TABLE "sign_ins" (
-  "id" SERIAL PRIMARY KEY,
-  "vehicle_id" int NOT NULL,
-  "department_id" int NOT NULL,
-  "timestamp" timestamp NOT NULL
-);
-
 CREATE TABLE "trips" (
   "id" SERIAL PRIMARY KEY,
   "route_id" int NOT NULL

@@ -4,7 +4,7 @@ import { DateTime } from "luxon";
 
 declare type AVL = {|
   id: number,
-  priority: string,
+  priority: "low" | "high" | "panic",
   timestamp: string,
   altitude: number,
   longitude: number,

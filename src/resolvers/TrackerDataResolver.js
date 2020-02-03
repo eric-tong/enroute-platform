@@ -21,7 +21,6 @@ export function insertTrackerDataFromCodec8DataAndImei(
         .query<{ id: number }>(GET_VEHICLE_ID_FROM_IMEI, [imei])
         .then(results => results.rows[0].id)
         .then(vehicleId => insertAvlFromTrackerData(avlData, vehicleId))
-        .then(results => results.rows[0].id)
         .then(avlId => {
           insertIoFromAvlData(avlData, avlId);
           return avlId;
@@ -44,18 +43,20 @@ export function insertAvlFromTrackerData(avlData: AVLData, vehicleId: number) {
     RETURNING id
   `;
 
-  return database.query<{ id: number }>(INSERT_AVL, [
-    avlData.timestamp.toSQL(),
-    avlData.priority,
-    avlData.longitude,
-    avlData.latitude,
-    avlData.altitude,
-    avlData.angle,
-    avlData.satellites,
-    avlData.speed,
-    vehicleId,
-    avlData.eventIOId
-  ]);
+  return database
+    .query<{ id: number }>(INSERT_AVL, [
+      avlData.timestamp.toSQL(),
+      avlData.priority,
+      avlData.longitude,
+      avlData.latitude,
+      avlData.altitude,
+      avlData.angle,
+      avlData.satellites,
+      avlData.speed,
+      vehicleId,
+      avlData.eventIOId
+    ])
+    .then(results => results.rows[0].id);
 }
 
 export function insertIoFromAvlData(avlData: AVLData, avlId: number) {

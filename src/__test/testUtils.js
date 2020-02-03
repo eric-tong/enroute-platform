@@ -6,12 +6,17 @@ const TABLE_NAMES = [
   "bus_stop_visits",
   "bus_stop_proxies",
   "scheduled_departures",
+  "predicted_departures",
   "avl",
+  "avl_trip_id",
   "bus_stops",
   "check_ins",
   "departments",
   "io",
-  "vehicles"
+  "io_names",
+  "vehicles",
+  "routes",
+  "trips"
 ];
 
 export async function clearTables() {

@@ -6,19 +6,23 @@ import { parsePosition } from "./Codec8Parser";
 type Size = 1 | 2 | 4 | 8;
 
 export type DataSchema = (
-  | $Exact<{
+  | {|
       key: string,
       size: Size,
-      transform?: number => mixed,
-    }>
-  | $Exact<{ key: string, schema: DataSchema, countKey: string }>
+      transform?: number => mixed
+    |}
+  | {|
+      key: string,
+      schema: DataSchema,
+      countKey: string
+    |}
 )[];
 
-type IOData = {
+export type IOData = {|
   ioId: number,
-  ioValue: number,
-};
-export type AVLData = {
+  ioValue: number
+|};
+export type AVLData = {|
   timestamp: DateTime,
   priority: "low" | "high" | "panic",
   longitude: number,
@@ -36,21 +40,21 @@ export type AVLData = {
   fourByteIOCount: number,
   fourByteIOData: IOData[],
   eightByteIOCount: number,
-  eightByteIOData: IOData[],
-};
-export type Codec8Data = {
+  eightByteIOData: IOData[]
+|};
+export type Codec8Data = {|
   preamble: 0,
   dataFieldLength: number,
   codecId: number,
   avlDataCount: number,
   avlData: AVLData[],
   avlDataCountTwo: number,
-  crc: number,
-};
+  crc: number
+|};
 
 const ioDataSchema: Size => DataSchema = size => [
   { key: "ioId", size: 1 },
-  { key: "ioValue", size },
+  { key: "ioValue", size }
 ];
 const avlDataSchema: DataSchema = [
   { key: "timestamp", size: 8, transform: DateTime.fromMillis },
@@ -58,7 +62,7 @@ const avlDataSchema: DataSchema = [
     key: "priority",
     size: 1,
     transform: priority =>
-      priority === 0 ? "low" : priority === 1 ? "high" : "panic",
+      priority === 0 ? "low" : priority === 1 ? "high" : "panic"
   },
   { key: "longitude", size: 4, transform: parsePosition },
   { key: "latitude", size: 4, transform: parsePosition },
@@ -72,26 +76,26 @@ const avlDataSchema: DataSchema = [
   {
     key: "oneByteIOData",
     schema: ioDataSchema(1),
-    countKey: "oneByteIOCount",
+    countKey: "oneByteIOCount"
   },
   { key: "twoByteIOCount", size: 1 },
   {
     key: "twoByteIOData",
     schema: ioDataSchema(2),
-    countKey: "twoByteIOCount",
+    countKey: "twoByteIOCount"
   },
   { key: "fourByteIOCount", size: 1 },
   {
     key: "fourByteIOData",
     schema: ioDataSchema(4),
-    countKey: "fourByteIOCount",
+    countKey: "fourByteIOCount"
   },
   { key: "eightByteIOCount", size: 1 },
   {
     key: "eightByteIOData",
     schema: ioDataSchema(8),
-    countKey: "eightByteIOCount",
-  },
+    countKey: "eightByteIOCount"
+  }
 ];
 const dataSchema: DataSchema = [
   { key: "preamble", size: 4 },
@@ -100,7 +104,7 @@ const dataSchema: DataSchema = [
   { key: "avlDataCount", size: 1 },
   { key: "avlData", schema: avlDataSchema, countKey: "avlDataCount" },
   { key: "avlDataCountTwo", size: 1 },
-  { key: "crc", size: 4 },
+  { key: "crc", size: 4 }
 ];
 
 export default dataSchema;

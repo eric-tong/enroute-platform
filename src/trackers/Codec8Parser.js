@@ -63,6 +63,8 @@ export default function parseCodec8Stream(stream: string): Codec8Data {
     });
     return result;
   }
+
+  // $FlowFixMe returns Codec8Data eventually
   return parse(schema, {});
 }
 
