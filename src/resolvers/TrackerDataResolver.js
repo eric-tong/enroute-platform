@@ -1,17 +1,13 @@
 // @flow
 
 import type { AVLData, Codec8Data, IOData } from "../trackers/codec8Schema";
-import {
-  saveBusStopProxyVisits,
-  saveBusStopVisits
-} from "../vehicleStatus/BusStopVisitDetector";
 
 import database from "../database/database";
 
 export function insertTrackerDataFromCodec8DataAndImei(
   data: Codec8Data,
   imei: string
-) {
+): Promise<number[]> {
   const GET_VEHICLE_ID_FROM_IMEI =
     "SELECT id FROM vehicles WHERE imei = $1 LIMIT 1";
 
@@ -33,14 +29,7 @@ export function insertTrackerDataFromCodec8DataAndImei(
           );
           return avlId;
         })
-        .catch(console.error)
     )
-  ).then(avlIds =>
-    avlIds.forEach(avlId => {
-      if (!avlId) return;
-      saveBusStopVisits(avlId);
-      saveBusStopProxyVisits(avlId);
-    })
   );
 }
 

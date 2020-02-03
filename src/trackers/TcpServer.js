@@ -1,5 +1,11 @@
 // @flow
 
+import {
+  insertBusStopProxyVisitFromAvlId,
+  insertBusStopVisitFromAvlId
+} from "../resolvers/BusStopVisitResolver";
+
+import type { Codec8Data } from "./Codec8Schema";
 import type { Socket } from "net";
 import crcIsValid from "./Crc16Checker";
 import { imeiIsValid } from "../resolvers/VehicleResolver";
@@ -40,8 +46,8 @@ const server = net.createServer((socket: Socket) => {
       setImei(stream);
     } else if (client.imei && crcIsValid(stream)) {
       const imei = client.imei;
-      const data: any = parseCodec8Stream(stream.toString("hex"));
-      insertTrackerDataFromCodec8DataAndImei(data, imei);
+      const data: Codec8Data = parseCodec8Stream(stream.toString("hex"));
+      save(data, imei);
       write(Buffer.from([0, 0, 0, data.avlDataCount]));
     } else {
       write(REPLY.REJECT);
@@ -71,3 +77,15 @@ const server = net.createServer((socket: Socket) => {
 server.listen(port, () =>
   console.log(`EnRoute TCP Platform successfully started at port ${port}.`)
 );
+
+async function save(data: Codec8Data, imei: string) {
+  insertTrackerDataFromCodec8DataAndImei(data, imei)
+    .then(avlIds =>
+      avlIds.forEach(avlId => {
+        if (!avlId) return;
+        insertBusStopVisitFromAvlId(avlId);
+        insertBusStopProxyVisitFromAvlId(avlId);
+      })
+    )
+    .catch(console.error);
+}

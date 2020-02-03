@@ -36,6 +36,13 @@ declare type BusStop = {|
   isTerminal: boolean
 |};
 
+declare type BusStopVisit = {|
+  avlId: number,
+  busStopId: number,
+  scheduledDepartureId: ?number,
+  isProxy: boolean
+|};
+
 declare type CheckIn = {|
   id: number,
   timestamp: string,

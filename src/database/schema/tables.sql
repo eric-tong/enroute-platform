@@ -48,7 +48,7 @@ CREATE TABLE "bus_stop_proxies" (
 CREATE TABLE "bus_stop_visits" (
   "avl_id" int PRIMARY KEY,
   "bus_stop_id" int NOT NULL,
-  "scheduled_departure_id" int NOT NULL,
+  "scheduled_departure_id" int,
   "is_proxy" boolean NOT NULL DEFAULT false
 );
 

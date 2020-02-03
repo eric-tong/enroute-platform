@@ -35,7 +35,7 @@ export async function insertAvl(
 
   return database
     .query<AVL>(INSERT_AVL, [
-      avl.id ?? 0,
+      avl.id ?? randomId(),
       avl.timestamp ?? DateTime.local().toSQL(),
       avl.priority ?? "low",
       avl.longitude ?? 0,
