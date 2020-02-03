@@ -49,18 +49,25 @@ export function getLatestAvlFromVehicleId(vehicleId: number) {
     .then(results => results.rows[0]);
 }
 
-export function getAvlOfLastTerminalExitFromVehicleId(vehicleId: number) {
+export function getAvlOfLastTerminalExitFromVehicleId(
+  vehicleId: number,
+  beforeTimestamp?: string = DateTime.local().toSQL()
+) {
   const GET_AVL_OF_LAST_TERMINAL_EXIT_FROM_VEHICLE_ID = `
     SELECT ${AVL_COLUMNS} FROM avl
       INNER JOIN bus_stop_visits ON bus_stop_visits.avl_id = avl.id
       INNER JOIN bus_stops ON bus_stops.id = bus_stop_visits.bus_stop_id
       WHERE avl.vehicle_id = $1
       AND bus_stops.is_terminal
+      AND avl.timestamp < $2::timestamp
       ORDER BY avl.timestamp DESC
       LIMIT 1
   `;
   return database
-    .query<AVL>(GET_AVL_OF_LAST_TERMINAL_EXIT_FROM_VEHICLE_ID, [vehicleId])
+    .query<AVL>(GET_AVL_OF_LAST_TERMINAL_EXIT_FROM_VEHICLE_ID, [
+      vehicleId,
+      beforeTimestamp
+    ])
     .then(results => {
       if (results.rows.length) {
         return results.rows[0];

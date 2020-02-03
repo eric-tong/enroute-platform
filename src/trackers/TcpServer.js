@@ -1,8 +1,8 @@
 // @flow
 
 import {
-  insertBusStopProxyVisitFromAvlId,
-  insertBusStopVisitFromAvlId
+  insertBusStopProxyVisitFromAvl,
+  insertBusStopVisitFromAvl
 } from "../resolvers/BusStopVisitResolver";
 
 import type { Codec8Data } from "./Codec8Schema";
@@ -80,11 +80,11 @@ server.listen(port, () =>
 
 async function save(data: Codec8Data, imei: string) {
   insertTrackerDataFromCodec8DataAndImei(data, imei)
-    .then(avlIds =>
-      avlIds.forEach(avlId => {
-        if (!avlId) return;
-        insertBusStopVisitFromAvlId(avlId);
-        insertBusStopProxyVisitFromAvlId(avlId);
+    .then(avls =>
+      avls.forEach(avl => {
+        if (!avl) return;
+        insertBusStopVisitFromAvl(avl);
+        insertBusStopProxyVisitFromAvl(avl);
       })
     )
     .catch(console.error);

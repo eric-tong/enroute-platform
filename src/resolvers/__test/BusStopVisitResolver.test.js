@@ -2,7 +2,7 @@
 
 import {
   getBusStopVisitFromAvlId,
-  insertBusStopVisitFromAvlId
+  insertBusStopVisitFromAvl
 } from "../BusStopVisitResolver";
 import { insertAvl, insertBusStop } from "../../__test/insert";
 
@@ -20,7 +20,7 @@ describe("bus stop visit resolver", () => {
         longitude: 100.00001,
         latitude: 100.00001
       });
-      await insertBusStopVisitFromAvlId(avl.id);
+      await insertBusStopVisitFromAvl(avl);
 
       const actual = await getBusStopVisitFromAvlId(avl.id);
       const expected: BusStopVisit = {

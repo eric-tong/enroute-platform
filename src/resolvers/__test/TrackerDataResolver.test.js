@@ -28,7 +28,7 @@ describe("tracker data resolver", () => {
       vehicleId: randomId()
     };
 
-    const avlId = await insertAvlFromAvlData(
+    const actual = await insertAvlFromAvlData(
       {
         timestamp: DateTime.fromSQL(avl.timestamp),
         priority: avl.priority,
@@ -51,8 +51,6 @@ describe("tracker data resolver", () => {
       },
       avl.vehicleId
     );
-
-    const actual = await getAvlFromAvlId(avlId);
     const expected = avl;
 
     expect(actual.altitude).toEqual(expected.altitude);

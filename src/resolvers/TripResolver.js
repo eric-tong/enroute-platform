@@ -23,8 +23,12 @@ export function getTripIdWithNearestStartTime(
     .then(results => results.rows[0].tripId);
 }
 
-export function getTripIdFromVehicleId(vehicleId: number) {
-  return getAvlOfLastTerminalExitFromVehicleId(vehicleId).then(avl =>
-    getTripIdWithNearestStartTime(avl.timestamp)
-  );
+export function getTripIdFromVehicleId(
+  vehicleId: number,
+  beforeTimestamp?: string = DateTime.local().toSQL()
+) {
+  return getAvlOfLastTerminalExitFromVehicleId(
+    vehicleId,
+    beforeTimestamp
+  ).then(avl => getTripIdWithNearestStartTime(avl.timestamp));
 }

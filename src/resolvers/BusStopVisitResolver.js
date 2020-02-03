@@ -17,8 +17,8 @@ export const ANGLE_BUFFER = 45;
 const GET_AVL_ID_IN_DATE =
   "SELECT id FROM avl WHERE DATE(timestamp) = DATE($1) ORDER BY timestamp DESC";
 
-export function insertBusStopVisitFromAvlId(
-  avlId: number,
+export async function insertBusStopVisitFromAvl(
+  avl: AVL,
   table?: string = "bus_stops",
   isProxy: boolean = false
 ) {
@@ -40,11 +40,11 @@ export function insertBusStopVisitFromAvlId(
         )
         RETURNING *
     `;
-  return database.query<{}>(INSERT_BUS_STOP_VISIT_FROM_AVL_ID, [avlId]);
+  return database.query<{}>(INSERT_BUS_STOP_VISIT_FROM_AVL_ID, [avl.id]);
 }
 
-export function insertBusStopProxyVisitFromAvlId(avlId: number) {
-  return insertBusStopVisitFromAvlId(avlId, "bus_stop_proxies", true);
+export function insertBusStopProxyVisitFromAvl(avl: AVL) {
+  return insertBusStopVisitFromAvl(avl, "bus_stop_proxies", true);
 }
 
 export function getBusStopVisitFromAvlId(avlId: number) {

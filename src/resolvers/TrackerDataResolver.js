@@ -2,12 +2,13 @@
 
 import type { AVLData, Codec8Data, IOData } from "../trackers/codec8Schema";
 
+import { AVL_COLUMNS } from "./AvlResolver";
 import database from "../database/database";
 
 export function insertTrackerDataFromCodec8DataAndImei(
   data: Codec8Data,
   imei: string
-): Promise<number[]> {
+): Promise<AVL[]> {
   const GET_VEHICLE_ID_FROM_IMEI =
     "SELECT id FROM vehicles WHERE imei = $1 LIMIT 1";
 
@@ -17,7 +18,7 @@ export function insertTrackerDataFromCodec8DataAndImei(
         .query<{ id: number }>(GET_VEHICLE_ID_FROM_IMEI, [imei])
         .then(results => results.rows[0].id)
         .then(vehicleId => insertAvlFromAvlData(avlData, vehicleId))
-        .then(avlId => {
+        .then((avl: AVL) => {
           insertIoFromIoData(
             [
               ...avlData.oneByteIOData,
@@ -25,9 +26,9 @@ export function insertTrackerDataFromCodec8DataAndImei(
               ...avlData.fourByteIOData,
               ...avlData.eightByteIOData
             ],
-            avlId
+            avl.id
           );
-          return avlId;
+          return avl;
         })
     )
   );
@@ -37,11 +38,11 @@ export function insertAvlFromAvlData(avlData: AVLData, vehicleId: number) {
   const INSERT_AVL = `
   INSERT INTO avl (timestamp, priority, longitude, latitude, altitude, angle, satellites, speed, vehicle_id, event_io_id) 
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-    RETURNING id
+    RETURNING ${AVL_COLUMNS}
   `;
 
   return database
-    .query<{ id: number }>(INSERT_AVL, [
+    .query<AVL>(INSERT_AVL, [
       avlData.timestamp.toSQL(),
       avlData.priority,
       avlData.longitude,
@@ -53,7 +54,7 @@ export function insertAvlFromAvlData(avlData: AVLData, vehicleId: number) {
       vehicleId,
       avlData.eventIOId
     ])
-    .then(results => results.rows[0].id);
+    .then(results => results.rows[0]);
 }
 
 export function insertIoFromIoData(ioData: IOData[], avlId: number) {
