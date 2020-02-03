@@ -13,7 +13,7 @@ CREATE TABLE "avl" (
   "longitude" float NOT NULL,
   "latitude" float NOT NULL,
   "altitude" int NOT NULL,
-  "angle" int NOT NULL,
+  "angle" int,
   "satellites" smallint NOT NULL,
   "speed" int NOT NULL,
   "saved_timestamp" timestamp NOT NULL DEFAULT (now())
@@ -33,7 +33,7 @@ CREATE TABLE "bus_stops" (
   "icon" char NOT NULL,
   "longitude" float NOT NULL,
   "latitude" float NOT NULL,
-  "road_angle" int NOT NULL,
+  "road_angle" int,
   "display_position" int
 );
 
@@ -41,7 +41,7 @@ CREATE TABLE "bus_stop_proxies" (
   "bus_stop_id" int NOT NULL,
   "longitude" float NOT NULL,
   "latitude" float NOT NULL,
-  "road_angle" int NOT NULL
+  "road_angle" int
 );
 
 CREATE TABLE "bus_stop_visits" (
@@ -83,7 +83,7 @@ CREATE TABLE "predicted_departures" (
   "predicted_timestamp" timestamp DEFAULT (now())
 );
 
-CREATE TABLE "route" (
+CREATE TABLE "routes" (
   "id" SERIAL PRIMARY KEY,
   "name" text NOT NULL,
   "terminal_bus_stop_id" int NOT NULL
@@ -133,7 +133,7 @@ ALTER TABLE "check_ins" ADD FOREIGN KEY ("vehicle_id") REFERENCES "vehicles" ("i
 
 ALTER TABLE "check_ins" ADD FOREIGN KEY ("department_id") REFERENCES "departments" ("id");
 
-ALTER TABLE "io" ADD FOREIGN KEY ("avl_id") REFERENCES "avl" ("event_io_id");
+ALTER TABLE "io" ADD FOREIGN KEY ("avl_id") REFERENCES "avl" ("id");
 
 ALTER TABLE "io" ADD FOREIGN KEY ("io_name_id") REFERENCES "io_names" ("id");
 
@@ -143,7 +143,7 @@ ALTER TABLE "predicted_departures" ADD FOREIGN KEY ("bus_stop_id") REFERENCES "b
 
 ALTER TABLE "predicted_departures" ADD FOREIGN KEY ("scheduled_departure_id") REFERENCES "scheduled_departures" ("id");
 
-ALTER TABLE "route" ADD FOREIGN KEY ("terminal_bus_stop_id") REFERENCES "bus_stops" ("id");
+ALTER TABLE "routes" ADD FOREIGN KEY ("terminal_bus_stop_id") REFERENCES "bus_stops" ("id");
 
 ALTER TABLE "scheduled_departures" ADD FOREIGN KEY ("trip_id") REFERENCES "trips" ("id");
 
@@ -153,4 +153,4 @@ ALTER TABLE "sign_ins" ADD FOREIGN KEY ("vehicle_id") REFERENCES "vehicles" ("id
 
 ALTER TABLE "sign_ins" ADD FOREIGN KEY ("department_id") REFERENCES "departments" ("id");
 
-ALTER TABLE "trips" ADD FOREIGN KEY ("route_id") REFERENCES "route" ("id");
+ALTER TABLE "trips" ADD FOREIGN KEY ("route_id") REFERENCES "routes" ("id");
