@@ -2,6 +2,7 @@
 
 import { DateTime } from "luxon";
 import database from "../database/database";
+import { getScheduledDepartureFromBusStopIdAndTripId } from "./ScheduledDepartureResolver";
 
 export const BUS_STOP_VISIT_COLUMNS = [
   `avl_id AS "avlId"`,

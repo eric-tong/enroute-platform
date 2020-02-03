@@ -11,6 +11,20 @@ export const SCHEDULED_DEPARTURE_COLUMNS = [
   .map(column => "scheduled_departures." + column)
   .join(", ");
 
+export function getScheduledDepartureFromBusStopIdAndTripId(
+  busStopId: number,
+  tripId: number
+) {
+  const GET_SCHEDULED_DEPARTURE_FROM_BUS_STOP_ID_AND_TRIP_ID = `
+    SELECT ${SCHEDULED_DEPARTURE_COLUMNS} FROM scheduled_departures
+      WHERE bus_stop_id = $1 AND trip_id = $2
+  `;
+  return database.query<ScheduledDeparture>(
+    GET_SCHEDULED_DEPARTURE_FROM_BUS_STOP_ID_AND_TRIP_ID,
+    [busStopId, tripId]
+  );
+}
+
 export function getScheduledDeparturesFromBusStopId(busStopId: number) {
   const GET_SCHEDULED_DEPARTURES_FROM_BUS_STOP_ID = `
   SELECT ${SCHEDULED_DEPARTURE_COLUMNS} FROM (

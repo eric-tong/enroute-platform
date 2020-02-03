@@ -112,3 +112,26 @@ export function getBusStopsVisitedByVehicle(vehicleId: number) {
     )
     .then(results => results.rows);
 }
+
+export async function getNearbyBusStopsFromLocation(
+  longitude: number,
+  latitude: number,
+  angle: number,
+  isProxy?: boolean = false
+) {
+  const GEOFENCE_RADIUS = 0.001;
+  const ANGLE_BUFFER = 45;
+  const table = isProxy ? "bus_stop_proxies" : "bus_stops";
+  const GET_NEARBY_BUS_STOPS_FROM_LOCATION = `
+    SELECT ${BUS_STOP_COLUMNS} FROM ${table}
+      WHERE CIRCLE(POINT(${table}.longitude, ${table}.latitude), ${GEOFENCE_RADIUS}) @> POINT($1, $2)
+      AND (
+        ${table}.road_angle IS NULL
+          OR ABS(${table}.road_angle - $3) < ${ANGLE_BUFFER}
+          OR ABS(${table}.road_angle - $3) > ${360 - ANGLE_BUFFER}
+      )
+  `;
+  return database
+    .query<{}>(GET_NEARBY_BUS_STOPS_FROM_LOCATION, [longitude, latitude, angle])
+    .then(results => results.rows);
+}

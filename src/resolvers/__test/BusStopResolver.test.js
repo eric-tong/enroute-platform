@@ -8,6 +8,7 @@ import {
   getBusStopFromUrl,
   getBusStopsFromTripId,
   getBusStopsVisitedByVehicle,
+  getNearbyBusStopsFromLocation,
   getUpcomingBusStopsFromTripId
 } from "../BusStopResolver";
 import {
@@ -160,6 +161,27 @@ describe("bus stop resolver", () => {
 
     const actual = await getBusStopsVisitedByVehicle(vehicleId);
     const expected = busStopsVisited.slice(1);
+
+    expect(actual).toEqual(expected);
+  });
+
+  test.only("get nearby bus stops from location", async () => {
+    const busStop = await insertBusStop({
+      longitude: 100,
+      latitude: 100
+    });
+    const avl = await insertAvl({
+      longitude: 100.00001,
+      latitude: 100.00001,
+      angle: 0
+    });
+
+    const actual = await getNearbyBusStopsFromLocation(
+      avl.longitude,
+      avl.latitude,
+      avl.angle
+    );
+    const expected = [busStop];
 
     expect(actual).toEqual(expected);
   });
