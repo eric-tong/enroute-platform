@@ -90,5 +90,6 @@ declare type Status =
 declare type Vehicle = {|
   id: number,
   registration: string,
-  imei: string
+  imei: string,
+  phone: string
 |};

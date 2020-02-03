@@ -79,7 +79,6 @@ CREATE TABLE "io_names" (
 CREATE TABLE "predicted_departures" (
   "id" SERIAL PRIMARY KEY,
   "avl_id" int NOT NULL,
-  "bus_stop_id" int NOT NULL,
   "scheduled_departure_id" int NOT NULL,
   "predicted_timestamp" timestamp DEFAULT (now())
 );

@@ -83,21 +83,26 @@ export function insertBusStop(
       0,
       busStop.isTerminal ?? 0,
       busStop.roadAngle,
-      busStop.url ?? 0
+      busStop.url ?? randomId().toString()
     ])
     .then(results => results.rows[0]);
 }
 
 export async function insertBusStopVisit(busStopVisit: {|
   avlId?: number,
-  busStopId?: number
+  busStopId?: number,
+  scheduledDepartureId?: number
 |}) {
   if (!busStopVisit.avlId) await insertAvl({ id: 0 });
   if (!busStopVisit.busStopId) await insertBusStop({ id: 0 });
 
   return database.query<{}>(
-    "INSERT INTO bus_stop_visits (avl_id, bus_stop_id) VALUES ($1, $2)",
-    [busStopVisit.avlId ?? 0, busStopVisit.busStopId ?? 0]
+    "INSERT INTO bus_stop_visits (avl_id, bus_stop_id, scheduled_departure_id) VALUES ($1, $2, $3)",
+    [
+      busStopVisit.avlId ?? 0,
+      busStopVisit.busStopId ?? 0,
+      busStopVisit.scheduledDepartureId ?? 0
+    ]
   );
 }
 
@@ -124,7 +129,8 @@ export function insertDepartment(
 export async function insertIo(io: IO, avlId: number) {
   const ioNameId = randomId(32000);
   const INSERT_IO_NAME = "INSERT INTO io_names (id, value) VALUES($1, $2)";
-  const INSERT_IO = "INSERT INTO io (avl_id, id, value) VALUES($1, $2, $3)";
+  const INSERT_IO =
+    "INSERT INTO io (avl_id, io_name_id, value) VALUES($1, $2, $3)";
 
   await database.query(INSERT_IO_NAME, [ioNameId, io.name]);
   await database.query(INSERT_IO, [avlId, ioNameId, io.value]);
@@ -165,20 +171,17 @@ export async function insertScheduledDeparture(
         busStopId?: number
       |}
 ) {
-  const INSERT_INTO_BUS_STOP = `
+  const INSERT_INTO_SCHEDULED_DEPARTURES = `
   INSERT INTO scheduled_departures (id, minute_of_day, trip_id, bus_stop_id)
     VALUES($1, $2, $3, $4)
     RETURNING ${SCHEDULED_DEPARTURE_COLUMNS}`;
 
-  const busStopId = randomId();
-  if (!scheduledDeparture.busStopId) await insertBusStop({ id: busStopId });
-
   return database
-    .query<ScheduledDeparture>(INSERT_INTO_BUS_STOP, [
+    .query<ScheduledDeparture>(INSERT_INTO_SCHEDULED_DEPARTURES, [
       scheduledDeparture.id ?? randomId(),
       scheduledDeparture.minuteOfDay ?? 0,
       scheduledDeparture.tripId ?? 0,
-      scheduledDeparture.busStopId ?? busStopId
+      scheduledDeparture.busStopId ?? randomId()
     ])
     .then(results => results.rows[0]);
 }
@@ -189,19 +192,21 @@ export function insertVehicle(
     | {|
         id?: number,
         registration?: string,
-        imei?: string
+        imei?: string,
+        phone?: string
       |}
 ) {
   const INSERT_AVL = `
-    INSERT INTO vehicles (id, registration, imei) 
-      VALUES ($1, $2, $3)
+    INSERT INTO vehicles (id, registration, imei, phone) 
+      VALUES ($1, $2, $3, $4)
       RETURNING *
   `;
   return database
     .query<Vehicle>(INSERT_AVL, [
       vehicle.id ?? 0,
       vehicle.registration ?? "",
-      vehicle.imei ?? ""
+      vehicle.imei ?? "",
+      vehicle.phone ?? ""
     ])
     .then(results => results.rows[0]);
 }

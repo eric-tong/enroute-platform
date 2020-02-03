@@ -11,7 +11,7 @@ import { DateTime } from "luxon";
 import database from "../../database/database";
 import { getPredictedDepartureTodayFromScheduledDepartureId } from "../PredictedDepartureResolver";
 
-describe("predicted departures", () => {
+describe("predicted departure resolver", () => {
   describe("gets predicted departures today from scheduled departure id", () => {
     test("predicted departure for today exists", async () => {
       const scheduledDepartureId = randomId();

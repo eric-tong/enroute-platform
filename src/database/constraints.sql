@@ -23,8 +23,6 @@ ALTER TABLE "io" ADD FOREIGN KEY ("io_name_id") REFERENCES "io_names" ("id");
 
 ALTER TABLE "predicted_departures" ADD FOREIGN KEY ("avl_id") REFERENCES "avl" ("id");
 
-ALTER TABLE "predicted_departures" ADD FOREIGN KEY ("bus_stop_id") REFERENCES "bus_stops" ("id");
-
 ALTER TABLE "predicted_departures" ADD FOREIGN KEY ("scheduled_departure_id") REFERENCES "scheduled_departures" ("id");
 
 ALTER TABLE "routes" ADD FOREIGN KEY ("terminal_bus_stop_id") REFERENCES "bus_stops" ("id");
