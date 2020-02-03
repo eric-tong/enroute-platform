@@ -1,6 +1,6 @@
 // @flow
 
-import type { AVLData, Codec8Data } from "../trackers/codec8Schema";
+import type { AVLData, Codec8Data, IOData } from "../trackers/codec8Schema";
 import {
   saveBusStopProxyVisits,
   saveBusStopVisits
@@ -20,9 +20,17 @@ export function insertTrackerDataFromCodec8DataAndImei(
       database
         .query<{ id: number }>(GET_VEHICLE_ID_FROM_IMEI, [imei])
         .then(results => results.rows[0].id)
-        .then(vehicleId => insertAvlFromTrackerData(avlData, vehicleId))
+        .then(vehicleId => insertAvlFromAvlData(avlData, vehicleId))
         .then(avlId => {
-          insertIoFromAvlData(avlData, avlId);
+          insertIoFromIoData(
+            [
+              ...avlData.oneByteIOData,
+              ...avlData.twoByteIOData,
+              ...avlData.fourByteIOData,
+              ...avlData.eightByteIOData
+            ],
+            avlId
+          );
           return avlId;
         })
         .catch(console.error)
@@ -36,7 +44,7 @@ export function insertTrackerDataFromCodec8DataAndImei(
   );
 }
 
-export function insertAvlFromTrackerData(avlData: AVLData, vehicleId: number) {
+export function insertAvlFromAvlData(avlData: AVLData, vehicleId: number) {
   const INSERT_AVL = `
   INSERT INTO avl (timestamp, priority, longitude, latitude, altitude, angle, satellites, speed, vehicle_id, event_io_id) 
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -59,19 +67,14 @@ export function insertAvlFromTrackerData(avlData: AVLData, vehicleId: number) {
     .then(results => results.rows[0].id);
 }
 
-export function insertIoFromAvlData(avlData: AVLData, avlId: number) {
+export function insertIoFromIoData(ioData: IOData[], avlId: number) {
   const INSERT_IO = `
-  INSERT INTO io (avl_id, id, value) 
+  INSERT INTO io (avl_id, io_name_id, value) 
     VALUES ($1, $2, $3)
   `;
 
-  Promise.all(
-    [
-      ...avlData.oneByteIOData,
-      ...avlData.twoByteIOData,
-      ...avlData.fourByteIOData,
-      ...avlData.eightByteIOData
-    ].map(ioData =>
+  return Promise.all(
+    ioData.map(ioData =>
       database.query(INSERT_IO, [avlId, ioData.ioId, ioData.ioValue])
     )
   );

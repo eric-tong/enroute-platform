@@ -1,14 +1,17 @@
 // @flow
 
 import { clearTables, randomId } from "../../__test/testUtils";
+import {
+  insertAvlFromAvlData,
+  insertIoFromIoData
+} from "../TrackerDataResolver";
+import { insertIo, insertIoName } from "../../__test/insert";
 
 import { DateTime } from "luxon";
 import type { IOData } from "../../trackers/Codec8Schema";
 import database from "../../database/database";
 import { getAvlFromAvlId } from "../AvlResolver";
 import { getIoFromAvlId } from "../IoResolver";
-import { insertAvlFromTrackerData } from "../TrackerDataResolver";
-import { insertIo } from "../../__test/insert";
 
 describe("tracker data resolver", () => {
   test("insert data from tracker data", async () => {
@@ -25,7 +28,7 @@ describe("tracker data resolver", () => {
       vehicleId: randomId()
     };
 
-    const avlId = await insertAvlFromTrackerData(
+    const avlId = await insertAvlFromAvlData(
       {
         timestamp: DateTime.fromSQL(avl.timestamp),
         priority: avl.priority,
@@ -59,6 +62,25 @@ describe("tracker data resolver", () => {
     expect(actual.priority).toEqual(expected.priority);
     expect(actual.satellites).toEqual(expected.satellites);
     expect(actual.speed).toEqual(expected.speed);
+  });
+
+  test("insert io from avl data", async () => {
+    const avlId = randomId();
+    const io: IO = {
+      name: "ioName",
+      value: randomId()
+    };
+    const ioData: IOData = {
+      ioId: randomId(32000),
+      ioValue: io.value
+    };
+    await insertIoName({ id: ioData.ioId, value: io.name });
+    await insertIoFromIoData([ioData], avlId);
+
+    const actual = await getIoFromAvlId(avlId);
+    const expected = [io];
+
+    expect(actual).toEqual(expected);
   });
 
   beforeAll(clearTables);

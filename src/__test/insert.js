@@ -128,12 +128,16 @@ export function insertDepartment(
 
 export async function insertIo(io: IO, avlId: number) {
   const ioNameId = randomId(32000);
-  const INSERT_IO_NAME = "INSERT INTO io_names (id, value) VALUES($1, $2)";
+
+  await insertIoName({ id: ioNameId, value: io.name });
   const INSERT_IO =
     "INSERT INTO io (avl_id, io_name_id, value) VALUES($1, $2, $3)";
-
-  await database.query(INSERT_IO_NAME, [ioNameId, io.name]);
   await database.query(INSERT_IO, [avlId, ioNameId, io.value]);
+}
+
+export async function insertIoName(ioName: { id: number, value: string }) {
+  const INSERT_IO_NAME = "INSERT INTO io_names (id, value) VALUES($1, $2)";
+  await database.query(INSERT_IO_NAME, [ioName.id, ioName.value]);
 }
 
 export function insertPredictedDeparture(
