@@ -4,7 +4,6 @@ import crcIsValid, { generateCRC16 } from "../Crc16Checker";
 
 import type { Codec8Data } from "../Codec8Schema";
 import { DateTime } from "luxon";
-import packet from "./PacketData";
 import parse from "../Codec8Parser";
 
 describe("Codec8 parsing", () => {

@@ -3,9 +3,9 @@
 import type { Socket } from "net";
 import crcIsValid from "./Crc16Checker";
 import { imeiIsValid } from "../resolvers/VehicleResolver";
+import { insertTrackerDataFromCodec8DataAndImei } from "../resolvers/TrackerDataResolver";
 import net from "net";
 import parseCodec8Stream from "./Codec8Parser";
-import save from "../database/AvlSaver";
 
 type Client = {|
   name: string,
@@ -41,7 +41,7 @@ const server = net.createServer((socket: Socket) => {
     } else if (client.imei && crcIsValid(stream)) {
       const imei = client.imei;
       const data: any = parseCodec8Stream(stream.toString("hex"));
-      save(data, imei);
+      insertTrackerDataFromCodec8DataAndImei(data, imei);
       write(Buffer.from([0, 0, 0, data.avlDataCount]));
     } else {
       write(REPLY.REJECT);

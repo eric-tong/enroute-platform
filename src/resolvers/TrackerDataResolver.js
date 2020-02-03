@@ -1,0 +1,77 @@
+// @flow
+
+import type { AVLData, Codec8Data } from "../trackers/codec8Schema";
+import {
+  saveBusStopProxyVisits,
+  saveBusStopVisits
+} from "../vehicleStatus/BusStopVisitDetector";
+
+import database from "../database/database";
+
+export function insertTrackerDataFromCodec8DataAndImei(
+  data: Codec8Data,
+  imei: string
+) {
+  const GET_VEHICLE_ID_FROM_IMEI =
+    "SELECT id FROM vehicles WHERE imei = $1 LIMIT 1";
+
+  return Promise.all(
+    data.avlData.map(avlData =>
+      database
+        .query<{ id: number }>(GET_VEHICLE_ID_FROM_IMEI, [imei])
+        .then(results => results.rows[0].id)
+        .then(vehicleId => insertAvlFromTrackerData(avlData, vehicleId))
+        .then(results => results.rows[0].id)
+        .then(avlId => {
+          insertIoFromAvlData(avlData, avlId);
+          return avlId;
+        })
+        .catch(console.error)
+    )
+  ).then(avlIds =>
+    avlIds.forEach(avlId => {
+      if (!avlId) return;
+      saveBusStopVisits(avlId);
+      saveBusStopProxyVisits(avlId);
+    })
+  );
+}
+
+export function insertAvlFromTrackerData(avlData: AVLData, vehicleId: number) {
+  const INSERT_AVL = `
+  INSERT INTO avl (timestamp, priority, longitude, latitude, altitude, angle, satellites, speed, vehicle_id, event_io_id) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    RETURNING id
+  `;
+
+  return database.query<{ id: number }>(INSERT_AVL, [
+    avlData.timestamp.toSQL(),
+    avlData.priority,
+    avlData.longitude,
+    avlData.latitude,
+    avlData.altitude,
+    avlData.angle,
+    avlData.satellites,
+    avlData.speed,
+    vehicleId,
+    avlData.eventIOId
+  ]);
+}
+
+export function insertIoFromAvlData(avlData: AVLData, avlId: number) {
+  const INSERT_IO = `
+  INSERT INTO io (avl_id, id, value) 
+    VALUES ($1, $2, $3)
+  `;
+
+  Promise.all(
+    [
+      ...avlData.oneByteIOData,
+      ...avlData.twoByteIOData,
+      ...avlData.fourByteIOData,
+      ...avlData.eightByteIOData
+    ].map(ioData =>
+      database.query(INSERT_IO, [avlId, ioData.ioId, ioData.ioValue])
+    )
+  );
+}
