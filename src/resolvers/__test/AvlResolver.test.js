@@ -85,32 +85,74 @@ describe("avl resolver", () => {
     expect(actual).toEqual(expected);
   });
 
-  test("gets avl of last terminal exit from vehicle id", async () => {
-    const vehicleId = 8;
-    const lastTerminalAvlId = 10;
-    const currentAvlId = 500;
-    const terminal = busStops.begbrokeSciencePark;
-    const nonTerminal = busStops.oxfordTownCentre;
+  describe("gets avl of last terminal exit from vehicle id", () => {
+    test("no timestamp provided", async () => {
+      const vehicleId = 8;
+      const lastTerminalAvlId = 10;
+      const currentAvlId = 500;
+      const terminal = busStops.begbrokeSciencePark;
+      const nonTerminal = busStops.oxfordTownCentre;
 
-    await insertVehicle({ id: vehicleId });
-    for (let i = 0; i < 100; i++) {
-      await insertAvl({ id: lastTerminalAvlId + i, vehicleId });
-    }
-    await insertBusStop(terminal);
-    await insertBusStop(nonTerminal);
-    await insertBusStopVisit({
-      avlId: lastTerminalAvlId,
-      busStopId: terminal.id
+      await insertVehicle({ id: vehicleId });
+      for (let i = 0; i < 100; i++) {
+        await insertAvl({ id: lastTerminalAvlId + i, vehicleId });
+      }
+      await insertBusStop(terminal);
+      await insertBusStop(nonTerminal);
+      await insertBusStopVisit({
+        avlId: lastTerminalAvlId,
+        busStopId: terminal.id
+      });
+      await insertBusStopVisit({
+        avlId: lastTerminalAvlId + 50,
+        busStopId: nonTerminal.id
+      });
+
+      const actual = await getAvlOfLastTerminalExitFromVehicleId(vehicleId);
+      const expected = await getAvlFromAvlId(lastTerminalAvlId);
+
+      expect(actual).toEqual(expected);
     });
-    await insertBusStopVisit({
-      avlId: lastTerminalAvlId + 50,
-      busStopId: nonTerminal.id
+
+    test("timestamp provided", async () => {
+      const vehicleId = 8;
+      const lastTerminalAvlId = 10;
+      const currentAvlId = 500;
+      const terminal = busStops.begbrokeSciencePark;
+      const nonTerminal = busStops.oxfordTownCentre;
+      const now = DateTime.local().minus({ days: 1 });
+
+      await insertVehicle({ id: vehicleId });
+      for (let i = 0; i < 100; i++) {
+        await insertAvl({
+          id: lastTerminalAvlId + i,
+          vehicleId,
+          timestamp: now.plus({ hours: i })
+        });
+      }
+      await insertBusStop(terminal);
+      await insertBusStop(nonTerminal);
+      await insertBusStopVisit({
+        avlId: lastTerminalAvlId,
+        busStopId: terminal.id
+      });
+      await insertBusStopVisit({
+        avlId: lastTerminalAvlId + 50,
+        busStopId: nonTerminal.id
+      });
+      await insertBusStopVisit({
+        avlId: lastTerminalAvlId + 70,
+        busStopId: terminal.id
+      });
+
+      const actual = await getAvlOfLastTerminalExitFromVehicleId(
+        vehicleId,
+        now.plus({ hours: 2 }).toSQL()
+      );
+      const expected = await getAvlFromAvlId(lastTerminalAvlId);
+
+      expect(actual).toEqual(expected);
     });
-
-    const actual = await getAvlOfLastTerminalExitFromVehicleId(vehicleId);
-    const expected = await getAvlFromAvlId(lastTerminalAvlId);
-
-    expect(actual).toEqual(expected);
   });
 
   beforeAll(clearTables);
