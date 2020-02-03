@@ -13,7 +13,7 @@ CREATE TABLE "avl" (
   "longitude" float NOT NULL,
   "latitude" float NOT NULL,
   "altitude" int NOT NULL,
-  "angle" int,
+  "angle" int NOT NULL,
   "satellites" smallint NOT NULL,
   "speed" int NOT NULL,
   "saved_timestamp" timestamp NOT NULL DEFAULT (now())
@@ -34,6 +34,7 @@ CREATE TABLE "bus_stops" (
   "longitude" float NOT NULL,
   "latitude" float NOT NULL,
   "road_angle" int,
+  "is_terminal" boolean NOT NULL DEFAULT false,
   "display_position" int
 );
 
