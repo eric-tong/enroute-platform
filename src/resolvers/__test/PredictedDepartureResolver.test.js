@@ -32,6 +32,37 @@ describe("predicted departure resolver", () => {
       expect(actual).toEqual(expected);
     });
 
+    test("returns latest prediction", async () => {
+      const scheduledDepartureId = randomId();
+      const avlId = randomId();
+      const now = DateTime.local();
+
+      await insertScheduledDeparture({ id: scheduledDepartureId });
+      await insertAvl({ id: avlId, timestamp: now.toSQL() });
+      const predictedDeparture = await insertPredictedDeparture({
+        avlId,
+        scheduledDepartureId,
+        predictedTimestamp: now.toSQL()
+      });
+
+      await insertAvl({
+        id: avlId - 1,
+        timestamp: now.minus({ hours: 1 }).toSQL()
+      });
+      await insertPredictedDeparture({
+        avlId: avlId - 1,
+        scheduledDepartureId,
+        predictedTimestamp: now.minus({ hours: 1 }).toSQL()
+      });
+
+      const actual = await getPredictedDepartureTodayFromScheduledDepartureId(
+        scheduledDepartureId
+      );
+      const expected = predictedDeparture;
+
+      expect(actual).toEqual(expected);
+    });
+
     test("returns undefined when predicted departure for today does not exist", async () => {
       const scheduledDepartureId = randomId();
       const avlId = randomId();

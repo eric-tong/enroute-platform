@@ -16,9 +16,10 @@ export function getPredictedDepartureTodayFromScheduledDepartureId(
 ) {
   const GET_PREDICTED_DEPARTURE_TODAY_FROM_SCHEDULED_DEPARTURE_ID = `
     SELECT ${PREDICTED_DEPARTURE_COLUMNS} FROM predicted_departures
+      INNER JOIN avl ON predicted_departures.avl_id = avl.id
       WHERE scheduled_departure_id = $1
       AND predicted_timestamp::DATE = NOW()::DATE
-      ORDER BY predicted_timestamp 
+      ORDER BY avl.timestamp DESC
       LIMIT 1
   `;
   return database
