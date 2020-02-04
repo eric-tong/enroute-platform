@@ -13,7 +13,7 @@ export const SCHEDULED_DEPARTURE_COLUMNS = [
 
 export function getScheduledDepartureFromBusStopIdAndTripId(
   busStopId: number,
-  tripId: number
+  tripId: ?number
 ) {
   const GET_SCHEDULED_DEPARTURE_FROM_BUS_STOP_ID_AND_TRIP_ID = `
     SELECT ${SCHEDULED_DEPARTURE_COLUMNS} FROM scheduled_departures

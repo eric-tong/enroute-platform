@@ -9,7 +9,7 @@ export function getTripIdFromAvlId(avlId: number) {
     "SELECT trip_id AS id FROM avl_trip WHERE avl_id = $1 LIMIT 1";
   return database
     .query<{ id: number }>(GET_TRIP_ID_FROM_AVL, [avlId])
-    .then(results => results.rows[0].id);
+    .then(results => (results.rows.length ? results.rows[0].id : null));
 }
 
 export async function insertTripIdFromAvl(avl: AVL) {
