@@ -116,22 +116,36 @@ export function getBusStopsVisitedByVehicle(vehicleId: number) {
 export async function getNearbyBusStopsFromLocation(
   longitude: number,
   latitude: number,
-  angle: number,
-  isProxy?: boolean = false
+  angle: number
 ) {
   const GEOFENCE_RADIUS = 0.001;
   const ANGLE_BUFFER = 45;
-  const table = isProxy ? "bus_stop_proxies" : "bus_stops";
   const GET_NEARBY_BUS_STOPS_FROM_LOCATION = `
-    SELECT ${BUS_STOP_COLUMNS} FROM ${table}
-      WHERE CIRCLE(POINT(${table}.longitude, ${table}.latitude), ${GEOFENCE_RADIUS}) @> POINT($1, $2)
+    WITH bus_stops AS (
+      SELECT bus_stops.id, bus_stops.url, bus_stops.name, bus_stops.street, bus_stops.direction, bus_stops.icon, 
+      bus_stop_proxies.longitude, bus_stop_proxies.latitude, bus_stops.road_angle, bus_stops.is_terminal, 
+      bus_stops.display_position, true as is_proxy FROM bus_stops 
+      INNER JOIN bus_stop_proxies ON bus_stops.id = bus_stop_proxies.bus_stop_id 
+      UNION SELECT *, false as is_proxy FROM bus_stops
+    )
+
+
+    SELECT ${BUS_STOP_COLUMNS}, is_proxy AS "isProxy" FROM bus_stops
+      WHERE CIRCLE(POINT(bus_stops.longitude, bus_stops.latitude), ${GEOFENCE_RADIUS}) @> POINT($1, $2)
       AND (
-        ${table}.road_angle IS NULL
-          OR ABS(${table}.road_angle - $3) < ${ANGLE_BUFFER}
-          OR ABS(${table}.road_angle - $3) > ${360 - ANGLE_BUFFER}
+        bus_stops.road_angle IS NULL
+          OR ABS(bus_stops.road_angle - $3) < ${ANGLE_BUFFER}
+          OR ABS(bus_stops.road_angle - $3) > ${360 - ANGLE_BUFFER}
       )
   `;
   return database
-    .query<{}>(GET_NEARBY_BUS_STOPS_FROM_LOCATION, [longitude, latitude, angle])
-    .then(results => results.rows);
+    .query<{| ...BusStop, isProxy: boolean |}>(
+      GET_NEARBY_BUS_STOPS_FROM_LOCATION,
+      [longitude, latitude, angle]
+    )
+    .then(results =>
+      results.rows.map<{ busStop: BusStop, isProxy: boolean }>(
+        ({ isProxy, ...busStop }) => ({ busStop, isProxy })
+      )
+    );
 }

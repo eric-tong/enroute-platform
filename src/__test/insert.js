@@ -88,6 +88,24 @@ export function insertBusStop(
     .then(results => results.rows[0]);
 }
 
+export async function insertBusStopProxy(busStopProxy: {|
+  busStopId: number,
+  longitude: number,
+  latitude: number,
+  roadAngle?: number
+|}) {
+  const INSERT_INTO_BUS_STOP_PROXY = `
+    INSERT INTO bus_stop_proxies (bus_stop_id, longitude, latitude, road_angle)
+      VALUES ($1, $2, $3, $4)
+  `;
+  return database.query<{}>(INSERT_INTO_BUS_STOP_PROXY, [
+    busStopProxy.busStopId,
+    busStopProxy.longitude,
+    busStopProxy.latitude,
+    busStopProxy.roadAngle
+  ]);
+}
+
 export async function insertBusStopVisit(busStopVisit: {|
   avlId?: number,
   busStopId?: number,
