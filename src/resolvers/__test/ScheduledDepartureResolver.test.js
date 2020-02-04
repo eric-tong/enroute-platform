@@ -1,7 +1,7 @@
 // @flow
 
 import {
-  getScheduledDeparturesFromBusStopId,
+  getScheduledDeparturesExceptLastInTripFromBusStopId,
   getScheduledDeparturesFromTripId
 } from "../ScheduledDepartureResolver";
 import { insertBusStop, insertScheduledDeparture } from "../../__test/insert";
@@ -10,7 +10,7 @@ import { clearTables } from "../../__test/testUtils";
 import database from "../../database/database";
 
 describe("departure resolver", () => {
-  test("gets scheduled departures from bus stop id", async () => {
+  test("gets scheduled departures except last in trip from bus stop id", async () => {
     const busStopId = 8;
     await insertBusStop({ id: busStopId });
     const scheduledDepartures = [
@@ -48,7 +48,9 @@ describe("departure resolver", () => {
       busStopId: busStopId + 1
     });
 
-    const actual = await getScheduledDeparturesFromBusStopId(busStopId);
+    const actual = await getScheduledDeparturesExceptLastInTripFromBusStopId(
+      busStopId
+    );
     const expected = scheduledDepartures;
 
     expect(actual).toEqual(expected);

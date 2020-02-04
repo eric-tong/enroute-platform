@@ -57,7 +57,10 @@ declare type Department = {|
 |};
 
 declare type Departure = {|
-  scheduledDeparture: ScheduledDeparture
+  scheduledDeparture: ScheduledDeparture,
+  predictedDeparture: ?PredictedDeparture,
+  actualDeparture: ?BusStopVisit,
+  isAtBusStop: boolean
 |};
 
 declare type IO = {|

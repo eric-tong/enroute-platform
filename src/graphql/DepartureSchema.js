@@ -1,9 +1,11 @@
 // @flow
 
-import { GraphQLObjectType, GraphQLString } from "graphql";
+import { GraphQLBoolean, GraphQLObjectType, GraphQLString } from "graphql";
 
 import { BusStopType } from "./BusStopSchema";
+import { DateTime } from "luxon";
 import { TripType } from "./TripSchema";
+import { getAvlFromAvlId } from "../resolvers/AvlResolver";
 import { getBusStopFromId } from "../resolvers/BusStopResolver";
 import { getPredictedDepartureTodayFromScheduledDepartureId } from "../resolvers/PredictedDepartureResolver";
 import { toActualTime } from "../utils/TimeUtils";
@@ -14,17 +16,23 @@ export const DepartureType = new GraphQLObjectType({
   fields: () => ({
     scheduledTimestamp: {
       type: GraphQLString,
-      resolve: (departure: Departure) =>
-        toActualTime(departure.scheduledDeparture.minuteOfDay).toSQL()
+      resolve: ({ scheduledDeparture }: Departure) =>
+        toActualTime(scheduledDeparture.minuteOfDay).toSQL()
     },
     predictedTimestamp: {
       type: GraphQLString,
-      resolve: (departure: Departure) =>
-        getPredictedDepartureTodayFromScheduledDepartureId(
-          departure.scheduledDeparture.id
-        ).then(predictedDeparture =>
-          predictedDeparture ? predictedDeparture.predictedTimestamp : null
-        )
+      resolve: ({ predictedDeparture }: Departure) =>
+        predictedDeparture ? predictedDeparture.predictedTimestamp : null
+    },
+    actualDeparture: {
+      type: GraphQLString,
+      resolve: ({ actualDeparture }: Departure) =>
+        actualDeparture
+          ? getAvlFromAvlId(actualDeparture.avlId).then(avl => avl.timestamp)
+          : null
+    },
+    isAtBusStop: {
+      type: GraphQLBoolean
     },
     busStop: {
       type: BusStopType,

@@ -2,8 +2,8 @@
 
 import { clearTables, randomId } from "../../__test/testUtils";
 import {
-  getDeparturesFromBusStop,
-  getDeparturesFromTripId
+  getAllDeparturesFromBusStop,
+  getAllDeparturesFromTripId
 } from "../DepartureResolver";
 import { insertBusStop, insertScheduledDeparture } from "../../__test/insert";
 
@@ -33,7 +33,7 @@ describe("departure resolver", () => {
       }
     ];
 
-    const actual = await getDeparturesFromBusStop(busStop, {});
+    const actual = await getAllDeparturesFromBusStop(busStop, {});
     const expected = departures.slice(0, -1); // The last stop is not included in scheduled departures
 
     expect(actual).toEqual(expected);
@@ -62,7 +62,7 @@ describe("departure resolver", () => {
       }
     ];
 
-    const actual = await getDeparturesFromTripId(tripId, {});
+    const actual = await getAllDeparturesFromTripId(tripId, {});
     const expected = departures;
 
     expect(actual).toEqual(expected);

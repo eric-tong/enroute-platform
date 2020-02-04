@@ -28,7 +28,9 @@ export function getScheduledDepartureFromBusStopIdAndTripId(
     .then(results => results.rows[0]);
 }
 
-export function getScheduledDeparturesFromBusStopId(busStopId: number) {
+export function getScheduledDeparturesExceptLastInTripFromBusStopId(
+  busStopId: number
+) {
   const GET_SCHEDULED_DEPARTURES_FROM_BUS_STOP_ID = `
   SELECT ${SCHEDULED_DEPARTURE_COLUMNS} FROM (
     SELECT *, ROW_NUMBER() OVER (PARTITION BY trip_id ORDER BY trip_id, minute_of_day DESC) as stops_from_terminal
