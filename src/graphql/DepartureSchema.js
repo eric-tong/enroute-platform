@@ -31,9 +31,7 @@ export const DepartureType = new GraphQLObjectType({
     actualTimestamp: {
       type: GraphQLString,
       resolve: ({ actualDeparture }: Departure) =>
-        actualDeparture
-          ? getAvlFromAvlId(actualDeparture.avlId).then(avl => avl.timestamp)
-          : null
+        actualDeparture ? actualDeparture.timestamp : null
     },
     isAtBusStop: {
       type: GraphQLBoolean

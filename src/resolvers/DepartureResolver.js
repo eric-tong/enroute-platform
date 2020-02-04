@@ -1,6 +1,7 @@
 // @flow
 
 import {
+  AVL_COLUMNS,
   getAvlFromAvlId,
   getLatestAvlFromTripId,
   getLatestAvlFromVehicleId
@@ -10,7 +11,6 @@ import {
   getScheduledDeparturesFromTripId
 } from "./ScheduledDepartureResolver";
 
-import { BUS_STOP_VISIT_COLUMNS } from "./BusStopVisitResolver";
 import { DateTime } from "luxon";
 import database from "../database/database";
 import { getAllPredictedBusArrivals } from "../vehicleStatus/VehicleStatusGetter";
@@ -18,21 +18,50 @@ import { getBusStopFromAvlId } from "./BusStopResolver";
 import { getPredictedDepartureTodayFromScheduledDepartureId } from "./PredictedDepartureResolver";
 import { toActualTime } from "../utils/TimeUtils";
 
-export async function getAllDeparturesFromBusStop(
+const DEPARTED_BUFFER = 3;
+
+export async function getUpcomingDeparturesFromBusStop(
   busStop: BusStop,
   { maxLength = Number.MAX_SAFE_INTEGER }: { maxLength?: number }
 ) {
+  const departures = await getAllDeparturesFromBusStopId(busStop.id);
+
+  // $FlowFixMe flow filter bug
+  return departures.filter(
+    ({
+      scheduledDeparture,
+      predictedDeparture,
+      actualDeparture,
+      isAtBusStop
+    }: Departure) => {
+      if (isAtBusStop) return true;
+      const cutOffTime = DateTime.local().plus({ minutes: DEPARTED_BUFFER });
+      if (actualDeparture) {
+        const actualTime = DateTime.fromSQL(actualDeparture.timestamp);
+        return actualTime.valueOf() > cutOffTime.valueOf();
+      }
+      return (
+        toActualTime(scheduledDeparture.minuteOfDay).valueOf() >
+          cutOffTime.valueOf() ||
+        (predictedDeparture &&
+          DateTime.fromSQL(predictedDeparture.predictedTimestamp).valueOf >
+            cutOffTime.valueOf())
+      );
+    }
+  );
+}
+
+export async function getAllDeparturesFromBusStopId(
+  busStopId: number
+): Promise<Departure[]> {
   return getScheduledDeparturesExceptLastInTripFromBusStopId(
-    busStop.id
+    busStopId
   ).then(scheduledDepartures =>
     Promise.all(scheduledDepartures.map(getDepartureFromScheduledDeparture))
   );
 }
 
-export async function getAllDeparturesFromTripId(
-  tripId: number,
-  { maxLength = Number.MAX_SAFE_INTEGER }: { maxLength?: number }
-) {
+export async function getAllDeparturesFromTripId(tripId: number) {
   return getScheduledDeparturesFromTripId(tripId).then(scheduledDepartures =>
     Promise.all(scheduledDepartures.map(getDepartureFromScheduledDeparture))
   );
@@ -61,7 +90,7 @@ function getActualDepartureTodayFromScheduledDepartureId(
   scheduledDepartureId: number
 ) {
   const GET_ACTUAL_DEPARTURE_TODAY_FROM_SCHEDULED_DEPARTURE_ID = `
-    SELECT ${BUS_STOP_VISIT_COLUMNS} FROM bus_stop_visits
+    SELECT ${AVL_COLUMNS} FROM bus_stop_visits
       INNER JOIN avl ON avl.id = bus_stop_visits.avl_id
       WHERE bus_stop_visits.scheduled_departure_id = $1
       AND avl.timestamp::DATE = now()::DATE
@@ -69,9 +98,8 @@ function getActualDepartureTodayFromScheduledDepartureId(
       LIMIT 1
   `;
   return database
-    .query<BusStopVisit>(
-      GET_ACTUAL_DEPARTURE_TODAY_FROM_SCHEDULED_DEPARTURE_ID,
-      [scheduledDepartureId]
-    )
+    .query<AVL>(GET_ACTUAL_DEPARTURE_TODAY_FROM_SCHEDULED_DEPARTURE_ID, [
+      scheduledDepartureId
+    ])
     .then(results => results.rows[0]);
 }

@@ -2,11 +2,6 @@
 
 import { clearTables, randomId } from "../../__test/testUtils";
 import {
-  getAllDeparturesFromBusStop,
-  getAllDeparturesFromTripId,
-  getDepartureFromScheduledDeparture
-} from "../DepartureResolver";
-import {
   insertAvl,
   insertAvlTrip,
   insertBusStop,
@@ -16,22 +11,22 @@ import {
 } from "../../__test/insert";
 
 import database from "../../database/database";
+import { getDepartureFromScheduledDeparture } from "../DepartureResolver";
 
 describe("departure resolver", () => {
   test("gets departure from scheduled departure", async () => {
     const avlId = randomId();
-
     const scheduledDeparture = await insertScheduledDeparture({});
     const predictedDeparture = await insertPredictedDeparture({
       scheduledDepartureId: scheduledDeparture.id,
       avlId
     });
-    const actualDeparture = await insertBusStopVisit({
+    const actualDeparture = await insertAvl({ id: avlId });
+    await insertBusStopVisit({
       avlId,
       scheduledDepartureId: scheduledDeparture.id
     });
 
-    await insertAvl({ id: avlId });
     await insertAvlTrip({ avlId, tripId: scheduledDeparture.tripId });
 
     const actual = await getDepartureFromScheduledDeparture(scheduledDeparture);
