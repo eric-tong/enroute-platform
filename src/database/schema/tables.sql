@@ -19,8 +19,8 @@ CREATE TABLE "avl" (
   "saved_timestamp" timestamp NOT NULL DEFAULT (now())
 );
 
-CREATE TABLE "avl_trip_id" (
-  "avl_id" int NOT NULL,
+CREATE TABLE "avl_trip" (
+  "avl_id" int SERIAL PRIMARY KEY,
   "trip_id" int NOT NULL
 );
 

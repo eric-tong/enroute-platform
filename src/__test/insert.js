@@ -50,6 +50,21 @@ export async function insertAvl(
     .then(results => results.rows[0]);
 }
 
+export function insertAvlTrip({
+  avlId,
+  tripId
+}: {
+  avlId?: number,
+  tripId?: number
+}) {
+  const INSERT_INTO_AVL_TRIP =
+    "INSERT INTO avl_trip (avl_id, trip_id) VALUES ($1, $2)";
+  return database.query<{}>(INSERT_INTO_AVL_TRIP, [
+    avlId ?? randomId(),
+    tripId ?? randomId()
+  ]);
+}
+
 export function insertBusStop(
   busStop:
     | BusStop

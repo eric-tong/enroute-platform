@@ -18,11 +18,14 @@ export function getScheduledDepartureFromBusStopIdAndTripId(
   const GET_SCHEDULED_DEPARTURE_FROM_BUS_STOP_ID_AND_TRIP_ID = `
     SELECT ${SCHEDULED_DEPARTURE_COLUMNS} FROM scheduled_departures
       WHERE bus_stop_id = $1 AND trip_id = $2
+      LIMIT 1
   `;
-  return database.query<ScheduledDeparture>(
-    GET_SCHEDULED_DEPARTURE_FROM_BUS_STOP_ID_AND_TRIP_ID,
-    [busStopId, tripId]
-  );
+  return database
+    .query<ScheduledDeparture>(
+      GET_SCHEDULED_DEPARTURE_FROM_BUS_STOP_ID_AND_TRIP_ID,
+      [busStopId, tripId]
+    )
+    .then(results => results.rows[0]);
 }
 
 export function getScheduledDeparturesFromBusStopId(busStopId: number) {

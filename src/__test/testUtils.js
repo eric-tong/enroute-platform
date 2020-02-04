@@ -8,7 +8,7 @@ const TABLE_NAMES = [
   "scheduled_departures",
   "predicted_departures",
   "avl",
-  "avl_trip_id",
+  "avl_trip",
   "bus_stops",
   "check_ins",
   "departments",

@@ -1,15 +1,12 @@
 // @flow
 
-import {
-  insertBusStopProxyVisitFromAvl,
-  insertBusStopVisitFromAvl
-} from "../resolvers/BusStopVisitResolver";
-
 import type { Codec8Data } from "./Codec8Schema";
 import type { Socket } from "net";
 import crcIsValid from "./Crc16Checker";
 import { imeiIsValid } from "../resolvers/VehicleResolver";
+import { insertBusStopVisitFromAvl } from "../resolvers/BusStopVisitResolver";
 import { insertTrackerDataFromCodec8DataAndImei } from "../resolvers/TrackerDataResolver";
+import { insertTripIdFromAvl } from "../resolvers/TripResolver";
 import net from "net";
 import parseCodec8Stream from "./Codec8Parser";
 
@@ -81,10 +78,10 @@ server.listen(port, () =>
 async function save(data: Codec8Data, imei: string) {
   insertTrackerDataFromCodec8DataAndImei(data, imei)
     .then(avls =>
-      avls.forEach(avl => {
+      avls.forEach(async avl => {
         if (!avl) return;
-        insertBusStopVisitFromAvl(avl);
-        insertBusStopProxyVisitFromAvl(avl);
+        await insertTripIdFromAvl(avl);
+        await insertBusStopVisitFromAvl(avl);
       })
     )
     .catch(console.error);

@@ -1,7 +1,14 @@
 // @flow
 
+import {
+  getTripIdFromAvlId,
+  getTripIdWithNearestStartTime
+} from "./TripResolver";
+
 import { DateTime } from "luxon";
 import database from "../database/database";
+import { getAvlOfLastTerminalExitFromVehicleId } from "./AvlResolver";
+import { getNearbyBusStopsFromLocation } from "./BusStopResolver";
 import { getScheduledDepartureFromBusStopIdAndTripId } from "./ScheduledDepartureResolver";
 
 export const BUS_STOP_VISIT_COLUMNS = [
@@ -13,39 +20,32 @@ export const BUS_STOP_VISIT_COLUMNS = [
   .map(column => "bus_stop_visits." + column)
   .join(", ");
 
-export const GEOFENCE_RADIUS = 0.001;
-export const ANGLE_BUFFER = 45;
-const GET_AVL_ID_IN_DATE =
-  "SELECT id FROM avl WHERE DATE(timestamp) = DATE($1) ORDER BY timestamp DESC";
+export async function insertBusStopVisitFromAvl(avl: AVL) {
+  const [nearbyBusStops, tripId] = await Promise.all([
+    getNearbyBusStopsFromLocation(avl.longitude, avl.latitude, avl.angle),
+    getTripIdFromAvlId(avl.id)
+  ]);
 
-export async function insertBusStopVisitFromAvl(
-  avl: AVL,
-  table?: string = "bus_stops",
-  isProxy: boolean = false
-) {
-  const INSERT_BUS_STOP_VISIT_FROM_AVL_ID = `
-    WITH avl AS (
-        SELECT id, longitude, latitude, angle FROM avl WHERE id = $1
+  const INSERT_INTO_BUS_STOP_VISIT = `
+    INSERT INTO bus_stop_visits (avl_id, bus_Stop_id, scheduled_departure_id, is_proxy)
+      VALUES ($1, $2, $3, $4)
+  `;
+
+  return Promise.all(
+    nearbyBusStops.map(nearbyBusStop =>
+      getScheduledDepartureFromBusStopIdAndTripId(
+        nearbyBusStop.busStop.id,
+        tripId
+      ).then(scheduledDeparture =>
+        database.query<{}>(INSERT_INTO_BUS_STOP_VISIT, [
+          avl.id,
+          nearbyBusStop.busStop.id,
+          scheduledDeparture ? scheduledDeparture.id : null,
+          nearbyBusStop.isProxy
+        ])
+      )
     )
-
-    INSERT INTO bus_stop_visits (avl_id, bus_stop_id, is_proxy)
-    SELECT avl.id as avl_id, ${table}.id as bus_stop_id, ${
-    isProxy ? "true" : "false"
-  } as is_proxy
-        FROM ${table} CROSS JOIN avl
-        WHERE CIRCLE(POINT(${table}.longitude, ${table}.latitude), ${GEOFENCE_RADIUS}) @> POINT(avl.longitude, avl.latitude)
-        AND (
-          ${table}.road_angle IS NULL
-            OR ABS(${table}.road_angle - avl.angle) < ${ANGLE_BUFFER}
-            OR ABS(${table}.road_angle - avl.angle) > ${360 - ANGLE_BUFFER}
-        )
-        RETURNING *
-    `;
-  return database.query<{}>(INSERT_BUS_STOP_VISIT_FROM_AVL_ID, [avl.id]);
-}
-
-export function insertBusStopProxyVisitFromAvl(avl: AVL) {
-  return insertBusStopVisitFromAvl(avl, "bus_stop_proxies", true);
+  );
 }
 
 export function getBusStopVisitFromAvlId(avlId: number) {
