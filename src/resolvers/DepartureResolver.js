@@ -1,6 +1,10 @@
 // @flow
 
-import { getAvlFromAvlId, getLatestAvlFromVehicleId } from "./AvlResolver";
+import {
+  getAvlFromAvlId,
+  getLatestAvlFromTripId,
+  getLatestAvlFromVehicleId
+} from "./AvlResolver";
 import {
   getScheduledDeparturesExceptLastInTripFromBusStopId,
   getScheduledDeparturesFromTripId
@@ -10,17 +14,18 @@ import { BUS_STOP_VISIT_COLUMNS } from "./BusStopVisitResolver";
 import { DateTime } from "luxon";
 import database from "../database/database";
 import { getAllPredictedBusArrivals } from "../vehicleStatus/VehicleStatusGetter";
+import { getBusStopFromAvlId } from "./BusStopResolver";
 import { getPredictedDepartureTodayFromScheduledDepartureId } from "./PredictedDepartureResolver";
 import { toActualTime } from "../utils/TimeUtils";
-
-const DEPARTURE_BUFFER = 60 * 1000;
 
 export async function getAllDeparturesFromBusStop(
   busStop: BusStop,
   { maxLength = Number.MAX_SAFE_INTEGER }: { maxLength?: number }
 ) {
-  return getScheduledDeparturesExceptLastInTripFromBusStopId(busStop.id).then(
-    getDeparturesFromScheduledDepartures
+  return getScheduledDeparturesExceptLastInTripFromBusStopId(
+    busStop.id
+  ).then(scheduledDepartures =>
+    Promise.all(scheduledDepartures.map(getDepartureFromScheduledDeparture))
   );
 }
 
@@ -28,44 +33,28 @@ export async function getAllDeparturesFromTripId(
   tripId: number,
   { maxLength = Number.MAX_SAFE_INTEGER }: { maxLength?: number }
 ) {
-  return getScheduledDeparturesFromTripId(tripId).then(
-    getDeparturesFromScheduledDepartures
+  return getScheduledDeparturesFromTripId(tripId).then(scheduledDepartures =>
+    Promise.all(scheduledDepartures.map(getDepartureFromScheduledDeparture))
   );
 }
 
-export async function getDeparturesFromScheduledDepartures(
-  scheduledDepartures: ScheduledDeparture[]
-) {
-  const getPredictedDepartures = Promise.all(
-    scheduledDepartures.map(scheduledDeparture =>
-      getPredictedDepartureTodayFromScheduledDepartureId(scheduledDeparture.id)
-    )
-  );
-  const getActualDepartures = Promise.all(
-    scheduledDepartures.map(scheduledDeparture =>
-      getActualDepartureTodayFromScheduledDepartureId(scheduledDeparture.id)
-    )
-  );
-  const [predictedDepartures, actualDepartures] = await Promise.all([
-    getPredictedDepartures,
-    getActualDepartures
+export async function getDepartureFromScheduledDeparture(
+  scheduledDeparture: ScheduledDeparture
+): Promise<Departure> {
+  const [predictedDeparture, actualDeparture] = await Promise.all([
+    getPredictedDepartureTodayFromScheduledDepartureId(scheduledDeparture.id),
+    getActualDepartureTodayFromScheduledDepartureId(scheduledDeparture.id)
   ]);
-  const isAtBusStopArray = await Promise.all(
-    actualDepartures.map(actualDeparture => {
-      if (!actualDeparture) return false;
-      else
-        return getAvlFromAvlId(actualDeparture.avlId)
-          .then(avl => getLatestAvlFromVehicleId(avl.vehicleId))
-          .then(latestAvl => latestAvl.id === actualDeparture.avlId);
-    })
-  );
+  const isAtBusStop = await getLatestAvlFromTripId(scheduledDeparture.tripId)
+    .then(avl => getBusStopFromAvlId(avl.id))
+    .then(busStop => !!busStop && busStop.id === scheduledDeparture.busStopId);
 
-  return scheduledDepartures.map<Departure>((scheduledDeparture, i) => ({
+  return {
     scheduledDeparture,
-    predictedDeparture: predictedDepartures[i],
-    actualDeparture: actualDepartures[i],
-    isAtBusStop: isAtBusStopArray[i]
-  }));
+    predictedDeparture,
+    actualDeparture,
+    isAtBusStop
+  };
 }
 
 function getActualDepartureTodayFromScheduledDepartureId(
@@ -74,7 +63,8 @@ function getActualDepartureTodayFromScheduledDepartureId(
   const GET_ACTUAL_DEPARTURE_TODAY_FROM_SCHEDULED_DEPARTURE_ID = `
     SELECT ${BUS_STOP_VISIT_COLUMNS} FROM bus_stop_visits
       INNER JOIN avl ON avl.id = bus_stop_visits.avl_id
-      WHERE scheduled_departure_id = $1
+      WHERE bus_stop_visits.scheduled_departure_id = $1
+      AND avl.timestamp::DATE = now()::DATE
       ORDER BY avl.timestamp DESC
       LIMIT 1
   `;

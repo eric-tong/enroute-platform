@@ -49,6 +49,20 @@ export function getLatestAvlFromVehicleId(vehicleId: number) {
     .then(results => results.rows[0]);
 }
 
+export function getLatestAvlFromTripId(tripId: number) {
+  const GET_LATEST_AVL_FROM_TRIP_ID = `
+    SELECT ${AVL_COLUMNS} FROM avl
+      INNER JOIN avl_trip ON avl.id = avl_trip.avl_id
+      WHERE trip_id = $1
+      ORDER BY avl.timestamp DESC
+      LIMIT 1
+  `;
+
+  return database
+    .query<AVL>(GET_LATEST_AVL_FROM_TRIP_ID, [tripId])
+    .then(results => results.rows[0]);
+}
+
 export function getAvlOfLastTerminalExitFromVehicleId(
   vehicleId: number,
   beforeTimestamp?: string = DateTime.local().toSQL()

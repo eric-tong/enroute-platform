@@ -28,14 +28,5 @@ export function getPredictedDepartureTodayFromScheduledDepartureId(
       GET_PREDICTED_DEPARTURE_TODAY_FROM_SCHEDULED_DEPARTURE_ID,
       [scheduledDepartureId]
     )
-    .then(results => results.rows[0])
-    .then(
-      predictedDeparture =>
-        predictedDeparture && {
-          ...predictedDeparture,
-          predictedTimestamp: DateTime.fromMillis(
-            parseInt(predictedDeparture.predictedTimestamp, 10)
-          ).toSQL()
-        }
-    );
+    .then(results => results.rows[0]);
 }

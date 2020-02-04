@@ -2,6 +2,7 @@
 
 import { AVL_COLUMNS } from "../resolvers/AvlResolver";
 import { BUS_STOP_COLUMNS } from "../resolvers/BusStopResolver";
+import { BUS_STOP_VISIT_COLUMNS } from "../resolvers/BusStopVisitResolver";
 import { DateTime } from "luxon";
 import { PREDICTED_DEPARTURE_COLUMNS } from "../resolvers/PredictedDepartureResolver";
 import { SCHEDULED_DEPARTURE_COLUMNS } from "../resolvers/ScheduledDepartureResolver";
@@ -126,17 +127,18 @@ export async function insertBusStopVisit(busStopVisit: {|
   busStopId?: number,
   scheduledDepartureId?: number
 |}) {
-  if (!busStopVisit.avlId) await insertAvl({ id: 0 });
-  if (!busStopVisit.busStopId) await insertBusStop({ id: 0 });
+  const INSERT_BUS_STOP_VISIT = `
+    INSERT INTO bus_stop_visits (avl_id, bus_stop_id, scheduled_departure_id) 
+      VALUES ($1, $2, $3) RETURNING ${BUS_STOP_VISIT_COLUMNS}
+  `;
 
-  return database.query<{}>(
-    "INSERT INTO bus_stop_visits (avl_id, bus_stop_id, scheduled_departure_id) VALUES ($1, $2, $3)",
-    [
-      busStopVisit.avlId ?? 0,
-      busStopVisit.busStopId ?? 0,
-      busStopVisit.scheduledDepartureId ?? 0
-    ]
-  );
+  return database
+    .query<BusStopVisit>(INSERT_BUS_STOP_VISIT, [
+      busStopVisit.avlId ?? randomId(),
+      busStopVisit.busStopId ?? randomId(),
+      busStopVisit.scheduledDepartureId ?? randomId()
+    ])
+    .then(results => results.rows[0]);
 }
 
 export function insertDepartment(

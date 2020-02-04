@@ -3,67 +3,44 @@
 import { clearTables, randomId } from "../../__test/testUtils";
 import {
   getAllDeparturesFromBusStop,
-  getAllDeparturesFromTripId
+  getAllDeparturesFromTripId,
+  getDepartureFromScheduledDeparture
 } from "../DepartureResolver";
-import { insertBusStop, insertScheduledDeparture } from "../../__test/insert";
+import {
+  insertAvl,
+  insertAvlTrip,
+  insertBusStop,
+  insertBusStopVisit,
+  insertPredictedDeparture,
+  insertScheduledDeparture
+} from "../../__test/insert";
 
 import database from "../../database/database";
 
 describe("departure resolver", () => {
-  test("gets departure from bus stop", async () => {
-    const busStop = await insertBusStop({});
-    const departures = [
-      {
-        scheduledDeparture: await insertScheduledDeparture({
-          busStopId: busStop.id,
-          minuteOfDay: 100
-        })
-      },
-      {
-        scheduledDeparture: await insertScheduledDeparture({
-          busStopId: busStop.id,
-          minuteOfDay: 200
-        })
-      },
-      {
-        scheduledDeparture: await insertScheduledDeparture({
-          busStopId: busStop.id,
-          minuteOfDay: 300
-        })
-      }
-    ];
+  test("gets departure from scheduled departure", async () => {
+    const avlId = randomId();
 
-    const actual = await getAllDeparturesFromBusStop(busStop, {});
-    const expected = departures.slice(0, -1); // The last stop is not included in scheduled departures
+    const scheduledDeparture = await insertScheduledDeparture({});
+    const predictedDeparture = await insertPredictedDeparture({
+      scheduledDepartureId: scheduledDeparture.id,
+      avlId
+    });
+    const actualDeparture = await insertBusStopVisit({
+      avlId,
+      scheduledDepartureId: scheduledDeparture.id
+    });
 
-    expect(actual).toEqual(expected);
-  });
+    await insertAvl({ id: avlId });
+    await insertAvlTrip({ avlId, tripId: scheduledDeparture.tripId });
 
-  test("gets departure from trip id", async () => {
-    const tripId = randomId();
-    const departures = [
-      {
-        scheduledDeparture: await insertScheduledDeparture({
-          minuteOfDay: 100,
-          tripId
-        })
-      },
-      {
-        scheduledDeparture: await insertScheduledDeparture({
-          minuteOfDay: 200,
-          tripId
-        })
-      },
-      {
-        scheduledDeparture: await insertScheduledDeparture({
-          minuteOfDay: 300,
-          tripId
-        })
-      }
-    ];
-
-    const actual = await getAllDeparturesFromTripId(tripId, {});
-    const expected = departures;
+    const actual = await getDepartureFromScheduledDeparture(scheduledDeparture);
+    const expected: Departure = {
+      scheduledDeparture,
+      predictedDeparture,
+      actualDeparture,
+      isAtBusStop: false
+    };
 
     expect(actual).toEqual(expected);
   });
