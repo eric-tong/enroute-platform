@@ -1,5 +1,6 @@
 // @flow
 
+import { DateTime } from "luxon";
 import database from "../database/database";
 
 export const PREDICTED_DEPARTURE_COLUMNS = [
@@ -27,5 +28,14 @@ export function getPredictedDepartureTodayFromScheduledDepartureId(
       GET_PREDICTED_DEPARTURE_TODAY_FROM_SCHEDULED_DEPARTURE_ID,
       [scheduledDepartureId]
     )
-    .then(results => results.rows[0]);
+    .then(results => results.rows[0])
+    .then(
+      predictedDeparture =>
+        predictedDeparture && {
+          ...predictedDeparture,
+          predictedTimestamp: DateTime.fromMillis(
+            parseInt(predictedDeparture.predictedTimestamp, 10)
+          ).toSQL()
+        }
+    );
 }
