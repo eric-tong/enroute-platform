@@ -78,11 +78,11 @@ server.listen(port, () =>
 async function save(data: Codec8Data, imei: string) {
   insertTrackerDataFromCodec8DataAndImei(data, imei)
     .then(avls =>
-      avls.forEach(async avl => {
-        if (!avl) return;
-        await insertTripIdFromAvl(avl);
-        await insertBusStopVisitFromAvl(avl);
-      })
+      Promise.all(
+        avls.map(avl =>
+          insertTripIdFromAvl(avl).then(() => insertBusStopVisitFromAvl(avl))
+        )
+      )
     )
     .catch(console.error);
 }

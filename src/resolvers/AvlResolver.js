@@ -72,8 +72,7 @@ export function getAvlOfLastTerminalExitFromVehicleId(
       if (results.rows.length) {
         return results.rows[0];
       } else {
-        console.error("No last terminal exit found");
-        return getLatestAvlFromVehicleId(vehicleId);
+        throw new Error("No last terminal exit found");
       }
     });
 }
