@@ -20,7 +20,7 @@ CREATE TABLE "avl" (
 );
 
 CREATE TABLE "avl_trip" (
-  "avl_id" int SERIAL PRIMARY KEY,
+  "avl_id" SERIAL PRIMARY KEY,
   "trip_id" int NOT NULL
 );
 

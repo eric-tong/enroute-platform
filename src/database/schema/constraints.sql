@@ -31,8 +31,4 @@ ALTER TABLE "scheduled_departures" ADD FOREIGN KEY ("trip_id") REFERENCES "trips
 
 ALTER TABLE "scheduled_departures" ADD FOREIGN KEY ("bus_stop_id") REFERENCES "bus_stops" ("id");
 
-ALTER TABLE "sign_ins" ADD FOREIGN KEY ("vehicle_id") REFERENCES "vehicles" ("id");
-
-ALTER TABLE "sign_ins" ADD FOREIGN KEY ("department_id") REFERENCES "departments" ("id");
-
 ALTER TABLE "trips" ADD FOREIGN KEY ("route_id") REFERENCES "routes" ("id");
