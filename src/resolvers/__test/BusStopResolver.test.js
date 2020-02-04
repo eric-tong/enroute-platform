@@ -165,25 +165,92 @@ describe("bus stop resolver", () => {
     expect(actual).toEqual(expected);
   });
 
-  test.only("get nearby bus stops from location", async () => {
-    const busStop = await insertBusStop({
-      longitude: 100,
-      latitude: 100
-    });
-    const avl = await insertAvl({
-      longitude: 100.00001,
-      latitude: 100.00001,
-      angle: 0
+  describe("get nearby bus stops from location", () => {
+    test("returns nearby bus stop with any angle", async () => {
+      const busStop = await insertBusStop({
+        longitude: 100,
+        latitude: 100
+      });
+      const avl = await insertAvl({
+        longitude: 100.00001,
+        latitude: 100.00001,
+        angle: 0
+      });
+
+      const actual = await getNearbyBusStopsFromLocation(
+        avl.longitude,
+        avl.latitude,
+        avl.angle
+      );
+      const expected = [busStop];
+
+      expect(actual).toEqual(expected);
     });
 
-    const actual = await getNearbyBusStopsFromLocation(
-      avl.longitude,
-      avl.latitude,
-      avl.angle
-    );
-    const expected = [busStop];
+    test("returns nearby bus stop with angle range", async () => {
+      const busStop = await insertBusStop({
+        longitude: 100,
+        latitude: 100,
+        roadAngle: 45
+      });
+      const avl = await insertAvl({
+        longitude: 100.00001,
+        latitude: 100.00001,
+        angle: 85
+      });
 
-    expect(actual).toEqual(expected);
+      const actual = await getNearbyBusStopsFromLocation(
+        avl.longitude,
+        avl.latitude,
+        avl.angle
+      );
+      const expected = [busStop];
+
+      expect(actual).toEqual(expected);
+    });
+
+    test("does not return far away bus stop", async () => {
+      const busStop = await insertBusStop({
+        longitude: 100,
+        latitude: 100
+      });
+      const avl = await insertAvl({
+        longitude: 101,
+        latitude: 101,
+        angle: 0
+      });
+
+      const actual = await getNearbyBusStopsFromLocation(
+        avl.longitude,
+        avl.latitude,
+        avl.angle
+      );
+      const expected = [];
+
+      expect(actual).toEqual(expected);
+    });
+
+    test("does not return bus stop with very different angle", async () => {
+      const busStop = await insertBusStop({
+        longitude: 100,
+        latitude: 100,
+        roadAngle: 180
+      });
+      const avl = await insertAvl({
+        longitude: 100.001,
+        latitude: 100.001,
+        angle: 0
+      });
+
+      const actual = await getNearbyBusStopsFromLocation(
+        avl.longitude,
+        avl.latitude,
+        avl.angle
+      );
+      const expected = [];
+
+      expect(actual).toEqual(expected);
+    });
   });
 
   beforeAll(clearTables);
