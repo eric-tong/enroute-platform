@@ -80,7 +80,9 @@ async function save(data: Codec8Data, imei: string) {
     .then(avls =>
       Promise.all(
         avls.map(avl =>
-          insertTripIdFromAvl(avl).then(() => insertBusStopVisitFromAvl(avl))
+          insertTripIdFromAvl(avl)
+            .catch(console.error)
+            .finally(() => insertBusStopVisitFromAvl(avl))
         )
       )
     )
