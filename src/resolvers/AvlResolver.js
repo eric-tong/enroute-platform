@@ -59,7 +59,7 @@ export function getLatestAvlFromTripId(tripId: number) {
   `;
 
   return database
-    .query<AVL>(GET_LATEST_AVL_FROM_TRIP_ID, [tripId])
+    .query<?AVL>(GET_LATEST_AVL_FROM_TRIP_ID, [tripId])
     .then(results => results.rows[0]);
 }
 

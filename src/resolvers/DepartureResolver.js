@@ -74,9 +74,12 @@ export async function getDepartureFromScheduledDeparture(
     getPredictedDepartureTodayFromScheduledDepartureId(scheduledDeparture.id),
     getActualDepartureTodayFromScheduledDepartureId(scheduledDeparture.id)
   ]);
-  const isAtBusStop = await getLatestAvlFromTripId(scheduledDeparture.tripId)
-    .then(avl => getBusStopFromAvlId(avl.id))
-    .then(busStop => !!busStop && busStop.id === scheduledDeparture.busStopId);
+  const latestAvl = await getLatestAvlFromTripId(scheduledDeparture.tripId);
+  const isAtBusStop =
+    !!latestAvl &&
+    (await getBusStopFromAvlId(latestAvl.id).then(
+      busStop => !!busStop && busStop.id === scheduledDeparture.busStopId
+    ));
 
   return {
     scheduledDeparture,
