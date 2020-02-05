@@ -7,3 +7,7 @@ export function toActualTime(minuteOfDay: number) {
     .startOf("day")
     .plus({ minute: minuteOfDay });
 }
+
+export function maxTime(t1: DateTime, t2: DateTime) {
+  return t1.valueOf() > t2.valueOf() ? t1 : t2;
+}
