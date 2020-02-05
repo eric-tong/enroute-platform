@@ -8,7 +8,7 @@ CREATE TABLE "avl" (
   "id" SERIAL PRIMARY KEY,
   "vehicle_id" int NOT NULL,
   "event_io_id" int NOT NULL,
-  "timestamp" timestamp NOT NULL,
+  "timestamp" timestamptz NOT NULL,
   "priority" priority NOT NULL,
   "longitude" float NOT NULL,
   "latitude" float NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE "avl" (
   "angle" int NOT NULL,
   "satellites" smallint NOT NULL,
   "speed" int NOT NULL,
-  "saved_timestamp" timestamp NOT NULL DEFAULT (now())
+  "saved_timestamp" timestamptz NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE "avl_trip" (
@@ -56,7 +56,7 @@ CREATE TABLE "check_ins" (
   "id" SERIAL PRIMARY KEY,
   "vehicle_id" int NOT NULL,
   "department_id" int NOT NULL,
-  "timestamp" timestamp NOT NULL
+  "timestamp" timestamptz NOT NULL
 );
 
 CREATE TABLE "departments" (
@@ -80,7 +80,7 @@ CREATE TABLE "predicted_departures" (
   "id" SERIAL PRIMARY KEY,
   "avl_id" int NOT NULL,
   "scheduled_departure_id" int NOT NULL,
-  "predicted_timestamp" timestamp DEFAULT (now())
+  "predicted_timestamp" timestamptz DEFAULT (now())
 );
 
 CREATE TABLE "routes" (

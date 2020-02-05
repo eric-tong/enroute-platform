@@ -4,7 +4,7 @@ import database from "../database/database";
 
 const CHECK_IN_COLUMNS = [
   "id",
-  "timestamp",
+  "timestamp::text",
   `vehicle_id AS "vehicleId"`,
   `department_id AS "departmentId"`
 ]

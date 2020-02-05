@@ -22,11 +22,7 @@ export const DepartureType = new GraphQLObjectType({
     predictedTimestamp: {
       type: GraphQLString,
       resolve: ({ predictedDeparture }: Departure) =>
-        predictedDeparture
-          ? DateTime.fromMillis(
-              parseInt(predictedDeparture.predictedTimestamp, 10)
-            ).toSQL()
-          : null
+        predictedDeparture ? predictedDeparture.predictedTimestamp : null
     },
     actualTimestamp: {
       type: GraphQLString,
