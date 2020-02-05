@@ -6,7 +6,7 @@ import database from "../database/database";
 export const AVL_COLUMNS = [
   "id",
   "priority",
-  "timestamp",
+  "timestamp::text",
   "altitude",
   "longitude",
   "latitude",
