@@ -59,7 +59,7 @@ export async function getAllDeparturesFromTripId(tripId: number) {
 export async function getDepartureFromScheduledDeparture(
   scheduledDeparture: ScheduledDeparture
 ): Promise<Departure> {
-  const [predictedDeparture, actualDeparture] = await Promise.all([
+  const [predictedDeparture, { isProxy, actualDeparture }] = await Promise.all([
     getPredictedDepartureTodayFromScheduledDepartureId(scheduledDeparture.id),
     getActualDepartureTodayFromScheduledDepartureId(scheduledDeparture.id)
   ]);
@@ -82,6 +82,8 @@ export async function getDepartureFromScheduledDeparture(
       return currentBusStop &&
         currentBusStop.id === scheduledDeparture.busStopId
         ? "now"
+        : isProxy
+        ? "skipped"
         : "departed";
     }
     if (predictedDeparture) return "arriving";
@@ -93,7 +95,7 @@ function getActualDepartureTodayFromScheduledDepartureId(
   scheduledDepartureId: number
 ) {
   const GET_ACTUAL_DEPARTURE_TODAY_FROM_SCHEDULED_DEPARTURE_ID = `
-    SELECT ${AVL_COLUMNS} FROM bus_stop_visits
+    SELECT ${AVL_COLUMNS}, bus_stop_visits.is_proxy AS "isProxy" FROM bus_stop_visits
       INNER JOIN avl ON avl.id = bus_stop_visits.avl_id
       WHERE bus_stop_visits.scheduled_departure_id = $1
       AND avl.timestamp::DATE = now()::DATE
@@ -101,10 +103,17 @@ function getActualDepartureTodayFromScheduledDepartureId(
       LIMIT 1
   `;
   return database
-    .query<?AVL>(GET_ACTUAL_DEPARTURE_TODAY_FROM_SCHEDULED_DEPARTURE_ID, [
-      scheduledDepartureId
-    ])
-    .then(results => results.rows[0]);
+    .query<?{| ...AVL, isProxy: boolean |}>(
+      GET_ACTUAL_DEPARTURE_TODAY_FROM_SCHEDULED_DEPARTURE_ID,
+      [scheduledDepartureId]
+    )
+    .then(results => {
+      const row = results.rows[0];
+      if (!row) return { isProxy: false, actualDeparture: null };
+
+      const { isProxy, ...actualDeparture } = row;
+      return { isProxy, actualDeparture };
+    });
 }
 
 const isUpcomingDeparture = ({
