@@ -13,7 +13,7 @@ export const AVL_COLUMNS = [
   "angle",
   "satellites",
   "speed",
-  "vehicle_id AS vehicleId"
+  `vehicle_id AS "vehicleId"`
 ]
   .map(column => "avl." + column)
   .join(", ");
@@ -83,7 +83,6 @@ export function getAvlOfLastTerminalExitFromVehicleId(
       beforeTimestamp
     ])
     .then(results => {
-      console.log({ vehicleId, results, beforeTimestamp });
       if (results.rows.length) {
         return results.rows[0];
       } else {
