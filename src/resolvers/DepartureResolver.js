@@ -13,7 +13,6 @@ import {
 
 import { DateTime } from "luxon";
 import database from "../database/database";
-import { getAllPredictedBusArrivals } from "../vehicleStatus/VehicleStatusGetter";
 import { getBusStopFromAvlId } from "./BusStopResolver";
 import { getPredictedDepartureTodayFromScheduledDepartureId } from "./PredictedDepartureResolver";
 import { toActualTime } from "../utils/TimeUtils";
