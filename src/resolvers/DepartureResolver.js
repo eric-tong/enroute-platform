@@ -26,7 +26,7 @@ export async function getUpcomingDeparturesFromBusStop(
   const departures = await getAllDeparturesFromBusStopId(busStop.id);
 
   // $FlowFixMe flow filter bug
-  return departures.filter(upcomingDeparturesOnly).slice(0, maxLength);
+  return departures.filter(isUpcomingDeparture).slice(0, maxLength);
 }
 
 export async function getUpcomingDeparturesFromTripId(
@@ -36,7 +36,7 @@ export async function getUpcomingDeparturesFromTripId(
   const departures = await getAllDeparturesFromTripId(tripId);
 
   // $FlowFixMe flow filter bug
-  return departures.filter(upcomingDeparturesOnly).slice(0, maxLength);
+  return departures.filter(isUpcomingDeparture).slice(0, maxLength);
 }
 
 export async function getAllDeparturesFromBusStopId(
@@ -95,7 +95,7 @@ function getActualDepartureTodayFromScheduledDepartureId(
     .then(results => results.rows[0]);
 }
 
-const upcomingDeparturesOnly = ({
+const isUpcomingDeparture = ({
   scheduledDeparture,
   predictedDeparture,
   actualDeparture,

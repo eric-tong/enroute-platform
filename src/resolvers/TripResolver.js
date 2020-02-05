@@ -3,6 +3,7 @@
 import { DateTime } from "luxon";
 import database from "../database/database";
 import { getAvlOfLastTerminalExitFromVehicleId } from "./AvlResolver";
+import { getBusStopFromAvlId } from "./BusStopResolver";
 
 export function getTripIdFromAvlId(avlId: number) {
   const GET_TRIP_ID_FROM_AVL =
@@ -13,6 +14,9 @@ export function getTripIdFromAvlId(avlId: number) {
 }
 
 export async function insertTripIdFromAvl(avl: AVL) {
+  const currentBusStop = await getBusStopFromAvlId(avl.id);
+  if (currentBusStop.isTerminal) return;
+
   const tripId = await getAvlOfLastTerminalExitFromVehicleId(
     avl.vehicleId,
     avl.timestamp
