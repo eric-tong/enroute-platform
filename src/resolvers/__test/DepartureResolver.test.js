@@ -16,7 +16,10 @@ import { getDepartureFromScheduledDeparture } from "../DepartureResolver";
 describe("departure resolver", () => {
   test("gets departure from scheduled departure", async () => {
     const avlId = randomId();
-    const scheduledDeparture = await insertScheduledDeparture({});
+    const busStop = await insertBusStop({});
+    const scheduledDeparture = await insertScheduledDeparture({
+      busStopId: busStop.id
+    });
     const predictedDeparture = await insertPredictedDeparture({
       scheduledDepartureId: scheduledDeparture.id,
       avlId
@@ -24,6 +27,7 @@ describe("departure resolver", () => {
     const actualDeparture = await insertAvl({ id: avlId });
     await insertBusStopVisit({
       avlId,
+      busStopId: busStop.id,
       scheduledDepartureId: scheduledDeparture.id
     });
 
@@ -34,7 +38,7 @@ describe("departure resolver", () => {
       scheduledDeparture,
       predictedDeparture,
       actualDeparture,
-      isAtBusStop: false
+      status: "now"
     };
 
     expect(actual).toEqual(expected);

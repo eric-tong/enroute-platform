@@ -62,19 +62,30 @@ export async function getDepartureFromScheduledDeparture(
     getPredictedDepartureTodayFromScheduledDepartureId(scheduledDeparture.id),
     getActualDepartureTodayFromScheduledDepartureId(scheduledDeparture.id)
   ]);
-  const latestAvl = await getLatestAvlFromTripId(scheduledDeparture.tripId);
-  const isAtBusStop =
-    !!latestAvl &&
-    (await getBusStopFromAvlId(latestAvl.id).then(
-      busStop => !!busStop && busStop.id === scheduledDeparture.busStopId
-    ));
 
   return {
     scheduledDeparture,
     predictedDeparture,
     actualDeparture,
-    isAtBusStop
+    status: await getDepartureStatus()
   };
+
+  async function getDepartureStatus(): Promise<DepartureStatus> {
+    if (!predictedDeparture && !actualDeparture) return "unknown";
+
+    const latestAvl = await getLatestAvlFromTripId(scheduledDeparture.tripId);
+    if (!latestAvl) return "unknown";
+
+    if (actualDeparture) {
+      const currentBusStop = await getBusStopFromAvlId(latestAvl.id);
+      return currentBusStop &&
+        currentBusStop.id === scheduledDeparture.busStopId
+        ? "now"
+        : "departed";
+    }
+    if (predictedDeparture) return "arriving";
+    return "unknown";
+  }
 }
 
 function getActualDepartureTodayFromScheduledDepartureId(
@@ -89,7 +100,7 @@ function getActualDepartureTodayFromScheduledDepartureId(
       LIMIT 1
   `;
   return database
-    .query<AVL>(GET_ACTUAL_DEPARTURE_TODAY_FROM_SCHEDULED_DEPARTURE_ID, [
+    .query<?AVL>(GET_ACTUAL_DEPARTURE_TODAY_FROM_SCHEDULED_DEPARTURE_ID, [
       scheduledDepartureId
     ])
     .then(results => results.rows[0]);
@@ -99,19 +110,21 @@ const isUpcomingDeparture = ({
   scheduledDeparture,
   predictedDeparture,
   actualDeparture,
-  isAtBusStop
+  status
 }: Departure) => {
-  if (isAtBusStop) return true;
+  if (status === "arriving" || status === "now") return true;
+
   const cutOffTime = DateTime.local().plus({ minutes: DEPARTED_BUFFER });
-  if (actualDeparture) {
-    const actualTime = DateTime.fromSQL(actualDeparture.timestamp);
-    return actualTime.valueOf() > cutOffTime.valueOf();
+  if (status === "departed" || status == "skipped") {
+    return (
+      actualDeparture &&
+      DateTime.fromSQL(actualDeparture.timestamp).valueOf() >
+        cutOffTime.valueOf()
+    );
+  } else {
+    return (
+      toActualTime(scheduledDeparture.minuteOfDay).valueOf() >
+      cutOffTime.valueOf()
+    );
   }
-  if (predictedDeparture) {
-    return true;
-  }
-  return (
-    toActualTime(scheduledDeparture.minuteOfDay).valueOf() >
-    cutOffTime.valueOf()
-  );
 };

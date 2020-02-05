@@ -60,8 +60,15 @@ declare type Departure = {|
   scheduledDeparture: ScheduledDeparture,
   predictedDeparture: ?PredictedDeparture,
   actualDeparture: ?AVL,
-  isAtBusStop: boolean
+  status: DepartureStatus
 |};
+
+declare type DepartureStatus =
+  | "arriving"
+  | "now"
+  | "departed"
+  | "skipped"
+  | "unknown";
 
 declare type IO = {|
   name: string,
