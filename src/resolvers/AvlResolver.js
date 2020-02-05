@@ -83,6 +83,7 @@ export function getAvlOfLastTerminalExitFromVehicleId(
       beforeTimestamp
     ])
     .then(results => {
+      console.log({ vehicleId, results, beforeTimestamp });
       if (results.rows.length) {
         return results.rows[0];
       } else {
