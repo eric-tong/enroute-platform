@@ -3,7 +3,7 @@
 import { GraphQLInt, GraphQLList, GraphQLObjectType } from "graphql";
 
 import { DepartureType } from "./DepartureSchema";
-import { getAllDeparturesFromTripId } from "../resolvers/DepartureResolver";
+import { getUpcomingDeparturesFromTripId } from "../resolvers/DepartureResolver";
 
 export const TripType = new GraphQLObjectType({
   name: "TripType",
@@ -12,7 +12,8 @@ export const TripType = new GraphQLObjectType({
     id: { type: GraphQLInt },
     departures: {
       type: new GraphQLList(DepartureType),
-      resolve: trip => getAllDeparturesFromTripId(trip.id)
+      resolve: (trip, options) =>
+        getUpcomingDeparturesFromTripId(trip.id, options)
     }
   })
 });

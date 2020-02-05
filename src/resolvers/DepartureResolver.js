@@ -26,30 +26,17 @@ export async function getUpcomingDeparturesFromBusStop(
   const departures = await getAllDeparturesFromBusStopId(busStop.id);
 
   // $FlowFixMe flow filter bug
-  return departures
-    .filter(
-      ({
-        scheduledDeparture,
-        predictedDeparture,
-        actualDeparture,
-        isAtBusStop
-      }: Departure) => {
-        if (isAtBusStop) return true;
-        const cutOffTime = DateTime.local().plus({ minutes: DEPARTED_BUFFER });
-        if (actualDeparture) {
-          const actualTime = DateTime.fromSQL(actualDeparture.timestamp);
-          return actualTime.valueOf() > cutOffTime.valueOf();
-        }
-        if (predictedDeparture) {
-          return true;
-        }
-        return (
-          toActualTime(scheduledDeparture.minuteOfDay).valueOf() >
-          cutOffTime.valueOf()
-        );
-      }
-    )
-    .slice(0, maxLength);
+  return departures.filter(upcomingDeparturesOnly).slice(0, maxLength);
+}
+
+export async function getUpcomingDeparturesFromTripId(
+  tripId: number,
+  { maxLength = Number.MAX_SAFE_INTEGER }: { maxLength?: number }
+) {
+  const departures = await getAllDeparturesFromTripId(tripId);
+
+  // $FlowFixMe flow filter bug
+  return departures.filter(upcomingDeparturesOnly).slice(0, maxLength);
 }
 
 export async function getAllDeparturesFromBusStopId(
@@ -107,3 +94,24 @@ function getActualDepartureTodayFromScheduledDepartureId(
     ])
     .then(results => results.rows[0]);
 }
+
+const upcomingDeparturesOnly = ({
+  scheduledDeparture,
+  predictedDeparture,
+  actualDeparture,
+  isAtBusStop
+}: Departure) => {
+  if (isAtBusStop) return true;
+  const cutOffTime = DateTime.local().plus({ minutes: DEPARTED_BUFFER });
+  if (actualDeparture) {
+    const actualTime = DateTime.fromSQL(actualDeparture.timestamp);
+    return actualTime.valueOf() > cutOffTime.valueOf();
+  }
+  if (predictedDeparture) {
+    return true;
+  }
+  return (
+    toActualTime(scheduledDeparture.minuteOfDay).valueOf() >
+    cutOffTime.valueOf()
+  );
+};
