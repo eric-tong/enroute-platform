@@ -27,28 +27,30 @@ export async function getUpcomingDeparturesFromBusStop(
   const departures = await getAllDeparturesFromBusStopId(busStop.id);
 
   // $FlowFixMe flow filter bug
-  return departures.filter(
-    ({
-      scheduledDeparture,
-      predictedDeparture,
-      actualDeparture,
-      isAtBusStop
-    }: Departure) => {
-      if (isAtBusStop) return true;
-      const cutOffTime = DateTime.local().plus({ minutes: DEPARTED_BUFFER });
-      if (actualDeparture) {
-        const actualTime = DateTime.fromSQL(actualDeparture.timestamp);
-        return actualTime.valueOf() > cutOffTime.valueOf();
+  return departures
+    .filter(
+      ({
+        scheduledDeparture,
+        predictedDeparture,
+        actualDeparture,
+        isAtBusStop
+      }: Departure) => {
+        if (isAtBusStop) return true;
+        const cutOffTime = DateTime.local().plus({ minutes: DEPARTED_BUFFER });
+        if (actualDeparture) {
+          const actualTime = DateTime.fromSQL(actualDeparture.timestamp);
+          return actualTime.valueOf() > cutOffTime.valueOf();
+        }
+        return (
+          toActualTime(scheduledDeparture.minuteOfDay).valueOf() >
+            cutOffTime.valueOf() ||
+          (predictedDeparture &&
+            DateTime.fromSQL(predictedDeparture.predictedTimestamp).valueOf >
+              cutOffTime.valueOf())
+        );
       }
-      return (
-        toActualTime(scheduledDeparture.minuteOfDay).valueOf() >
-          cutOffTime.valueOf() ||
-        (predictedDeparture &&
-          DateTime.fromSQL(predictedDeparture.predictedTimestamp).valueOf >
-            cutOffTime.valueOf())
-      );
-    }
-  );
+    )
+    .slice(0, maxLength);
 }
 
 export async function getAllDeparturesFromBusStopId(
