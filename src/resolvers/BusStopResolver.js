@@ -89,27 +89,24 @@ export function getBusStopFromAvlId(avlId: number) {
     .then(results => (results.rows.length ? results.rows[0] : null));
 }
 
-export function getBusStopsVisitedByVehicle(vehicleId: number) {
+export function getBusStopsVisitedTodayFromTripId(tripId: number) {
   const BUS_STOPS_VISITED = `
-    WITH bus_stops AS (
-    SELECT bus_stops.*, ROW_NUMBER() OVER (PARTITION BY bus_stops.id ORDER BY avl.timestamp) AS id_within_bus_stop FROM avl
-        INNER JOIN bus_stop_visits ON bus_stop_visits.avl_id = avl.id
-        INNER JOIN bus_stops ON bus_stops.id = bus_stop_visits.bus_stop_id
-        WHERE avl.vehicle_id = $1
-        AND avl.timestamp >= $2
-        ORDER BY avl.timestamp
+    WITH bus_stop_ids AS (
+      SELECT bus_stop_id AS id, MIN(avl.timestamp) AS timestamp FROM bus_stop_visits 
+        INNER JOIN avl ON avl.id = bus_stop_visits.avl_id
+        WHERE scheduled_departure_id IN (
+        SELECT id FROM scheduled_departures WHERE trip_id = $1
+      ) AND avl.timestamp::DATE = now()::DATE
+      GROUP BY bus_stop_id
+      ORDER BY timestamp
     )
 
-    SELECT ${BUS_STOP_COLUMNS} FROM bus_stops WHERE id_within_bus_stop = 1
+    SELECT ${BUS_STOP_COLUMNS} FROM bus_stop_ids
+      INNER JOIN bus_stops ON bus_stops.id = bus_stop_ids.id;
   `;
 
-  return getAvlOfLastTerminalExitFromVehicleId(vehicleId)
-    .then(avl =>
-      database.query<{ id: number }>(BUS_STOPS_VISITED, [
-        vehicleId,
-        avl.timestamp
-      ])
-    )
+  return database
+    .query<BusStop>(BUS_STOPS_VISITED, [tripId])
     .then(results => results.rows);
 }
 

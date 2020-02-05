@@ -1,13 +1,14 @@
 // @flow
 
 import busStops, { busStopsInTrip } from "../../__test/models/busStops";
+import { clearTables, randomId } from "../../__test/testUtils";
 import {
   getAllBusStops,
   getBusStopFromAvlId,
   getBusStopFromId,
   getBusStopFromUrl,
   getBusStopsFromTripId,
-  getBusStopsVisitedByVehicle,
+  getBusStopsVisitedTodayFromTripId,
   getNearbyBusStopsFromLocation,
   getUpcomingBusStopsFromTripId
 } from "../BusStopResolver";
@@ -21,7 +22,6 @@ import {
 } from "../../__test/insert";
 
 import { DateTime } from "luxon";
-import { clearTables } from "../../__test/testUtils";
 import database from "../../database/database";
 
 const tripId = 8;
@@ -137,31 +137,26 @@ describe("bus stop resolver", () => {
   });
 
   test("get bus stops visited by vehicle", async () => {
-    const vehicleId = 8;
-    const busStopsVisited = [
-      busStops.departmentOfMaterialsSouthbound,
-      busStops.begbrokeSciencePark,
-      busStops.departmentOfMaterialsNorthbound,
-      busStops.bbcOxford,
-      busStops.parkwayParkAndRideNorthbound
-    ];
+    const tripId = randomId();
+    const busStopsVisited = [];
 
-    await insertVehicle({ id: vehicleId });
-    for (let i = 0; i < 100; i++) {
-      await insertAvl({ id: i, vehicleId });
-    }
-    for (const busStop of busStopsVisited) {
-      await insertBusStop(busStop);
-    }
-    for (let i = 0; i < busStopsVisited.length; i++) {
-      await insertBusStopVisit({
-        avlId: i * 5 + 1,
-        busStopId: busStopsVisited[i].id
+    for (let i = 0; i < 10; i++) {
+      const busStop = await insertBusStop({});
+      const scheduledDeparture = await insertScheduledDeparture({
+        tripId,
+        busStopId: busStop.id
       });
+      const avl = await insertAvl({});
+      await insertBusStopVisit({
+        avlId: avl.id,
+        busStopId: busStop.id,
+        scheduledDepartureId: scheduledDeparture.id
+      });
+      busStopsVisited.push(busStop);
     }
 
-    const actual = await getBusStopsVisitedByVehicle(vehicleId);
-    const expected = busStopsVisited.slice(1);
+    const actual = await getBusStopsVisitedTodayFromTripId(tripId);
+    const expected = busStopsVisited;
 
     expect(actual).toEqual(expected);
   });

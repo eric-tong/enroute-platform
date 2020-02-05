@@ -2,14 +2,17 @@
 
 import {
   getBusStopFromAvlId,
-  getBusStopsVisitedByVehicle
+  getBusStopsVisitedTodayFromTripId
 } from "../resolvers/BusStopResolver";
+import {
+  getTripIdFromAvlId,
+  getTripIdFromVehicleId
+} from "../resolvers/TripResolver";
 
 import { DateTime } from "luxon";
 import NodeCache from "node-cache";
 import { getAllVehicles } from "../resolvers/VehicleResolver";
 import { getLatestAvlFromVehicleId } from "../resolvers/AvlResolver";
-import { getTripIdFromVehicleId } from "../resolvers/TripResolver";
 
 export const vehicleStatusCache = new NodeCache();
 
@@ -27,11 +30,12 @@ async function estimateVehicleStatus(
 ): Promise<Status> {
   const avl = await getLatestAvlFromVehicleId(vehicle.id);
   if (!avl) return { isInTerminal: true };
-  const [currentBusStop, tripId, busStopsVisited] = await Promise.all([
-    getBusStopFromAvlId(avl.id),
-    getTripIdFromVehicleId(vehicle.id),
-    getBusStopsVisitedByVehicle(vehicle.id)
-  ]);
+
+  const tripId: ?number = await getTripIdFromAvlId(avl.id);
+  if (!tripId) return { isInTerminal: true };
+
+  const busStopsVisited = await getBusStopsVisitedTodayFromTripId(tripId);
+  const currentBusStop = await getBusStopFromAvlId(avl.id);
 
   return currentBusStop && currentBusStop.isTerminal
     ? { isInTerminal: true }
