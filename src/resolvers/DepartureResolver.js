@@ -17,7 +17,8 @@ import { getBusStopFromAvlId } from "./BusStopResolver";
 import { getPredictedDepartureTodayFromScheduledDepartureId } from "./PredictedDepartureResolver";
 import { toActualTime } from "../utils/TimeUtils";
 
-const DEPARTED_BUFFER = 3;
+const DEPARTED_BUFFER_SHORT = 3;
+const DEPARTED_BUFFER_LONG = 10;
 
 export async function getUpcomingDeparturesFromBusStop(
   busStop: BusStop,
@@ -112,9 +113,19 @@ const isUpcomingDeparture = ({
   actualDeparture,
   status
 }: Departure) => {
-  if (status === "arriving" || status === "now") return true;
+  if (status === "now") return true;
 
-  const cutOffTime = DateTime.local().plus({ minutes: DEPARTED_BUFFER });
+  if (status === "arriving" && predictedDeparture) {
+    const cutOffTime = DateTime.local().minus({
+      minutes: DEPARTED_BUFFER_LONG
+    });
+    return (
+      DateTime.fromSQL(predictedDeparture.predictedTimestamp).valueOf >
+      cutOffTime.valueOf()
+    );
+  }
+
+  const cutOffTime = DateTime.local().plus({ minutes: DEPARTED_BUFFER_SHORT });
   if (status === "departed" || status == "skipped") {
     return (
       actualDeparture &&
