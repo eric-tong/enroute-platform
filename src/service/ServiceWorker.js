@@ -31,10 +31,10 @@ function setIntervalWithCheck(task: () => mixed, periodInSeconds) {
   }, periodInSeconds * 1000);
 }
 
-function startInitialTasks() {
-  TASKS.forEach(async ({ task }) => {
+async function startInitialTasks() {
+  for (const { task } of TASKS) {
     await task();
-  });
+  }
 }
 
 function shouldRunTasks() {

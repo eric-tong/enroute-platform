@@ -28,9 +28,8 @@ export async function updateBusArrivalPredictions() {
         id: 0,
         isTerminal: false
       },
-      DateTime.fromJSDate(status.avl.timestamp)
+      DateTime.fromSQL(status.avl.timestamp)
     );
-
     if (predictedArrivals) {
       vehicleStatusCache.set(vehicleId, {
         ...status,

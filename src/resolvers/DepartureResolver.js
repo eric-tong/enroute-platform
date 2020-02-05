@@ -41,12 +41,12 @@ export async function getUpcomingDeparturesFromBusStop(
           const actualTime = DateTime.fromSQL(actualDeparture.timestamp);
           return actualTime.valueOf() > cutOffTime.valueOf();
         }
+        if (predictedDeparture) {
+          return true;
+        }
         return (
           toActualTime(scheduledDeparture.minuteOfDay).valueOf() >
-            cutOffTime.valueOf() ||
-          (predictedDeparture &&
-            DateTime.fromSQL(predictedDeparture.predictedTimestamp).valueOf >
-              cutOffTime.valueOf())
+          cutOffTime.valueOf()
         );
       }
     )
