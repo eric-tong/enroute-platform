@@ -12,7 +12,13 @@ describe("mapbox utils", () => {
       busStops.begbrokeSciencePark
     ];
 
-    const actual = await downloadDirections(busStopsInRoute);
+    const actual = await downloadDirections(
+      busStopsInRoute.map(({ longitude, latitude, roadAngle }) => ({
+        longitude,
+        latitude,
+        roadAngle
+      }))
+    );
 
     expect(actual.legs.length).toEqual(busStopsInRoute.length - 1);
     expect(actual.geometry.coordinates.length).toBeGreaterThan(0);

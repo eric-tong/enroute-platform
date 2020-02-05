@@ -60,7 +60,15 @@ async function getBusArrivalPredictions(
     busStopsVisited
   );
   const [directions, scheduledDepartures] = await Promise.all([
-    downloadDirections([vehicle, ...upcomingBusStops]),
+    downloadDirections(
+      [vehicle, ...upcomingBusStops].map(
+        ({ longitude, latitude, roadAngle }) => ({
+          longitude,
+          latitude,
+          roadAngle
+        })
+      )
+    ),
     getScheduledDeparturesFromTripId(tripId)
   ]);
 

@@ -14,7 +14,13 @@ export async function getRouteFromTripId(tripId?: number) {
     return routeByTripCache.get(trip);
   } else {
     const busStops = await getBusStopsFromTripId(trip);
-    const route = await downloadDirections(busStops);
+    const route = await downloadDirections(
+      busStops.map(({ longitude, latitude, roadAngle }) => ({
+        longitude,
+        latitude,
+        roadAngle
+      }))
+    );
     const routeCoords = route.geometry.coordinates.map(
       ([longitude, latitude]) => ({
         latitude,
