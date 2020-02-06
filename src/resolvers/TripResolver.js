@@ -15,7 +15,7 @@ export function getTripIdFromAvlId(avlId: number) {
 
 export async function insertTripIdFromAvl(avl: AVL) {
   const currentBusStop = await getBusStopFromAvlId(avl.id);
-  if (currentBusStop.isTerminal) return;
+  if (currentBusStop && currentBusStop.isTerminal) return;
 
   const tripId = await getAvlOfLastTerminalExitFromVehicleId(
     avl.vehicleId,
