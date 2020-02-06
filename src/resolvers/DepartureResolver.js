@@ -133,7 +133,7 @@ const isUpcomingDeparture = ({
       minutes: DEPARTED_BUFFER_LONG
     });
     return (
-      DateTime.fromSQL(predictedDeparture.predictedTimestamp).valueOf >
+      DateTime.fromSQL(predictedDeparture.predictedTimestamp).valueOf() >
       cutOffTime.valueOf()
     );
   }
