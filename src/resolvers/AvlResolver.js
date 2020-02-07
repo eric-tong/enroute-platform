@@ -49,7 +49,7 @@ export function getLatestAvlFromVehicleId(vehicleId: number) {
     .then(results => results.rows[0]);
 }
 
-export function getLatestAvlFromTripId(tripId: number) {
+export function getLatestAvlTodayFromTripId(tripId: number) {
   const GET_LATEST_AVL_FROM_TRIP_ID = `
     SELECT ${AVL_COLUMNS} FROM avl
       INNER JOIN avl_trip ON avl.id = avl_trip.avl_id

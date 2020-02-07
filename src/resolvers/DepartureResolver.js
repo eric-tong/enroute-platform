@@ -3,8 +3,9 @@
 import {
   AVL_COLUMNS,
   getAvlFromAvlId,
-  getLatestAvlFromTripId,
-  getLatestAvlFromVehicleId
+  getAvlOfLastTerminalExitFromVehicleId,
+  getLatestAvlFromVehicleId,
+  getLatestAvlTodayFromTripId
 } from "./AvlResolver";
 import {
   getScheduledDeparturesExceptLastInTripFromBusStopId,
@@ -51,9 +52,32 @@ export async function getAllDeparturesFromBusStopId(
 }
 
 export async function getAllDeparturesFromTripId(tripId: number) {
-  return getScheduledDeparturesFromTripId(tripId).then(scheduledDepartures =>
-    Promise.all(scheduledDepartures.map(getDepartureFromScheduledDeparture))
+  const latestAvl = await getLatestAvlTodayFromTripId(tripId);
+  const scheduledDepartures: ScheduledDeparture[] = await getScheduledDeparturesFromTripId(
+    tripId
   );
+
+  // If there is no latest avl, the trip hasn't started yet
+  if (!latestAvl) {
+    return scheduledDepartures.map<Departure>(scheduledDeparture => ({
+      scheduledDeparture,
+      predictedDeparture: undefined,
+      actualDeparture: undefined,
+      status: "unknown"
+    }));
+  }
+
+  const allDeparturesFromTrip = await Promise.all(
+    scheduledDepartures.map(getDepartureFromScheduledDeparture)
+  );
+
+  // The first departure should show when the bus left the terminal
+  allDeparturesFromTrip[0].status = "departed";
+  allDeparturesFromTrip[0].actualDeparture = await getAvlOfLastTerminalExitFromVehicleId(
+    latestAvl.vehicleId
+  );
+
+  return allDeparturesFromTrip;
 }
 
 export async function getDepartureFromScheduledDeparture(
@@ -72,20 +96,19 @@ export async function getDepartureFromScheduledDeparture(
   };
 
   async function getDepartureStatus(): Promise<DepartureStatus> {
+    if (isProxy) return "skipped";
     if (!predictedDeparture && !actualDeparture) return "unknown";
 
-    const latestAvl = await getLatestAvlFromTripId(scheduledDeparture.tripId);
+    const latestAvl = await getLatestAvlTodayFromTripId(
+      scheduledDeparture.tripId
+    );
     if (!latestAvl) return "unknown";
 
     if (actualDeparture) {
       const currentBusStop = await getBusStopFromAvlId(latestAvl.id);
-      if (!currentBusStop || currentBusStop.isTerminal) return "departed";
-
       return currentBusStop &&
         currentBusStop.id === scheduledDeparture.busStopId
         ? "now"
-        : isProxy
-        ? "skipped"
         : "departed";
     }
     if (predictedDeparture) return "arriving";
