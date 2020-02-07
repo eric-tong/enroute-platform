@@ -55,7 +55,7 @@ async function insertPredictionsFromAvl(avl: AVL) {
       roadAngle
     }))
   ];
-  const durations = await getTravelDurations(waypoints);
+  const travelData = await getTravelData(waypoints);
   const minimumTimes = upcomingScheduledDepartures.map(scheduledDeparture =>
     toActualTime(scheduledDeparture.minuteOfDay)
   );
@@ -63,7 +63,12 @@ async function insertPredictionsFromAvl(avl: AVL) {
   const predictedTimes = getAccumulativeTimes(
     DateTime.fromSQL(avl.timestamp),
     minimumTimes,
-    durations
+    travelData.map(data => data.duration)
+  );
+
+  // accumulative distances use to verify accuracy of predictions over time
+  const accumulativeDistances = getAccumulativeDistances(
+    travelData.map(data => data.distance)
   );
 
   Promise.all(
@@ -71,7 +76,8 @@ async function insertPredictionsFromAvl(avl: AVL) {
       insertPrediction({
         predictedTimestamp: predictedTime.toSQL(),
         avlId: avl.id,
-        scheduledDepartureId: upcomingScheduledDepartures[i].id
+        scheduledDepartureId: upcomingScheduledDepartures[i].id,
+        distance: accumulativeDistances[i]
       })
     )
   );
@@ -79,19 +85,22 @@ async function insertPredictionsFromAvl(avl: AVL) {
   return predictedTimes;
 }
 
-async function getTravelDurations(
+async function getTravelData(
   waypoints: {|
     longitude: number,
     latitude: number,
     roadAngle: ?number
   |}[]
-): Promise<number[]> {
+): Promise<{ duration: number, distance: number }[]> {
   const directions = await downloadDirections(waypoints);
 
   if (!directions || !directions.legs) {
     throw new Error("No directions returned from API");
   } else {
-    return directions.legs.map(leg => leg.duration);
+    return directions.legs.map(({ duration, distance }) => ({
+      duration,
+      distance
+    }));
   }
 }
 
@@ -101,7 +110,7 @@ function getAccumulativeTimes(
   durations: number[]
 ): DateTime[] {
   let accumulativeTime = startTime;
-  let accumulativeTimes = [];
+  const accumulativeTimes = [];
 
   for (let i = 0; i < durations.length; i++) {
     const predictedTime = accumulativeTime.plus({ seconds: durations[i] });
@@ -112,17 +121,29 @@ function getAccumulativeTimes(
   return accumulativeTimes;
 }
 
+function getAccumulativeDistances(distances: number[]) {
+  let accumulativeDistance = 0;
+  const accumulativeDistances = [];
+  for (const distance of distances) {
+    accumulativeDistance += distance;
+    accumulativeDistances.push(accumulativeDistance);
+  }
+  return accumulativeDistances;
+}
+
 async function insertPrediction(prediction: {|
   scheduledDepartureId: number,
   avlId: number,
-  predictedTimestamp: string
+  predictedTimestamp: string,
+  distance: number
 |}) {
   return database.query(
-    "INSERT INTO predicted_departures (scheduled_departure_id, avl_id, predicted_timestamp) VALUES ($1, $2, $3)",
+    "INSERT INTO predicted_departures (scheduled_departure_id, avl_id, predicted_timestamp, distance) VALUES ($1, $2, $3, $4)",
     [
       prediction.scheduledDepartureId,
       prediction.avlId,
-      prediction.predictedTimestamp
+      prediction.predictedTimestamp,
+      prediction.distance
     ]
   );
 }

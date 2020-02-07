@@ -80,7 +80,8 @@ CREATE TABLE "predicted_departures" (
   "id" SERIAL PRIMARY KEY,
   "avl_id" int NOT NULL,
   "scheduled_departure_id" int NOT NULL,
-  "predicted_timestamp" timestamptz NOT NULL DEFAULT (now())
+  "predicted_timestamp" timestamptz NOT NULL DEFAULT (now()),
+  "distance" float NOT NULL DEFAULT 0
 );
 
 CREATE TABLE "routes" (
