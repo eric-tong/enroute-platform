@@ -1,6 +1,7 @@
 // @flow
 
 import {
+  getBusStopFromAvlId,
   getBusStopsVisitedTodayFromTripId,
   getUpcomingBusStopsFromTripId
 } from "./BusStopResolver";
@@ -9,18 +10,37 @@ import { maxTime, toActualTime } from "../utils/TimeUtils";
 import { DateTime } from "luxon";
 import database from "../database/database";
 import { downloadDirections } from "../utils/MapboxUtils";
+import { getAllVehicles } from "./VehicleResolver";
+import { getLatestAvlFromVehicleId } from "./AvlResolver";
 import { getScheduledDeparturesFromTripId } from "./ScheduledDepartureResolver";
 import { getTripIdFromAvlId } from "./TripResolver";
 
+export function insertAllPredictions() {
+  return getAllVehicles().then(vehicles =>
+    Promise.all(
+      vehicles.map(vehicle =>
+        getLatestAvlFromVehicleId(vehicle.id).then(avl =>
+          insertPredictionsFromAvl(avl)
+        )
+      )
+    )
+  );
+}
+
 async function insertPredictionsFromAvl(avl: AVL) {
   const tripId = await getTripIdFromAvlId(avl.id);
-  if (tripId) return [];
+  if (!tripId) return [];
+
+  const currentBusStop = await getBusStopFromAvlId(avl.id);
+  if (currentBusStop && currentBusStop.isTerminal) return [];
 
   const visitedBusStops = await getBusStopsVisitedTodayFromTripId(tripId);
   const upcomingBusStops = await getUpcomingBusStopsFromTripId(
     tripId,
     visitedBusStops.map(busStop => busStop.id)
   );
+  if (upcomingBusStops.length < 1) return [];
+
   const upcomingScheduledDepartures: ScheduledDeparture[] = await getScheduledDeparturesFromTripId(
     tripId
   ).then(scheduledDepartures =>

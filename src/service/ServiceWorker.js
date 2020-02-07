@@ -1,16 +1,11 @@
 // @flow
 
 import { DateTime } from "luxon";
-import { updateBusArrivalPredictions } from "../vehicleStatus/BusArrivalPredictor";
-import { updateVehicleStatus } from "../vehicleStatus/VehicleStatusUpdater";
+import { insertAllPredictions } from "../resolvers/PredictionResolver";
 
-const TASKS = [
+const TASKS: { task: () => Promise<mixed>, period: number }[] = [
   {
-    task: updateVehicleStatus,
-    period: 15
-  },
-  {
-    task: updateBusArrivalPredictions,
+    task: insertAllPredictions,
     period: 30
   }
 ];
@@ -19,21 +14,21 @@ startServiceWorker();
 
 function startServiceWorker() {
   TASKS.forEach(({ task, period }) => {
-    task();
+    task().catch(console.error);
     setIntervalWithCheck(task, period);
   });
   startInitialTasks();
 }
 
-function setIntervalWithCheck(task: () => mixed, periodInSeconds) {
+function setIntervalWithCheck(task, periodInSeconds) {
   return setInterval(() => {
-    if (shouldRunTasks) task();
+    if (shouldRunTasks) task().catch(console.error);
   }, periodInSeconds * 1000);
 }
 
 async function startInitialTasks() {
   for (const { task } of TASKS) {
-    await task();
+    await task().catch(console.error);
   }
 }
 
