@@ -79,8 +79,7 @@ export async function getDepartureFromScheduledDeparture(
 
     if (actualDeparture) {
       const currentBusStop = await getBusStopFromAvlId(latestAvl.id);
-      if (!currentBusStop) return "departed";
-      if (currentBusStop.isTerminal) return "inTerminal";
+      if (!currentBusStop || currentBusStop.isTerminal) return "departed";
 
       return currentBusStop &&
         currentBusStop.id === scheduledDeparture.busStopId
@@ -126,7 +125,6 @@ const isUpcomingDeparture = ({
   status
 }: Departure) => {
   if (status === "now") return true;
-  if (status === "inTerminal") return false;
 
   if (status === "arriving" && predictedDeparture) {
     const cutOffTime = DateTime.local().minus({
