@@ -52,29 +52,12 @@ export async function getAllDeparturesFromBusStopId(
 }
 
 export async function getAllDeparturesFromTripId(tripId: number) {
-  const latestAvl = await getLatestAvlTodayFromTripId(tripId);
   const scheduledDepartures: ScheduledDeparture[] = await getScheduledDeparturesFromTripId(
     tripId
   );
 
-  // If there is no latest avl, the trip hasn't started yet
-  if (!latestAvl) {
-    return scheduledDepartures.map<Departure>(scheduledDeparture => ({
-      scheduledDeparture,
-      predictedDeparture: undefined,
-      actualDeparture: undefined,
-      status: "unknown"
-    }));
-  }
-
   const allDeparturesFromTrip = await Promise.all(
     scheduledDepartures.map(getDepartureFromScheduledDeparture)
-  );
-
-  // The first departure should show when the bus left the terminal
-  allDeparturesFromTrip[0].status = "departed";
-  allDeparturesFromTrip[0].actualDeparture = await getAvlOfLastTerminalExitFromVehicleId(
-    latestAvl.vehicleId
   );
 
   return allDeparturesFromTrip;
@@ -108,7 +91,7 @@ export async function getDepartureFromScheduledDeparture(
       const currentBusStop = await getBusStopFromAvlId(latestAvl.id);
       return currentBusStop &&
         currentBusStop.id === scheduledDeparture.busStopId &&
-          !currentBusStop.isTerminal
+        !currentBusStop.isTerminal
         ? "now"
         : "departed";
     }

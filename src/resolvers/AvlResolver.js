@@ -53,7 +53,7 @@ export function getLatestAvlTodayFromTripId(tripId: number) {
   const GET_LATEST_AVL_FROM_TRIP_ID = `
     SELECT ${AVL_COLUMNS} FROM avl
       INNER JOIN avl_trip ON avl.id = avl_trip.avl_id
-      WHERE trip_id = $1
+      WHERE avl_trip.trip_id = $1
       AND avl.timestamp::DATE = NOW()::DATE
       ORDER BY avl.timestamp DESC
       LIMIT 1
