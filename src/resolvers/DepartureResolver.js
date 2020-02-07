@@ -107,7 +107,8 @@ export async function getDepartureFromScheduledDeparture(
     if (actualDeparture) {
       const currentBusStop = await getBusStopFromAvlId(latestAvl.id);
       return currentBusStop &&
-        currentBusStop.id === scheduledDeparture.busStopId
+        currentBusStop.id === scheduledDeparture.busStopId &&
+          !currentBusStop.isTerminal
         ? "now"
         : "departed";
     }
