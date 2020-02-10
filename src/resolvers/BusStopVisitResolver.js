@@ -47,6 +47,17 @@ export async function insertBusStopVisitFromAvl(avl: AVL) {
         )
       )
     );
+  } else {
+    await Promise.all(
+      nearbyBusStops.map(nearbyBusStop =>
+        insertBusStopVisit(
+          avl.id,
+          nearbyBusStop.busStop.id,
+          undefined,
+          nearbyBusStop.isProxy
+        )
+      )
+    );
   }
 }
 
