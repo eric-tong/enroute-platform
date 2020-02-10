@@ -14,9 +14,6 @@ export function getTripIdFromAvlId(avlId: number) {
 }
 
 export async function insertTripIdFromAvl(avl: AVL) {
-  const currentBusStop = await getBusStopFromAvlId(avl.id);
-  if (currentBusStop && currentBusStop.isTerminal) return;
-
   const tripId = await getAvlOfLastTerminalExitFromVehicleId(
     avl.vehicleId,
     avl.timestamp
@@ -24,9 +21,10 @@ export async function insertTripIdFromAvl(avl: AVL) {
     getTripIdWithNearestStartTime(lastTerminalExit.timestamp)
   );
 
-  const INSERT_INTO_AVL_TRIP =
-    "INSERT INTO avl_trip (avl_id, trip_id) VALUES ($1, $2)";
-  return database.query<{}>(INSERT_INTO_AVL_TRIP, [avl.id, tripId]);
+  const INSERT_INTO_AVL_TRIP = `INSERT INTO avl_trip (avl_id, trip_id) VALUES ($1, $2) RETURNING trip_id AS "tripId"`;
+  return database
+    .query<{ tripId: number }>(INSERT_INTO_AVL_TRIP, [avl.id, tripId])
+    .then(results => results.rows[0].tripId);
 }
 
 export function getTripIdWithNearestStartTime(
