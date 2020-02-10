@@ -59,7 +59,7 @@ declare type Department = {|
 declare type Departure = {|
   scheduledDeparture: ScheduledDeparture,
   predictedDeparture: ?PredictedDeparture,
-  actualDeparture: ?AVL,
+  actualDeparture: ?(AVL | {| timestamp: string |}),
   status: DepartureStatus
 |};
 

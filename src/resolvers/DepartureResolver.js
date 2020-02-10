@@ -11,12 +11,13 @@ import {
   getScheduledDeparturesExceptLastInTripFromBusStopId,
   getScheduledDeparturesFromTripId
 } from "./ScheduledDepartureResolver";
+import { timeDifferenceInSeconds, toActualTime } from "../utils/TimeUtils";
 
 import { DateTime } from "luxon";
 import database from "../database/database";
 import { getBusStopFromAvlId } from "./BusStopResolver";
 import { getPredictedDepartureTodayFromScheduledDepartureId } from "./PredictedDepartureResolver";
-import { toActualTime } from "../utils/TimeUtils";
+import { tripIsStarted } from "./TripResolver";
 
 const DEPARTED_BUFFER_SHORT = 3;
 const DEPARTED_BUFFER_LONG = 10;
@@ -59,6 +60,24 @@ export async function getAllDeparturesFromTripId(tripId: number) {
   const allDeparturesFromTrip = await Promise.all(
     scheduledDepartures.map(getDepartureFromScheduledDeparture)
   );
+
+  // If trip has started, set first departure from terminal to be departed
+  // and actual departure to be last avl exit from terminal
+  if ((await tripIsStarted(tripId)) && allDeparturesFromTrip.length > 0) {
+    const lastTerminalDeparture = await getLatestAvlTodayFromTripId(tripId)
+      .then(avl =>
+        avl ? getAvlOfLastTerminalExitFromVehicleId(avl.vehicleId) : undefined
+      )
+      .catch(console.error);
+    allDeparturesFromTrip[0].status = "departed";
+    allDeparturesFromTrip[0].actualDeparture = lastTerminalDeparture
+      ? lastTerminalDeparture
+      : {
+          timestamp: toActualTime(
+            allDeparturesFromTrip[0].scheduledDeparture.minuteOfDay
+          ).toSQL()
+        };
+  }
 
   return allDeparturesFromTrip;
 }

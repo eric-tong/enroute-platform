@@ -1,9 +1,15 @@
 // @flow
 
+import {
+  getAvlOfLastTerminalExitFromVehicleId,
+  getLatestAvlFromVehicleId,
+  getLatestAvlTodayFromTripId
+} from "./AvlResolver";
+
 import { DateTime } from "luxon";
 import database from "../database/database";
-import { getAvlOfLastTerminalExitFromVehicleId } from "./AvlResolver";
 import { getBusStopFromAvlId } from "./BusStopResolver";
+import { timeDifferenceInSeconds } from "../utils/TimeUtils";
 
 export function getTripIdFromAvlId(avlId: number) {
   const GET_TRIP_ID_FROM_AVL =
@@ -54,4 +60,17 @@ export function getTripIdFromVehicleId(
     vehicleId,
     beforeTimestamp
   ).then(avl => getTripIdWithNearestStartTime(avl.timestamp));
+}
+
+export async function tripIsStarted(tripId: number) {
+  const latestAvlToday = await getLatestAvlFromVehicleId(tripId);
+  if (latestAvlToday) {
+    const timeSinceLatestAvlToday = timeDifferenceInSeconds(
+      DateTime.fromSQL(latestAvlToday.timestamp)
+    );
+    if (Math.abs(timeSinceLatestAvlToday) < 60) {
+      return true;
+    }
+  }
+  return false;
 }

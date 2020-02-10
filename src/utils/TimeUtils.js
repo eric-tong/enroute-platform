@@ -2,6 +2,13 @@
 
 import { DateTime } from "luxon";
 
+export function timeDifferenceInSeconds(
+  t1: DateTime,
+  t2?: DateTime = DateTime.local()
+) {
+  return (t1.toMillis() - t2.toMillis()) / 1000;
+}
+
 export function toActualTime(minuteOfDay: number) {
   return DateTime.local()
     .startOf("day")
