@@ -27,9 +27,10 @@ export async function insertTripIdFromAvl(avl: AVL) {
   );
 
   const INSERT_INTO_AVL_TRIP = `INSERT INTO avl_trip (avl_id, trip_id) VALUES ($1, $2) RETURNING trip_id AS "tripId"`;
-  return database
-    .query<{ tripId: number }>(INSERT_INTO_AVL_TRIP, [avl.id, tripId])
-    .then(results => results.rows[0].tripId);
+  if (tripId)
+    return database
+      .query<{ tripId: number }>(INSERT_INTO_AVL_TRIP, [avl.id, tripId])
+      .then(results => results.rows[0].tripId);
 }
 
 export function getTripIdWithNearestStartTime(
@@ -42,13 +43,16 @@ export function getTripIdWithNearestStartTime(
   
   SELECT trip_id as "tripId" FROM first_stops  
     WHERE stop_number = 1
+    AND ABS(EXTRACT(minute FROM $1::TIMESTAMP) + EXTRACT(hour FROM $1::TIMESTAMP) * 60 - first_stops.minute_of_day) < 30
     ORDER BY ABS(EXTRACT(minute FROM $1::TIMESTAMP) + EXTRACT(hour FROM $1::TIMESTAMP) * 60 - first_stops.minute_of_day)
     LIMIT 1
   `;
 
   return database
     .query<{ tripId: number }>(GET_TRIP_ID_WITH_NEAREST_START_TIME, [timestamp])
-    .then(results => results.rows[0].tripId);
+    .then(results =>
+      results.rows.length > 0 ? results.rows[0].tripId : undefined
+    );
 }
 
 export function getTripIdFromVehicleId(

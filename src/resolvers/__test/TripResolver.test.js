@@ -18,32 +18,62 @@ import busStops from "../../__test/models/busStops";
 import database from "../../database/database";
 
 describe("trip resolver", () => {
-  test("gets trip id with nearest start time", async () => {
-    const tripId = 500;
-    const now = DateTime.local();
-    const minuteOfDay = now.hour * 60 + now.minute;
+  describe("gets trip id with nearest start time", () => {
+    test("when trip has similar start time", async () => {
+      const tripId = 500;
+      const now = DateTime.local();
+      const minuteOfDay = now.hour * 60 + now.minute;
 
-    await insertBusStop({ id: 9 });
-    await insertScheduledDeparture({
-      tripId,
-      busStopId: 9,
-      minuteOfDay: minuteOfDay
-    });
-    await insertScheduledDeparture({
-      tripId,
-      busStopId: 9,
-      minuteOfDay: minuteOfDay - 60
-    });
-    await insertScheduledDeparture({
-      tripId,
-      busStopId: 9,
-      minuteOfDay: minuteOfDay + 60
+      await insertBusStop({ id: 9 });
+      await insertScheduledDeparture({
+        tripId,
+        busStopId: 9,
+        minuteOfDay: minuteOfDay
+      });
+      await insertScheduledDeparture({
+        tripId,
+        busStopId: 9,
+        minuteOfDay: minuteOfDay - 20
+      });
+      await insertScheduledDeparture({
+        tripId,
+        busStopId: 9,
+        minuteOfDay: minuteOfDay + 20
+      });
+
+      const actual = await getTripIdWithNearestStartTime();
+      const expected = tripId;
+
+      expect(actual).toEqual(expected);
     });
 
-    const actual = await getTripIdWithNearestStartTime();
-    const expected = tripId;
+    test("returns undefined for trips that start a long time away", async () => {
+      const tripId = 500;
+      const now = DateTime.local();
+      const minuteOfDay = now.hour * 60 + now.minute;
 
-    expect(actual).toEqual(expected);
+      await insertBusStop({ id: 9 });
+      await insertScheduledDeparture({
+        tripId,
+        busStopId: 9,
+        minuteOfDay: minuteOfDay
+      });
+      await insertScheduledDeparture({
+        tripId,
+        busStopId: 9,
+        minuteOfDay: minuteOfDay - 60
+      });
+      await insertScheduledDeparture({
+        tripId,
+        busStopId: 9,
+        minuteOfDay: minuteOfDay + 60
+      });
+
+      const actual = await getTripIdWithNearestStartTime();
+      const expected = tripId;
+
+      expect(actual).toBeUndefined();
+    });
   });
 
   test("gets trip id from vehicle id", async () => {

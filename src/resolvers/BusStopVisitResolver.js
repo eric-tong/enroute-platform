@@ -1,10 +1,6 @@
 // @flow
 
-import {
-  getTripIdFromAvlId,
-  getTripIdWithNearestStartTime,
-  insertTripIdFromAvl
-} from "./TripResolver";
+import { getTripIdFromAvlId, insertTripIdFromAvl } from "./TripResolver";
 
 import { DateTime } from "luxon";
 import database from "../database/database";

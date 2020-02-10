@@ -45,9 +45,12 @@ describe("bus stop visit resolver", () => {
         latitude: 100.00001,
         vehicleId
       });
+      const now = DateTime.local();
+      const minuteOfDay = now.hour * 60 + now.minute;
       const scheduledDeparture = await insertScheduledDeparture({
         tripId,
-        busStopId: busStop.id
+        busStopId: busStop.id,
+        minuteOfDay
       });
       await insertBusStopVisitFromAvl(avl);
 

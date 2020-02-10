@@ -1,37 +1,41 @@
 // @flow
 
+import { clearTables, randomId } from "../../__test/testUtils";
 import { insertBusStop, insertScheduledDeparture } from "../../__test/insert";
 
+import { DateTime } from "luxon";
 import busStops from "../../__test/models/busStops";
-import { clearTables } from "../../__test/testUtils";
 import database from "../../database/database";
 import { getRouteFromTripId } from "../RouteResolver";
 
 describe("route resolver", () => {
   test("gets route from trip id", async () => {
-    const tripId = 8;
+    const tripId = randomId();
     await insertBusStop(busStops.begbrokeSciencePark);
     await insertBusStop(busStops.departmentOfMaterialsSouthbound);
     await insertBusStop(busStops.oxfordTownCentre);
+
+    const now = DateTime.local();
+    const minuteOfDay = now.hour * 60 + now.minute;
     await insertScheduledDeparture({
       tripId,
       busStopId: busStops.begbrokeSciencePark.id,
-      minuteOfDay: 100
+      minuteOfDay: minuteOfDay
     });
     await insertScheduledDeparture({
       tripId,
       busStopId: busStops.departmentOfMaterialsSouthbound.id,
-      minuteOfDay: 200
+      minuteOfDay: minuteOfDay + 20
     });
     await insertScheduledDeparture({
       tripId,
       busStopId: busStops.oxfordTownCentre.id,
-      minuteOfDay: 300
+      minuteOfDay: minuteOfDay + 30
     });
     await insertScheduledDeparture({
       tripId,
       busStopId: busStops.begbrokeSciencePark.id,
-      minuteOfDay: 400
+      minuteOfDay: minuteOfDay + 40
     });
 
     const actual = await getRouteFromTripId();

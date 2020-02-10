@@ -6,7 +6,6 @@ import crcIsValid from "./Crc16Checker";
 import { imeiIsValid } from "../resolvers/VehicleResolver";
 import { insertBusStopVisitFromAvl } from "../resolvers/BusStopVisitResolver";
 import { insertTrackerDataFromCodec8DataAndImei } from "../resolvers/TrackerDataResolver";
-import { insertTripIdFromAvl } from "../resolvers/TripResolver";
 import net from "net";
 import parseCodec8Stream from "./Codec8Parser";
 
