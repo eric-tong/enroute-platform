@@ -2,7 +2,6 @@
 
 import {
   getAvlOfLastTerminalExitFromVehicleId,
-  getLatestAvlFromVehicleId,
   getLatestAvlTodayFromTripId
 } from "./AvlResolver";
 
@@ -63,7 +62,7 @@ export function getTripIdFromVehicleId(
 }
 
 export async function tripIsStarted(tripId: number) {
-  const latestAvlToday = await getLatestAvlFromVehicleId(tripId);
+  const latestAvlToday = await getLatestAvlTodayFromTripId(tripId);
   if (latestAvlToday) {
     const timeSinceLatestAvlToday = timeDifferenceInSeconds(
       DateTime.fromSQL(latestAvlToday.timestamp)
