@@ -41,7 +41,7 @@ export async function insertBusStopVisitFromAvl(avl: AVL) {
           insertBusStopVisit(
             avl.id,
             nearbyBusStop.busStop.id,
-            scheduledDeparture.id,
+            scheduledDeparture ? scheduledDeparture.id : undefined,
             nearbyBusStop.isProxy
           )
         )
