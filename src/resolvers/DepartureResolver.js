@@ -19,17 +19,64 @@ import { getBusStopFromAvlId } from "./BusStopResolver";
 import { getPredictedDepartureTodayFromScheduledDepartureId } from "./PredictedDepartureResolver";
 import { tripIsStarted } from "./TripResolver";
 
-const DEPARTED_BUFFER_SHORT = 3;
+const DEPARTED_BUFFER_SHORT = 2.5;
 const DEPARTED_BUFFER_LONG = 10;
 
 export async function getUpcomingDeparturesFromBusStop(
   busStop: BusStop,
   { maxLength = Number.MAX_SAFE_INTEGER }: { maxLength?: number }
 ) {
-  const departures = await getAllDeparturesFromBusStopId(busStop.id);
+  const departures = await (!busStop.isTerminal
+    ? getAllDeparturesFromBusStopId(busStop.id)
+    : await getScheduledDeparturesExceptLastInTripFromBusStopId(
+        busStop.id
+      ).then(scheduledDepartures =>
+        Promise.all(
+          scheduledDepartures.map(getTerminalDepartureFromScheduledDeparture)
+        )
+      ));
 
   // $FlowFixMe flow filter bug
   return departures.filter(isUpcomingDeparture).slice(0, maxLength);
+}
+
+async function getTerminalDepartureFromScheduledDeparture(
+  scheduledDeparture: ScheduledDeparture
+): Promise<Departure> {
+  const scheduledDepartureTime = toActualTime(scheduledDeparture.minuteOfDay);
+  if (await tripIsStarted(scheduledDeparture.tripId)) {
+    return {
+      scheduledDeparture,
+      predictedDeparture: undefined,
+      actualDeparture: await getLatestAvlTodayFromTripId(
+        scheduledDeparture.tripId
+      )
+        .then(latestAvl =>
+          latestAvl
+            ? getAvlOfLastTerminalExitFromVehicleId(latestAvl.vehicleId)
+            : { timestamp: scheduledDepartureTime.toSQL() }
+        )
+        .catch(console.error),
+      status: "departed"
+    };
+  } else if (
+    Math.abs(timeDifferenceInSeconds(scheduledDepartureTime)) <
+    DEPARTED_BUFFER_SHORT * 60
+  ) {
+    return {
+      scheduledDeparture,
+      predictedDeparture: undefined,
+      actualDeparture: undefined,
+      status: "now"
+    };
+  } else {
+    return {
+      scheduledDeparture,
+      predictedDeparture: undefined,
+      actualDeparture: undefined,
+      status: "unknown"
+    };
+  }
 }
 
 export async function getUpcomingDeparturesFromTripId(
