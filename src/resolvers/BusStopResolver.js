@@ -60,6 +60,12 @@ export async function getUpcomingBusStopsFromTripId(
   visitedBusStopIds: number[]
 ): Promise<BusStop[]> {
   const tripBusStops = await getBusStopsFromTripId(tripId);
+
+  // Remove first terminal stop since it has already departed
+  if (tripBusStops.length > 1 && tripBusStops[0].isTerminal) {
+    tripBusStops.unshift();
+  }
+
   const tripBusStopIds = tripBusStops.map(busStop => busStop.id);
 
   let tripIndex = 0;
