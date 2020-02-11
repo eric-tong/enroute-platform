@@ -114,7 +114,7 @@ function getAccumulativeTimes(
 
   for (let i = 0; i < durations.length; i++) {
     const predictedTime = accumulativeTime.plus({ seconds: durations[i] });
-    accumulativeTimes.push(accumulativeTime);
+    accumulativeTimes.push(predictedTime);
     accumulativeTime = maxTime(predictedTime, minimumTimes[i]);
   }
 
