@@ -63,7 +63,7 @@ export async function getUpcomingBusStopsFromTripId(
 
   // Remove first terminal stop since it has already departed
   if (tripBusStops.length > 1 && tripBusStops[0].isTerminal) {
-    tripBusStops.unshift();
+    tripBusStops.shift();
   }
 
   const tripBusStopIds = tripBusStops.map(busStop => busStop.id);
