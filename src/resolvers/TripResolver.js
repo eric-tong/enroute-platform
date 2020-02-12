@@ -2,6 +2,7 @@
 
 import {
   getAvlOfLastTerminalExitFromVehicleId,
+  getLatestAvlFromVehicleId,
   getLatestAvlTodayFromTripId
 } from "./AvlResolver";
 
@@ -59,10 +60,9 @@ export function getTripIdFromVehicleId(
   vehicleId: number,
   beforeTimestamp?: string = DateTime.local().toSQL()
 ) {
-  return getAvlOfLastTerminalExitFromVehicleId(
-    vehicleId,
-    beforeTimestamp
-  ).then(avl => getTripIdWithNearestStartTime(avl.timestamp));
+  return getLatestAvlFromVehicleId(vehicleId).then(avl =>
+    getTripIdFromAvlId(avl.id)
+  );
 }
 
 export async function tripIsStarted(tripId: number) {
