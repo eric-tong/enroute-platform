@@ -74,7 +74,7 @@ describe("bus stop resolver", () => {
       await insertTestTrip();
 
       const actual = await getUpcomingBusStopsFromTripId(tripId, []);
-      const expected = busStopsInTrip;
+      const expected = busStopsInTrip.slice(1); // Already departed from first stop
 
       expect(actual).toEqual(expected);
     });
@@ -82,7 +82,7 @@ describe("bus stop resolver", () => {
     test("bus stops visited in order", async () => {
       await insertTestTrip();
 
-      const actual = await getUpcomingBusStopsFromTripId(tripId, [7, 4, 5]);
+      const actual = await getUpcomingBusStopsFromTripId(tripId, [4, 5]);
       const expected = [
         busStops.departmentOfMaterialsNorthbound,
         busStops.bbcOxford,
@@ -96,7 +96,7 @@ describe("bus stop resolver", () => {
     test("bus stops skipped", async () => {
       await insertTestTrip();
 
-      const actual = await getUpcomingBusStopsFromTripId(tripId, [7, 5]);
+      const actual = await getUpcomingBusStopsFromTripId(tripId, [5]);
       const expected = [
         busStops.departmentOfMaterialsNorthbound,
         busStops.bbcOxford,
