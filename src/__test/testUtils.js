@@ -11,7 +11,6 @@ const TABLE_NAMES = [
   "avl_trip",
   "bus_stops",
   "check_ins",
-  "departments",
   "io",
   "io_names",
   "vehicles",

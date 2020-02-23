@@ -5,7 +5,6 @@ import { CheckOutMutation, CreateNewCheckInMutation } from "./CheckInSchema";
 import { GraphQLObjectType, GraphQLSchema } from "graphql";
 
 import { AvlQuery } from "./AvlSchema";
-import { DepartmentsQuery } from "./DepartmentSchema";
 import { RouteQuery } from "./RouteSchema";
 import { VehicleQuery } from "./VehicleSchema";
 
@@ -24,8 +23,7 @@ const RootQueryType = new GraphQLObjectType({
     busStops: BusStopsQuery,
     busStop: BusStopQuery,
     route: RouteQuery,
-    avls: AvlQuery,
-    departments: DepartmentsQuery
+    avls: AvlQuery
   }
 });
 
