@@ -10,11 +10,15 @@ export const CreateNewCheckInMutation = {
   description: "Create a new check in instance",
   type: GraphQLInt,
   args: {
-    departmentType: { type: GraphQLString },
-    vehicleRegistration: { type: GraphQLString }
+    userId: { type: GraphQLInt },
+    originId: { type: GraphQLInt },
+    destinationId: { type: GraphQLInt },
+    remarks: { type: GraphQLString }
   },
   resolve: (...args: any) =>
-    createCheckIn(...args).then(checkIn => (checkIn ? checkIn.id : -1))
+    createCheckIn(...args)
+      .then(checkIn => (checkIn ? checkIn.id : -1))
+      .catch(() => -1)
 };
 
 export const CheckOutMutation = {
