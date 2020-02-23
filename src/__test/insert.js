@@ -43,7 +43,7 @@ export async function insertAvl(
       avl.latitude ?? 0,
       avl.altitude ?? 0,
       avl.angle ?? 0,
-      avl.satellites ?? 0,
+      avl.satellites ?? 5,
       avl.speed ?? 0,
       avl.vehicleId ?? mockVehicleId,
       0

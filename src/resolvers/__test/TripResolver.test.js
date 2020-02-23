@@ -7,6 +7,7 @@ import {
 } from "../TripResolver";
 import {
   insertAvl,
+  insertAvlTrip,
   insertBusStop,
   insertBusStopVisit,
   insertScheduledDeparture,
@@ -130,6 +131,7 @@ describe("trip resolver", () => {
       avlId: currentAvlId,
       busStopId: nonTerminalBusStopId
     });
+    await insertAvlTrip({ avlId: currentAvlId, tripId });
 
     const actual = await getTripIdFromVehicleId(vehicleId);
     const expected = tripId;
