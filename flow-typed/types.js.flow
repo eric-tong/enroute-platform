@@ -38,8 +38,10 @@ declare type BusStopVisit = {|
 declare type CheckIn = {|
   id: number,
   timestamp: string,
-  vehicleId: number,
-  departmentId: number
+  userId: number,
+  originId: number,
+  destinationId: number,
+  remarks: ?string
 |};
 
 declare type Department = {|

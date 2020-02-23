@@ -1,37 +1,38 @@
 // @flow
 
 import { checkOutFromCheckInId, createCheckIn } from "../CheckInResolver";
-import { insertDepartment, insertVehicle } from "../../__test/insert";
+import { clearTables, randomId } from "../../__test/testUtils";
 
-import { clearTables } from "../../__test/testUtils";
 import database from "../../database/database";
+import { insertBusStop } from "../../__test/insert";
 
 describe("check in resolver", () => {
   describe("creates new check in", () => {
-    test("with valid department", async () => {
-      const vehicle = await insertVehicle({ registration: "XXXXXXX" });
-      const department = await insertDepartment({
-        id: 200,
-        type: "newDepartment"
-      });
+    test.only("with valid bus stop", async () => {
+      const userId = randomId();
+      const origin = await insertBusStop({});
+      const destination = await insertBusStop({});
+      const remarks = "new remark";
 
       const actual = await createCheckIn(undefined, {
-        departmentType: department.type,
-        vehicleRegistration: vehicle.registration
+        userId,
+        originId: origin.id,
+        destinationId: destination.id,
+        remarks
       });
       const expected = {
         id: expect.anything(),
         timestamp: expect.anything(),
-        departmentId: department.id,
-        vehicleId: vehicle.id
+        userId,
+        originId: origin.id,
+        destinationId: destination.id,
+        remarks
       };
 
       expect(actual).toEqual(expected);
     });
 
     test("returns undefined with invalid department", async () => {
-      const vehicle = await insertVehicle({ registration: "XXXXXXX" });
-
       const actual = await createCheckIn(undefined, {
         departmentType: "invalidDepartment",
         vehicleRegistration: vehicle.registration
@@ -43,11 +44,6 @@ describe("check in resolver", () => {
 
   describe("checks out", () => {
     test("with valid check in id", async () => {
-      const vehicle = await insertVehicle({ registration: "XXXXXXX" });
-      const department = await insertDepartment({
-        id: 200,
-        type: "newDepartment"
-      });
       const checkIn = await createCheckIn(undefined, {
         departmentType: department.type,
         vehicleRegistration: vehicle.registration

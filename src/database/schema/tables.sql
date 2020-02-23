@@ -57,7 +57,7 @@ CREATE TABLE "check_ins" (
   "user_id" int NOT NULL,
   "origin_id" int NOT NULL,
   "destination_id" int NOT NULL,
-  "timestamp" timestamptz NOT NULL,
+  "timestamp" timestamptz NOT NULL DEFAULT (now()),
   "remarks" text
 );
 

@@ -4,9 +4,11 @@ import database from "../database/database";
 
 const CHECK_IN_COLUMNS = [
   "id",
+  `user_id AS "userId"`,
+  `origin_id AS "originId"`,
+  `destination_id AS "destinationId"`,
   "timestamp::text",
-  `vehicle_id AS "vehicleId"`,
-  `department_id AS "departmentId"`
+  "remarks"
 ]
   .map(column => "check_ins." + column)
   .join(", ");
@@ -14,19 +16,24 @@ const CHECK_IN_COLUMNS = [
 export function createCheckIn(
   _: void,
   {
-    departmentType,
-    vehicleRegistration
-  }: { departmentType: string, vehicleRegistration: string }
+    userId = 0,
+    originId,
+    destinationId,
+    remarks
+  }: {
+    userId: ?number,
+    originId: number,
+    destinationId: number,
+    remarks: ?string
+  }
 ) {
   const CREATE_CHECK_IN = `
-  WITH department AS (SELECT * FROM departments WHERE type = $1),
-    vehicle AS (SELECT * FROM vehicles WHERE LOWER(registration) = LOWER($2))
-
-  INSERT INTO check_ins (timestamp, vehicle_id, department_id)
-      SELECT NOW() as timestamp, vehicle.id AS vehicle_id, department.id AS department_id FROM department CROSS JOIN vehicle
-      RETURNING ${CHECK_IN_COLUMNS};`;
+  INSERT INTO check_ins (user_id, origin_id, destination_id, remarks)
+    VALUES ($1, $2, $3, $4)
+    RETURNING ${CHECK_IN_COLUMNS}
+  `;
   return database
-    .query<CheckIn>(CREATE_CHECK_IN, [departmentType, vehicleRegistration])
+    .query<CheckIn>(CREATE_CHECK_IN, [userId, originId, destinationId, remarks])
     .then(results => results.rows[0]);
 }
 
