@@ -54,15 +54,11 @@ CREATE TABLE "bus_stop_visits" (
 
 CREATE TABLE "check_ins" (
   "id" SERIAL PRIMARY KEY,
-  "vehicle_id" int NOT NULL,
-  "department_id" int NOT NULL,
-  "timestamp" timestamptz NOT NULL
-);
-
-CREATE TABLE "departments" (
-  "id" SERIAL PRIMARY KEY,
-  "name" text NOT NULL,
-  "type" text NOT NULL
+  "user_id" int NOT NULL,
+  "origin_id" int NOT NULL,
+  "destination_id" int NOT NULL,
+  "timestamp" timestamptz NOT NULL,
+  "remarks" text
 );
 
 CREATE TABLE "io" (
