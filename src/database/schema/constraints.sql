@@ -14,7 +14,7 @@ ALTER TABLE "bus_stop_visits" ADD FOREIGN KEY ("scheduled_departure_id") REFEREN
 
 ALTER TABLE "check_ins" ADD FOREIGN KEY ("origin_id") REFERENCES "bus_stops" ("id");
 
-ALTER TABLE "check_ins" ADD FOREIGN KEY ("detination_id") REFERENCES "bus_stops" ("id");
+ALTER TABLE "check_ins" ADD FOREIGN KEY ("destination_id") REFERENCES "bus_stops" ("id");
 
 ALTER TABLE "io" ADD FOREIGN KEY ("avl_id") REFERENCES "avl" ("id");
 
