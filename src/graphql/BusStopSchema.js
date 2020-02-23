@@ -30,6 +30,7 @@ export const BusStopType = new GraphQLObjectType({
     latitude: { type: GraphQLFloat },
     longitude: { type: GraphQLFloat },
     roadAngle: { type: GraphQLFloat },
+    isTerminal: { type: GraphQLBoolean },
     departures: {
       type: new GraphQLList(DepartureType),
       args: { maxLength: { type: GraphQLInt } },
