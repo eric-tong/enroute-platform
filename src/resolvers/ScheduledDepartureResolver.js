@@ -31,6 +31,8 @@ export function getScheduledDepartureFromBusStopIdAndTripId(
 export function getScheduledDeparturesExceptLastInTripFromBusStopId(
   busStopId: number
 ) {
+  // only return scheduled departures with 3 hours of current time
+
   const GET_SCHEDULED_DEPARTURES_FROM_BUS_STOP_ID = `
   SELECT ${SCHEDULED_DEPARTURE_COLUMNS} FROM (
     SELECT *, ROW_NUMBER() OVER (PARTITION BY trip_id ORDER BY trip_id, minute_of_day DESC) as stops_from_terminal
@@ -38,6 +40,7 @@ export function getScheduledDeparturesExceptLastInTripFromBusStopId(
   ) as scheduled_departures
     WHERE bus_stop_id = $1
     AND stops_from_terminal > 1
+    AND ABS(minute_of_day / 60 - EXTRACT(hour FROM NOW())) < 3
     ORDER BY "minuteOfDay"
   `;
 
