@@ -12,20 +12,21 @@ import database from "../../database/database";
 describe("departure resolver", () => {
   test("gets scheduled departures except last in trip from bus stop id", async () => {
     const busStopId = 8;
+    const minuteOfDay = new Date().valueOf() / 60;
     await insertBusStop({ id: busStopId });
     const scheduledDepartures = [
       await insertScheduledDeparture({
-        minuteOfDay: 100,
+        minuteOfDay: minuteOfDay + 1,
         tripId: 1,
         busStopId
       }),
       await insertScheduledDeparture({
-        minuteOfDay: 200,
+        minuteOfDay: minuteOfDay + 2,
         tripId: 2,
         busStopId
       }),
       await insertScheduledDeparture({
-        minuteOfDay: 300,
+        minuteOfDay: minuteOfDay + 3,
         tripId: 3,
         busStopId
       })
@@ -33,17 +34,17 @@ describe("departure resolver", () => {
 
     await insertBusStop({ id: busStopId + 1 });
     await insertScheduledDeparture({
-      minuteOfDay: 400,
+      minuteOfDay: minuteOfDay + 100,
       tripId: 1,
       busStopId: busStopId + 1
     });
     await insertScheduledDeparture({
-      minuteOfDay: 400,
+      minuteOfDay: minuteOfDay + 100,
       tripId: 2,
       busStopId: busStopId + 1
     });
     await insertScheduledDeparture({
-      minuteOfDay: 400,
+      minuteOfDay: minuteOfDay + 100,
       tripId: 3,
       busStopId: busStopId + 1
     });
