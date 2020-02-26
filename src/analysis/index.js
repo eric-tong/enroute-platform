@@ -9,12 +9,12 @@ import ObjectsToCsv from "objects-to-csv";
 
 const tf = require("@tensorflow/tfjs-node");
 
-const MODEL_PATH = `file://${__dirname}/model-2`;
+const MODEL_PATH = `file://${__dirname}/model-3`;
 
 main();
 
 async function main() {
-  //   await trainAndSaveModel();
+  await trainAndSaveModel();
   await testModel();
 }
 

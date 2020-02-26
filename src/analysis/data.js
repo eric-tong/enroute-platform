@@ -9,7 +9,7 @@ export const MIN_DISTANCE = 0;
 export const MAX_DISTANCE = 24000;
 export const MIN_DELTA = 0;
 export const MAX_DELTA = 600;
-export const BUS_STOP_COUNT = 8;
+export const BUS_STOP_COUNT = 7;
 
 export const TEST_DATASET_SIZE = 100;
 
@@ -20,7 +20,7 @@ export async function getData() {
 
     const inputs = allData.map(data => {
       const busStopArray = Array.from({ length: BUS_STOP_COUNT }, () => 0);
-      busStopArray[data.busStopId - 1] = 1;
+      busStopArray[data.busStopId - 2] = 1;
       return [
         normalize(data.minuteOfDay, MIN_MINUTE_OF_DAY, MAX_MINUTE_OF_DAY),
         normalize(data.distance, MIN_DISTANCE, MAX_DISTANCE),
