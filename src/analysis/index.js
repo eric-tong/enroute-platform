@@ -30,7 +30,7 @@ async function testModel() {
   const data = await getData();
   const model = await loadModel();
 
-  const testTensor = data.training;
+  const testTensor = data.testing;
   const prediction = await model.predict(testTensor.input);
 
   const predictedDelta = prediction
@@ -46,8 +46,11 @@ async function testModel() {
       .sub(testTensor.label)
       .mul(MAX_DELTA)
       .div(60)
+
       .dataSync()
       .reduce((sum, val) => sum + Math.abs(val), 0) / TEST_DATASET_SIZE;
+
+  console.log({ predictedDelta, actualDelta, loss });
 
   const csvData = Array.from(actualDelta).map((actual, i) => ({
     actual,
@@ -55,11 +58,13 @@ async function testModel() {
     final: actual - predictedDelta[i]
   }));
 
-  await new ObjectsToCsv(csvData).toDisk(
-    `./delta/delta-${new Date().valueOf()}.csv`
-  );
+  //   await new ObjectsToCsv(csvData).toDisk(
+  //     `./data/delta-${new Date().valueOf()}.csv`
+  //   );
 }
 
 async function loadModel() {
   return await tf.loadLayersModel(`${MODEL_PATH}/model.json`);
 }
+
+async function saveToCSV(object: any) {}
