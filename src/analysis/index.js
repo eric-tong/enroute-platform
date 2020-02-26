@@ -9,12 +9,12 @@ import ObjectsToCsv from "objects-to-csv";
 
 const tf = require("@tensorflow/tfjs-node");
 
-const MODEL_PATH = `file://${__dirname}/model`;
+const MODEL_PATH = `file://${__dirname}/model-${new Date().valueOf()}`;
 
 main();
 
 async function main() {
-  //   await trainAndSaveModel();
+  await trainAndSaveModel();
   await testModel();
 }
 
@@ -46,7 +46,6 @@ async function testModel() {
       .sub(testTensor.label)
       .mul(MAX_DELTA)
       .div(60)
-
       .dataSync()
       .reduce((sum, val) => sum + Math.abs(val), 0) / TEST_DATASET_SIZE;
 

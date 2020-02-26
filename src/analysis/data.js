@@ -9,6 +9,7 @@ export const MIN_DISTANCE = 0;
 export const MAX_DISTANCE = 24000;
 export const MIN_DELTA = 0;
 export const MAX_DELTA = 600;
+export const BUS_STOP_COUNT = 8;
 
 export const TEST_DATASET_SIZE = 100;
 
@@ -17,16 +18,21 @@ export async function getData() {
   const tensors = tf.tidy(() => {
     tf.util.shuffle(allData);
 
-    const inputs = allData.map(data => [
-      normalize(data.minuteOfDay, MIN_MINUTE_OF_DAY, MAX_MINUTE_OF_DAY),
-      normalize(data.distance, MIN_DISTANCE, MAX_DISTANCE)
-    ]);
+    const inputs = allData.map(data => {
+      const busStopArray = Array.from({ length: BUS_STOP_COUNT }, () => 0);
+      busStopArray[data.busStopId - 1] = 1;
+      return [
+        normalize(data.minuteOfDay, MIN_MINUTE_OF_DAY, MAX_MINUTE_OF_DAY),
+        normalize(data.distance, MIN_DISTANCE, MAX_DISTANCE),
+        ...busStopArray
+      ];
+    });
     const labels = allData.map(data =>
       normalize(data.delta, MIN_DELTA, MAX_DELTA)
     );
 
     return {
-      input: tf.tensor(inputs, [inputs.length, 2]),
+      input: tf.tensor(inputs, [inputs.length, inputs[0].length]),
       label: tf.tensor(labels, [labels.length, 1])
     };
   });
@@ -43,7 +49,7 @@ export async function getData() {
 async function getRawData() {
   const GET_DATA = `
     WITH actual_departures AS (
-        SELECT scheduled_departure_id AS id, MIN(bus_stops.id) AS bus_stop_id,
+        SELECT scheduled_departure_id AS id, MIN(bus_stops.id) AS "busStopId",
         MIN(timestamp) AS arrival_timestamp, MIN(avl_trip.trip_id) AS trip
             FROM bus_stop_visits
             INNER JOIN avl ON avl.id = bus_stop_visits.avl_id

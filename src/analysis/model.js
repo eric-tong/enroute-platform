@@ -8,7 +8,7 @@ const BATCH_SIZE = 64;
 export function getModel() {
   const model = tf.sequential();
 
-  model.add(tf.layers.dense({ inputShape: [2], units: 1 }));
+  model.add(tf.layers.dense({ inputShape: [10], units: 1 }));
   model.add(tf.layers.dense({ units: 200, activation: "relu" }));
   model.add(tf.layers.dense({ units: 50, activation: "relu" }));
   model.add(tf.layers.dense({ units: 1 }));
