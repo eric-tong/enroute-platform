@@ -5,6 +5,8 @@ import "../service/config";
 import { MAX_DELTA, TEST_DATASET_SIZE, getData } from "./data";
 import { getModel, trainModel } from "./model";
 
+import ObjectsToCsv from "objects-to-csv";
+
 const tf = require("@tensorflow/tfjs-node");
 
 const MODEL_PATH = `file://${__dirname}/model`;
@@ -28,25 +30,34 @@ async function testModel() {
   const data = await getData();
   const model = await loadModel();
 
-  const prediction = await model.predict(data.training.input);
+  const testTensor = data.training;
+  const prediction = await model.predict(testTensor.input);
 
-  console.log({
-    prediction: prediction
+  const predictedDelta = prediction
+    .mul(MAX_DELTA)
+    .div(60)
+    .dataSync();
+  const actualDelta = await testTensor.label
+    .mul(MAX_DELTA)
+    .div(60)
+    .dataSync();
+  const loss =
+    prediction
+      .sub(testTensor.label)
       .mul(MAX_DELTA)
       .div(60)
-      .dataSync(),
-    actual: data.testing.label
-      .mul(MAX_DELTA)
-      .div(60)
-      .dataSync(),
-    loss:
-      prediction
-        .sub(data.testing.label)
-        .mul(MAX_DELTA)
-        .div(60)
-        .dataSync()
-        .reduce((sum, val) => sum + Math.abs(val), 0) / TEST_DATASET_SIZE
-  });
+      .dataSync()
+      .reduce((sum, val) => sum + Math.abs(val), 0) / TEST_DATASET_SIZE;
+
+  const csvData = Array.from(actualDelta).map((actual, i) => ({
+    actual,
+    predicted: predictedDelta[i],
+    final: actual - predictedDelta[i]
+  }));
+
+  await new ObjectsToCsv(csvData).toDisk(
+    `./delta/delta-${new Date().valueOf()}.csv`
+  );
 }
 
 async function loadModel() {
