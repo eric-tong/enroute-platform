@@ -1,0 +1,54 @@
+// @flow
+
+import "../service/config";
+
+import { MAX_DELTA, TEST_DATASET_SIZE, getData } from "./data";
+import { getModel, trainModel } from "./model";
+
+const tf = require("@tensorflow/tfjs-node");
+
+const MODEL_PATH = `file://${__dirname}/model`;
+
+main();
+
+async function main() {
+  //   await trainAndSaveModel();
+  await testModel();
+}
+
+async function trainAndSaveModel() {
+  console.log(MODEL_PATH);
+  const data = await getData();
+  const model = getModel();
+  await trainModel(model, data.training.input, data.training.label);
+  model.save(MODEL_PATH);
+}
+
+async function testModel() {
+  const data = await getData();
+  const model = await loadModel();
+
+  const prediction = await model.predict(data.training.input);
+
+  console.log({
+    prediction: prediction
+      .mul(MAX_DELTA)
+      .div(60)
+      .dataSync(),
+    actual: data.testing.label
+      .mul(MAX_DELTA)
+      .div(60)
+      .dataSync(),
+    loss:
+      prediction
+        .sub(data.testing.label)
+        .mul(MAX_DELTA)
+        .div(60)
+        .dataSync()
+        .reduce((sum, val) => sum + Math.abs(val), 0) / TEST_DATASET_SIZE
+  });
+}
+
+async function loadModel() {
+  return await tf.loadLayersModel(`${MODEL_PATH}/model.json`);
+}

@@ -6,15 +6,18 @@
     "build": "babel src/ -d lib/",
     "prepublish": "yarn run build",
     "start": "node lib/index.js",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "analyze": "yarn build src/analysis/ && node lib/analysis/index.js"
   },
   "dependencies": {
     "@babel/core": "^7.6.4",
     "@babel/preset-env": "^7.6.3",
     "@babel/register": "^7.6.2",
     "@babel/runtime": "^7.6.3",
+    "@tensorflow/tfjs-node": "^1.5.2",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
+    "export-to-csv": "^0.2.1",
     "express": "^4.17.1",
     "express-graphql": "^0.9.0",
     "graphql": "^14.5.8",
