@@ -15,6 +15,7 @@ import {
 } from "../resolvers/BusStopResolver";
 
 import { DepartureType } from "./DepartureSchema";
+import { departuresCacheByBusStopId } from "../service/DeparturesCache";
 import { getUpcomingDeparturesFromBusStop } from "../resolvers/DepartureResolver";
 
 export const BusStopType = new GraphQLObjectType({
@@ -34,7 +35,9 @@ export const BusStopType = new GraphQLObjectType({
     departures: {
       type: new GraphQLList(DepartureType),
       args: { maxLength: { type: GraphQLInt } },
-      resolve: getUpcomingDeparturesFromBusStop
+      resolve: (busStop, { maxLength }) =>
+        departuresCacheByBusStopId.get(busStop.id).slice(0, maxLength) ??
+        getUpcomingDeparturesFromBusStop(busStop, maxLength)
     }
   })
 });

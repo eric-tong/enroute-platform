@@ -2,11 +2,16 @@
 
 import { DateTime } from "luxon";
 import { insertAllPredictions } from "../resolvers/PredictionResolver";
+import { updateDeparturesCache } from "./DeparturesCache";
 
 const TASKS: { task: () => Promise<mixed>, period: number }[] = [
   {
     task: insertAllPredictions,
     period: 30
+  },
+  {
+    task: updateDeparturesCache,
+    period: 15
   }
 ];
 

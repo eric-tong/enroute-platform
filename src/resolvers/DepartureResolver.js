@@ -24,7 +24,7 @@ const DEPARTED_BUFFER_LONG = 10;
 
 export async function getUpcomingDeparturesFromBusStop(
   busStop: BusStop,
-  { maxLength = Number.MAX_SAFE_INTEGER }: { maxLength?: number }
+  maxLength?: number = Number.MAX_SAFE_INTEGER
 ) {
   const departures = await (!busStop.isTerminal
     ? getAllDeparturesFromBusStopId(busStop.id)
