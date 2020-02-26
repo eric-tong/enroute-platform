@@ -9,12 +9,12 @@ import ObjectsToCsv from "objects-to-csv";
 
 const tf = require("@tensorflow/tfjs-node");
 
-const MODEL_PATH = `file://${__dirname}/model-${new Date().valueOf()}`;
+const MODEL_PATH = `file://${__dirname}/model-2`;
 
 main();
 
 async function main() {
-  await trainAndSaveModel();
+  //   await trainAndSaveModel();
   await testModel();
 }
 
@@ -30,7 +30,7 @@ async function testModel() {
   const data = await getData();
   const model = await loadModel();
 
-  const testTensor = data.testing;
+  const testTensor = data.training;
   const prediction = await model.predict(testTensor.input);
 
   const predictedDelta = prediction
@@ -57,9 +57,9 @@ async function testModel() {
     final: actual - predictedDelta[i]
   }));
 
-  //   await new ObjectsToCsv(csvData).toDisk(
-  //     `./data/delta-${new Date().valueOf()}.csv`
-  //   );
+  await new ObjectsToCsv(csvData).toDisk(
+    `./data/delta-${new Date().valueOf()}.csv`
+  );
 }
 
 async function loadModel() {
