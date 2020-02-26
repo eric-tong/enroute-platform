@@ -19,3 +19,12 @@ export const TripType = new GraphQLObjectType({
     }
   })
 });
+
+export const TripQuery = {
+  description: "Get trip from the trip id",
+  type: TripType,
+  args: { id: { type: GraphQLInt } },
+  resolve: (_: void, { id }: { id: number }) => ({
+    id
+  })
+};

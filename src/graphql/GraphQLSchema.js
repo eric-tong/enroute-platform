@@ -6,6 +6,7 @@ import { GraphQLObjectType, GraphQLSchema } from "graphql";
 
 import { AvlQuery } from "./AvlSchema";
 import { RouteQuery } from "./RouteSchema";
+import { TripQuery } from "./TripSchema";
 import { VehicleQuery } from "./VehicleSchema";
 
 const MutationType = new GraphQLObjectType({
@@ -23,7 +24,8 @@ const RootQueryType = new GraphQLObjectType({
     busStops: BusStopsQuery,
     busStop: BusStopQuery,
     route: RouteQuery,
-    avls: AvlQuery
+    avls: AvlQuery,
+    trip: TripQuery
   }
 });
 
