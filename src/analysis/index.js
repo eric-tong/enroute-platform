@@ -5,7 +5,6 @@ import "../service/config";
 import { MAX_DELTA, MAX_DISTANCE, getData } from "./data";
 import { getModel, trainModel } from "./model";
 
-import ObjectsToCsv from "objects-to-csv";
 import { plot } from "nodeplotlib";
 
 const tf = require("@tensorflow/tfjs-node");
