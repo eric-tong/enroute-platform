@@ -1,5 +1,6 @@
 // @flow
 
+import { BATCH_SIZE } from "./model";
 import database from "../database/database";
 const tf = require("@tensorflow/tfjs-node");
 
@@ -9,39 +10,35 @@ export const MIN_DISTANCE = 0;
 export const MAX_DISTANCE = 10000;
 export const MIN_DELTA = 0;
 export const MAX_DELTA = 600;
-export const BUS_STOP_COUNT = 7;
-
-export const VALIDATION_SET_PERCENTAGE = 0;
 
 export async function getData(tripId: number) {
-  const allData = await getRawData(tripId);
+  const rawData = await getRawData(tripId);
   const tensors = tf.tidy(() => {
-    tf.util.shuffle(allData);
+    // Clone first 10% of data to weight points with lower distance
+    const allData = [...rawData, ...rawData.slice(0, rawData.length / 10)];
 
+    tf.util.shuffle(allData);
     const inputs = allData.map(data => {
-      return [normalize(data.distance, MIN_DISTANCE, MAX_DISTANCE)];
+      return normalize(data.distance, MIN_DISTANCE, MAX_DISTANCE);
     });
     const labels = allData.map(data =>
       normalize(data.delta, MIN_DELTA, MAX_DELTA)
     );
 
+    // Add 0 elements at the start of every batch so that we can get the
+    // y-intercept in the loss function and penalize it accordingly
+    for (let i = 0; i < inputs.length; i += BATCH_SIZE) {
+      inputs[i] = 0;
+      labels[i] = 0;
+    }
     return {
-      input: tf.tensor(inputs, [inputs.length, inputs[0].length]),
-      label: tf.tensor(labels, [labels.length, 1])
+      input: tf.tensor1d(inputs),
+      label: tf.tensor1d(labels)
     };
   });
 
-  const validationSetSize = VALIDATION_SET_PERCENTAGE * allData.length;
-
   return {
-    training: {
-      input: tensors.input.slice(validationSetSize),
-      label: tensors.label.slice(validationSetSize)
-    },
-    validation: {
-      input: tensors.input.slice(0, validationSetSize),
-      label: tensors.label.slice(0, validationSetSize)
-    }
+    training: tensors
   };
 }
 
@@ -70,6 +67,7 @@ async function getRawData(tripId: number) {
         WHERE actual_departures.arrival_timestamp::DATE = predicted_timestamp::DATE
         AND ABS(EXTRACT(epoch FROM predicted_timestamp - arrival_timestamp)) < $2
         AND distance < $3
+        ORDER BY distance
     `;
 
   return await database

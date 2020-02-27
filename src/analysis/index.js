@@ -12,7 +12,11 @@ const tf = require("@tensorflow/tfjs-node");
 
 const MODEL_PATH = `file://${__dirname}/model-split-training-trip`;
 
-main(10);
+index();
+
+async function index() {
+  for (let i = 1; i <= 29; i++) await main(i);
+}
 
 async function main(tripId: number) {
   await trainAndSaveModel(tripId);
@@ -48,16 +52,33 @@ async function validateModel(tripId: number) {
         .dataSync()
     ),
     type: "scatter",
-    mode: "markers"
+    mode: "markers",
+    name: "Training"
   };
   const predictionPlot = {
     x: Array.from(distance),
     y: Array.from(predictedDelta),
     type: "scatter",
-    mode: "markers"
+    mode: "markers",
+    name: "Prediction"
+  };
+  const layout = {
+    title: {
+      text: `Delta vs Distance for Trip ${tripId}`
+    },
+    xaxis: {
+      title: {
+        text: "Distance /m"
+      }
+    },
+    yaxis: {
+      title: {
+        text: "Delta /min"
+      }
+    }
   };
 
-  plot([trainingPlot, predictionPlot]);
+  plot([trainingPlot, predictionPlot], layout);
 }
 
 async function loadModel(path: string) {
