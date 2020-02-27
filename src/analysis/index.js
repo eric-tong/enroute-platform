@@ -47,7 +47,7 @@ async function testModel() {
       .mul(MAX_DELTA)
       .div(60)
       .dataSync()
-      .reduce((sum, val) => sum + Math.abs(val), 0) / TEST_DATASET_SIZE;
+      .reduce((sum, val) => sum + Math.abs(val), 0) / predictedDelta.length;
 
   console.log({ predictedDelta, actualDelta, loss });
 
