@@ -2,70 +2,64 @@
 
 import "../service/config";
 
-import { MAX_DELTA, getData } from "./data";
+import { MAX_DELTA, MAX_DISTANCE, getData } from "./data";
 import { getModel, trainModel } from "./model";
 
 import ObjectsToCsv from "objects-to-csv";
+import { plot } from "nodeplotlib";
 
 const tf = require("@tensorflow/tfjs-node");
 
-const MODEL_PATH = `file://${__dirname}/model-split-training-trip-10-2`;
+const MODEL_PATH = `file://${__dirname}/model-split-training-trip`;
 
-main();
+main(10);
 
-async function main() {
-  await trainAndSaveModel();
-  await validateModel();
+async function main(tripId: number) {
+  await trainAndSaveModel(tripId);
+  await validateModel(tripId);
 }
 
-async function trainAndSaveModel() {
-  const data = await getData();
+async function trainAndSaveModel(tripId: number) {
+  const data = await getData(tripId);
   const model = getModel();
   await trainModel(model, data.training.input, data.training.label);
-  model.save(MODEL_PATH);
+  model.save(`${MODEL_PATH}-${tripId}`);
 }
 
-async function validateModel() {
-  const data = await getData();
-  const model = await loadModel();
+async function validateModel(tripId: number) {
+  const data = await getData(tripId);
+  const model = await loadModel(`${MODEL_PATH}-${tripId}`);
 
-  const testTensor = data.validation;
-  const prediction = await model.predict(testTensor.input);
+  const testTensor = tf.linspace(0, 1, 100).reshape([100, 1]);
+  const prediction = await model.predict(testTensor);
 
   const predictedDelta = prediction
     .mul(MAX_DELTA)
     .div(60)
     .dataSync();
-  const distance = testTensor.input.dataSync();
-  const actualDelta = testTensor.label
-    .mul(MAX_DELTA)
-    .div(60)
-    .dataSync();
-  const loss =
-    prediction
-      .sub(testTensor.label)
-      .mul(MAX_DELTA)
-      .div(60)
-      .dataSync()
-      .reduce((sum, val) => sum + Math.abs(val), 0) / predictedDelta.length;
+  const distance = testTensor.mul(MAX_DISTANCE).dataSync();
 
-  const csvData = Array.from(actualDelta).map((actual, i) => ({
-    distance: distance[i],
-    actual,
-    predicted: predictedDelta[i],
-    final: actual - predictedDelta[i]
-  }));
-  console.log(
-    csvData.map(csv => [csv.distance, csv.actual, csv.predicted, csv.final])
-  );
+  const trainingPlot = {
+    x: Array.from(data.training.input.mul(MAX_DISTANCE).dataSync()),
+    y: Array.from(
+      data.training.label
+        .mul(MAX_DELTA)
+        .div(60)
+        .dataSync()
+    ),
+    type: "scatter",
+    mode: "markers"
+  };
+  const predictionPlot = {
+    x: Array.from(distance),
+    y: Array.from(predictedDelta),
+    type: "scatter",
+    mode: "markers"
+  };
 
-  await new ObjectsToCsv(csvData).toDisk(
-    `./data/delta-${new Date().valueOf()}.csv`
-  );
+  plot([trainingPlot, predictionPlot]);
 }
 
-async function loadModel() {
-  return await tf.loadLayersModel(`${MODEL_PATH}/model.json`);
+async function loadModel(path: string) {
+  return await tf.loadLayersModel(path + "/model.json");
 }
-
-async function saveToCSV(object: any) {}
