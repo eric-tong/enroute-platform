@@ -7,7 +7,8 @@
     "prepublish": "yarn run build",
     "start": "node lib/index.js",
     "test": "jest --runInBand",
-    "analyze": "yarn build src/analysis/ && node lib/analysis/index.js"
+    "analyze": "yarn build src/analysis/ && node lib/analysis/index.js",
+    "plot": "yarn build src/analysis/ && node lib/analysis/plot.js"
   },
   "dependencies": {
     "@babel/core": "^7.6.4",
@@ -25,6 +26,7 @@
     "node-cache": "^5.1.0",
     "node-fetch": "^2.6.0",
     "node-persist": "^3.0.5",
+    "nodeplotlib": "^0.6.5",
     "objects-to-csv": "^1.3.6",
     "pg": "^7.12.1"
   },
