@@ -11,7 +11,7 @@ export const MIN_DELTA = 0;
 export const MAX_DELTA = 600;
 export const BUS_STOP_COUNT = 7;
 
-export const TEST_DATASET_SIZE = 100;
+export const VALIDATION_SET_PERCENTAGE = 0.1;
 
 export async function getData() {
   const allData = await getRawData();
@@ -19,13 +19,7 @@ export async function getData() {
     tf.util.shuffle(allData);
 
     const inputs = allData.map(data => {
-      const busStopArray = Array.from({ length: BUS_STOP_COUNT }, () => 0);
-      busStopArray[data.busStopId - 2] = 1;
-      return [
-        normalize(data.minuteOfDay, MIN_MINUTE_OF_DAY, MAX_MINUTE_OF_DAY),
-        normalize(data.distance, MIN_DISTANCE, MAX_DISTANCE),
-        ...busStopArray
-      ];
+      return [normalize(data.distance, MIN_DISTANCE, MAX_DISTANCE)];
     });
     const labels = allData.map(data =>
       normalize(data.delta, MIN_DELTA, MAX_DELTA)
@@ -37,11 +31,16 @@ export async function getData() {
     };
   });
 
+  const validationSetSize = VALIDATION_SET_PERCENTAGE * allData.length;
+
   return {
-    training: tensors,
-    testing: {
-      input: tensors.input.slice(0, TEST_DATASET_SIZE),
-      label: tensors.label.slice(0, TEST_DATASET_SIZE)
+    training: {
+      input: tensors.input.slice(validationSetSize),
+      label: tensors.label.slice(validationSetSize)
+    },
+    validation: {
+      input: tensors.input.slice(0, validationSetSize),
+      label: tensors.label.slice(0, validationSetSize)
     }
   };
 }
@@ -56,6 +55,7 @@ async function getRawData() {
             INNER JOIN avl_trip ON avl.id = avl_trip.avl_id
             INNER JOIN bus_stops ON bus_stop_visits.bus_stop_id = bus_stops.id
             WHERE NOW()::DATE - timestamp::DATE < 7
+            AND trip_id = 10
             GROUP BY scheduled_departure_id, timestamp::DATE
     )
 
