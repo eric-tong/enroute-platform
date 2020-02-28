@@ -1,7 +1,7 @@
 // @flow
 
-import { getRawData } from "./data";
+import { createTempTable } from "./data";
 
 async function main() {
-  const data = getRawData();
+  const data = createTempTable();
 }
