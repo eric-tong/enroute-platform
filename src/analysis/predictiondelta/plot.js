@@ -1,8 +1,8 @@
 // @flow
 
-import "../service/config";
+import "../../service/config";
 
-import database from "../database/database";
+import database from "../../database/database";
 import { plot } from "nodeplotlib";
 
 const trips = Array.from({ length: 5 }, (_, i) => i + 1);

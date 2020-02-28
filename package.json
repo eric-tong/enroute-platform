@@ -7,8 +7,8 @@
     "prepublish": "yarn run build",
     "start": "node lib/index.js",
     "test": "jest --runInBand",
-    "analyze": "yarn build src/analysis/ && node lib/analysis/index.js",
-    "plot": "yarn build src/analysis/ && node lib/analysis/plot.js"
+    "traindeltamodels": "yarn build src/analysis/predictiondelta && node lib/analysis/predictiondelta/index.js",
+    "plotdeltamodels": "yarn build src/analysis/predictiondelta && node lib/analysis/predictiondelta/plot.js"
   },
   "dependencies": {
     "@babel/core": "^7.6.4",

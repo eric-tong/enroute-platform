@@ -1,7 +1,7 @@
 // @flow
 
 import { BATCH_SIZE } from "./model";
-import database from "../database/database";
+import database from "../../database/database";
 const tf = require("@tensorflow/tfjs-node");
 
 export const MIN_MINUTE_OF_DAY = 430;

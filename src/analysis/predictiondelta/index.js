@@ -1,6 +1,6 @@
 // @flow
 
-import "../service/config";
+import "../../service/config";
 
 import { MAX_DELTA, MAX_DISTANCE, getData } from "./data";
 import { getModel, trainModel } from "./model";
