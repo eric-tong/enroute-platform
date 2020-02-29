@@ -44,6 +44,7 @@ export async function createTempTable() {
 export async function cleanData() {
   await updateStartOfTrips();
   await updateEndOfTrips();
+  await deleteDiscontinuousVisits();
 }
 
 export async function updateStartOfTrips() {
@@ -139,6 +140,39 @@ export async function updateEndOfTrips() {
   }
 }
 
+export async function deleteDiscontinuousVisits() {
+  const rows = await getRawData();
+  const DELETE_IN_RANGE = "DELETE FROM visits_temp WHERE id >= $1 AND id <= $2";
+
+  let currentTrip = 0;
+  let currentScheduledDepartureId = 0;
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+
+    if (!row.trip_id) continue;
+    if (row.trip_id != currentTrip) {
+      currentTrip = row.trip_id;
+      currentScheduledDepartureId = row.scheduled_departure_id;
+      continue;
+    }
+    if (row.scheduled_departure_id === currentScheduledDepartureId + 1) {
+      currentScheduledDepartureId++;
+      continue;
+    }
+    // Check if the next continuous is within 5 visits.
+    // If yes, delete everything in between.
+    for (let j = i; j < Math.min(i + 5, rows.length); j++) {
+      const testRow = rows[j];
+      if (testRow.scheduled_departure_id === currentScheduledDepartureId + 1) {
+        await database.query(DELETE_IN_RANGE, [row.id, testRow.id - 1]);
+        i = j;
+        currentScheduledDepartureId++;
+        break;
+      }
+    }
+  }
+}
+
 export async function getRawData() {
   const GET_ALL_ROWS = "SELECT * FROM visits_temp ORDER BY id";
   return database.query<any>(GET_ALL_ROWS).then(results => results.rows);
@@ -147,21 +181,4 @@ export async function getRawData() {
 export async function dropTable() {
   const DROP_TABLE = "DROP TABLE IF EXISTS visits_temp";
   return database.query<any>(DROP_TABLE);
-}
-
-export async function getMedianDelta() {
-  const GET_DELTA = `
-    SELECT  bus_stop_id, 
-            name,
-            trip_id,
-            scheduled_departure_id, 
-            median(extract(epoch from delta)::NUMERIC) as median_delta,
-            count(*)
-            
-      FROM visits_temp 
-      WHERE delta IS NOT NULL
-      AND skipped IS FALSE
-      GROUP BY scheduled_departure_id, bus_stop_id, name, trip_id
-      ORDER BY median(extract(epoch from delta)::NUMERIC) DESC
-  `;
 }
