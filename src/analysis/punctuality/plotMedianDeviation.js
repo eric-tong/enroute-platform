@@ -4,7 +4,7 @@ import { getMedianDelta, getScheduledDepartures } from "./analysis";
 
 import { plot } from "nodeplotlib";
 
-export async function plotTimetable() {
+export default async function plotMedianDeviation() {
   const { grid, topHeader, leftHeader } = await getScheduledDeparturesGrid();
 
   const values = [
@@ -49,7 +49,7 @@ export async function plotTimetable() {
     },
     autosize: false,
     width: 1600,
-    height: 800,
+    height: 650,
     margin: 0
   };
   plot(data, layout);

@@ -4,7 +4,8 @@ import "../../service/config";
 
 import { cleanData, createTempTable, dropTable } from "./data";
 
-import { plotTimetable } from "./plot";
+import plotMedianDeviation from "./plotMedianDeviation";
+import plotSkipCount from "./plotSkipCount";
 
 main();
 
@@ -13,5 +14,6 @@ async function main() {
   // await createTempTable();
   // await cleanData();
 
-  plotTimetable();
+  plotMedianDeviation();
+  plotSkipCount();
 }
