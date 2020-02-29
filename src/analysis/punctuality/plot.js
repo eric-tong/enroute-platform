@@ -1,6 +1,7 @@
 // @flow
 
-import { getScheduledDepartures } from "./analysis";
+import { getMedianDelta, getScheduledDepartures } from "./analysis";
+
 import { plot } from "nodeplotlib";
 
 export async function plotTimetable() {
@@ -8,22 +9,48 @@ export async function plotTimetable() {
 
   const values = [
     leftHeader,
-    ...grid.map(row => row.map(cell => (cell ? cell.minuteOfDay : "")))
+    ...grid.map(row =>
+      row.map(cell => (cell ? `${cell.minuteOfDay} ${cell.median}` : ""))
+    )
   ];
 
   const data = [
     {
       type: "table",
-      header: { values: topHeader },
-      cells: { values: values },
-      columnwidth: [5, Array.from({ length: topHeader.length - 1 }, () => 1)]
+      header: { values: topHeader, align: ["center", "center"] },
+      cells: {
+        values: values,
+        align: ["left", "center"],
+        height: 30,
+        fill: {
+          color: [
+            ["white"],
+            ...grid.map(row =>
+              row.map(cell => getCellColor(cell && cell.median))
+            )
+          ]
+        }
+      },
+      columnwidth: [
+        4,
+        ...Array.from({ length: topHeader.length - 1 }, () => 1)
+      ],
+      rowheight: Array.from({ length: grid[0].length + 1 }, () => 10)
     }
   ];
-  plot(data);
+
+  const layout = {
+    autosize: false,
+    width: 1600,
+    height: 800,
+    margin: 0
+  };
+  plot(data, layout);
 }
 
 async function getScheduledDeparturesGrid() {
   const scheduledDepartures = await getScheduledDepartures();
+  const medianDelta = await getMedianDelta();
   const tripCount = Math.max(
     ...scheduledDepartures.map(departure => departure.tripId)
   );
@@ -34,10 +61,11 @@ async function getScheduledDeparturesGrid() {
     Array.from({ length: busStopsCount })
   );
   scheduledDepartures.forEach(departure => {
+    const data = { ...departure, median: medianDelta.get(departure.id) ?? 0 };
     if (!grid[departure.tripId - 1][departure.busStopId - 1]) {
-      grid[departure.tripId - 1][departure.busStopId - 1] = departure;
+      grid[departure.tripId - 1][departure.busStopId - 1] = data;
     } else {
-      grid[departure.tripId - 1][busStopsCount - 1] = departure;
+      grid[departure.tripId - 1][busStopsCount - 1] = data;
     }
   });
 
@@ -51,4 +79,17 @@ async function getScheduledDeparturesGrid() {
     return cell && cell.name;
   });
   return { grid, topHeader, leftHeader };
+}
+
+const CELL_MAXIMUM_COLOR = 256;
+const MIN_HUE = 193;
+const MAX_HUE = 340;
+
+function getCellColor(value: ?number) {
+  if (!value) return "white";
+
+  const percentage = Math.max(-1, Math.min(1, value / CELL_MAXIMUM_COLOR));
+  const lightness = 1 - Math.abs(percentage) * 0.5;
+  const hue = percentage < 0 ? MIN_HUE : MAX_HUE;
+  return `hsla(${hue}, 1, ${lightness}, 1)`;
 }

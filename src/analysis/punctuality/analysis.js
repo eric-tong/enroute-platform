@@ -15,14 +15,22 @@ export async function getMedianDelta() {
         WHERE delta IS NOT NULL
         AND skipped IS FALSE
         GROUP BY scheduled_departure_id, bus_stop_id, name, trip_id
-        ORDER BY scheduled_departure_id/
+        ORDER BY scheduled_departure_id
     `;
-  return database.query<any>(GET_MEDIAN_DELTA).then(results => results.rows);
+  return database
+    .query<any>(GET_MEDIAN_DELTA)
+    .then(results =>
+      results.rows.map<[number, number]>(row => [
+        row.scheduled_departure_id,
+        Math.round(row.median_delta)
+      ])
+    )
+    .then(rows => new Map<number, number>(rows));
 }
 
 export async function getScheduledDepartures() {
   const GET_SCHEDULED_DEPARTURES = `
-    SELECT trip_id AS "tripId", bus_stops.id AS "busStopId", name, minute_of_day as "minuteOfDay"
+    SELECT scheduled_departures.id, trip_id AS "tripId", bus_stops.id AS "busStopId", name, minute_of_day as "minuteOfDay"
         FROM scheduled_departures
         INNER JOIN bus_stops ON scheduled_departures.bus_stop_id = bus_stops.id
         ORDER BY trip_id, minute_of_day, bus_stops.id
