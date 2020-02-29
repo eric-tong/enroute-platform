@@ -4,6 +4,7 @@ import "../../service/config";
 
 import { cleanData, createTempTable, dropTable } from "./data";
 
+import plotEarlyCount from "./plotEarlyCount";
 import plotMedianDeviation from "./plotMedianDeviation";
 import plotSkipCount from "./plotSkipCount";
 
@@ -16,4 +17,5 @@ async function main() {
 
   plotMedianDeviation();
   plotSkipCount();
+  plotEarlyCount();
 }

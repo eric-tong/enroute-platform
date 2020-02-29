@@ -61,3 +61,24 @@ export async function getSkippedCount() {
     )
     .then(rows => new Map<number, number>(rows));
 }
+
+export async function getEarlyCount() {
+  const GET_SKIPPED_COUNT = `
+    SELECT scheduled_departure_id, COUNT(*), MEDIAN(EXTRACT(epoch FROM delta)::NUMERIC)
+      FROM visits_temp
+      WHERE EXTRACT(epoch FROM delta) < 0
+      AND scheduled_departure_id IS NOT NULL
+      GROUP BY scheduled_departure_id
+      ORDER BY COUNT(*) DESC
+    `;
+
+  return await database
+    .query<any>(GET_SKIPPED_COUNT)
+    .then(results =>
+      results.rows.map<[number, number]>(row => [
+        row.scheduled_departure_id,
+        row.count
+      ])
+    )
+    .then(rows => new Map<number, number>(rows));
+}
