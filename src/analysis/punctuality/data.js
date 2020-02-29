@@ -15,7 +15,7 @@ export async function createTempTable() {
     WHERE NOW()::DATE - timestamp::DATE < 14
   )
 
-  SELECT  ROW_NUMBER() OVER (ORDER BY MIN(avl.timestamp)::DATE, vehicle_id, MIN(avl.timestamp)) * 2 AS id,
+  SELECT  ROW_NUMBER() OVER (ORDER BY MAX(avl.timestamp)::DATE, vehicle_id, MAX(avl.timestamp)) * 2 AS id,
           bus_stops.id AS bus_stop_id, 
           bus_stops.name,
           bus_stops.is_terminal,
@@ -35,7 +35,7 @@ export async function createTempTable() {
     WHERE NOW()::DATE - timestamp::DATE < 14
     AND EXTRACT(dow FROM timestamp) BETWEEN 1 AND 5
     GROUP BY bus_stop_visits.group, avl.timestamp::DATE, vehicle_id, scheduled_departure_id, bus_stops.name, bus_stops.id, is_proxy, scheduled_departures.minute_of_day, trip_id
-    ORDER BY MIN(avl.timestamp)::DATE, vehicle_id, MIN(avl.timestamp)
+    ORDER BY MAX(avl.timestamp)::DATE, vehicle_id, MAX(avl.timestamp)
   `;
 
   return await database.query<any>(CREATE_TEMP_TABLE);
@@ -46,22 +46,29 @@ export async function cleanData() {
   const SET_TRIP_AND_SCHEDULED_DEPARTURE_OF_ID = `
   UPDATE visits_temp
     SET trip_id = $2, 
-        scheduled_departure_id = $3, 
+        scheduled_departure_id = (SELECT id FROM scheduled_departures
+                                  WHERE scheduled_departures.bus_stop_id = bus_stop_id
+                                  AND trip_id = $2 ORDER BY minute_of_day LIMIT 1), 
         scheduled = (SELECT enter::DATE + MAKE_INTERVAL(mins => minute_of_day)
-                     FROM scheduled_departures WHERE id = $3),
+                     FROM scheduled_departures WHERE id = 
+                     (SELECT id FROM scheduled_departures
+                      WHERE scheduled_departures.bus_stop_id = visits_temp.bus_stop_id
+                      AND trip_id = $2 ORDER BY minute_of_day LIMIT 1)),
         delta = exit - (SELECT enter::DATE + MAKE_INTERVAL(mins => minute_of_day)
-                        FROM scheduled_departures WHERE id = $3)
+                        FROM scheduled_departures WHERE id =
+                        (SELECT id FROM scheduled_departures
+                          WHERE scheduled_departures.bus_stop_id = visits_temp.bus_stop_id
+                          AND trip_id = $2 ORDER BY minute_of_day LIMIT 1))
     WHERE id = $1
   `;
 
-  // Identify terminal exits
+  // Identify starts of trips
   let currentTripId = 0;
   let currentScheduledDepartureId = 0;
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     if (!row.trip_id) continue;
 
-    currentScheduledDepartureId = row.scheduled_departure_id;
     if (row.trip_id !== currentTripId && !row.is_terminal) {
       currentTripId = row.trip_id;
       for (let j = i - 1; j >= 0; j--) {
@@ -69,14 +76,21 @@ export async function cleanData() {
         if (testRow.is_terminal) {
           database.query(SET_TRIP_AND_SCHEDULED_DEPARTURE_OF_ID, [
             testRow.id,
-            currentTripId,
-            currentScheduledDepartureId - 1
+            currentTripId
           ]);
           break;
         }
       }
     }
   }
+
+  // Check for mismatch
+  const DEPARTURE_MISMATCH_COUNT = `
+  SELECT visits_temp.id
+    FROM scheduled_departures INNER JOIN visits_temp 
+    ON scheduled_departures.id = visits_temp.scheduled_departure_id
+    WHERE visits_temp.bus_stop_id != scheduled_departures.bus_stop_id
+  `;
 }
 
 export async function getRawData() {
