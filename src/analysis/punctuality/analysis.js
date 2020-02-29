@@ -22,7 +22,7 @@ export async function getMedianDelta() {
     .then(results =>
       results.rows.map<[number, number]>(row => [
         row.scheduled_departure_id,
-        Math.round(row.median_delta)
+        Math.round(Math.round(row.median_delta) / 6) / 10
       ])
     )
     .then(rows => new Map<number, number>(rows));

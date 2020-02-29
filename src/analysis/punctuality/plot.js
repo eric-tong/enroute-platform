@@ -10,7 +10,11 @@ export async function plotTimetable() {
   const values = [
     leftHeader,
     ...grid.map(row =>
-      row.map(cell => (cell ? `${cell.minuteOfDay} ${cell.median}` : ""))
+      row.map(cell =>
+        cell
+          ? `${cell.time.toString().padStart(4, "0")} <b>${cell.median}</b>`
+          : ""
+      )
     )
   ];
 
@@ -40,6 +44,9 @@ export async function plotTimetable() {
   ];
 
   const layout = {
+    title: {
+      text: `Median Deviation from Scheduled Departures`
+    },
     autosize: false,
     width: 1600,
     height: 800,
@@ -57,11 +64,17 @@ async function getScheduledDeparturesGrid() {
   const busStopsCount =
     Math.max(...scheduledDepartures.map(departure => departure.busStopId)) + 1;
 
-  const grid = Array.from({ length: tripCount }, () =>
+  const grid: any[][] = Array.from({ length: tripCount }, () =>
     Array.from({ length: busStopsCount })
   );
   scheduledDepartures.forEach(departure => {
-    const data = { ...departure, median: medianDelta.get(departure.id) ?? 0 };
+    const data = {
+      name: departure.name,
+      time:
+        Math.floor(departure.minuteOfDay / 60) * 100 +
+        (departure.minuteOfDay % 60),
+      median: medianDelta.get(departure.id) ?? 0
+    };
     if (!grid[departure.tripId - 1][departure.busStopId - 1]) {
       grid[departure.tripId - 1][departure.busStopId - 1] = data;
     } else {
@@ -81,7 +94,7 @@ async function getScheduledDeparturesGrid() {
   return { grid, topHeader, leftHeader };
 }
 
-const CELL_MAXIMUM_COLOR = 256;
+const CELL_MAXIMUM_COLOR = 5;
 const MIN_HUE = 193;
 const MAX_HUE = 340;
 
