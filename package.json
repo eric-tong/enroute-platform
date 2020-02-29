@@ -8,7 +8,8 @@
     "start": "node lib/index.js",
     "test": "jest --runInBand",
     "traindeltamodels": "yarn build src/analysis/predictiondelta && node lib/analysis/predictiondelta/index.js",
-    "plotdeltamodels": "yarn build src/analysis/predictiondelta && node lib/analysis/predictiondelta/plot.js"
+    "plotdeltamodels": "yarn build src/analysis/predictiondelta && node lib/analysis/predictiondelta/plot.js",
+    "testpunctuality": "yarn build src/analysis/punctuality && node lib/analysis/punctuality/index.js"
   },
   "dependencies": {
     "@babel/core": "^7.6.4",

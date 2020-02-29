@@ -1,7 +1,13 @@
 // @flow
 
-import { createTempTable } from "./data";
+import "../../service/config";
+
+import { cleanData, createTempTable, dropTable } from "./data";
+
+main();
 
 async function main() {
-  const data = createTempTable();
+  await dropTable();
+  await createTempTable();
+  await cleanData();
 }
