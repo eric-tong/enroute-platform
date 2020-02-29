@@ -42,6 +42,11 @@ export async function createTempTable() {
 }
 
 export async function cleanData() {
+  await updateStartOfTrips();
+  await updateEndOfTrips();
+}
+
+export async function updateStartOfTrips() {
   const rows = await getRawData();
   const SET_TRIP_AND_SCHEDULED_DEPARTURE_OF_ID = `
   UPDATE visits_temp
@@ -62,19 +67,19 @@ export async function cleanData() {
     WHERE id = $1
   `;
 
-  // Identify starts of trips
   let currentTripId = 0;
   let currentScheduledDepartureId = 0;
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     if (!row.trip_id) continue;
 
+    // Find a start of trip that doesn't start with a terminal
     if (row.trip_id !== currentTripId && !row.is_terminal) {
       currentTripId = row.trip_id;
       for (let j = i - 1; j >= 0; j--) {
         const testRow = rows[j];
         if (testRow.is_terminal) {
-          database.query(SET_TRIP_AND_SCHEDULED_DEPARTURE_OF_ID, [
+          await database.query(SET_TRIP_AND_SCHEDULED_DEPARTURE_OF_ID, [
             testRow.id,
             currentTripId
           ]);
@@ -83,14 +88,55 @@ export async function cleanData() {
       }
     }
   }
+}
 
-  // Check for mismatch
-  const DEPARTURE_MISMATCH_COUNT = `
-  SELECT visits_temp.id
-    FROM scheduled_departures INNER JOIN visits_temp 
-    ON scheduled_departures.id = visits_temp.scheduled_departure_id
-    WHERE visits_temp.bus_stop_id != scheduled_departures.bus_stop_id
+export async function updateEndOfTrips() {
+  const rows = await database
+    .query("SELECT * FROM visits_temp WHERE is_terminal ORDER BY id")
+    .then(results => results.rows);
+  const DUPLICATE_ROW_WITH_ID = `
+    INSERT INTO visits_temp
+      SELECT 
+        id - 1 AS id,
+        bus_stop_id,
+        name, 
+        is_terminal,
+        vehicle_id,
+        $2 AS trip_id,
+        (SELECT id FROM scheduled_departures
+          WHERE scheduled_departures.bus_stop_id = bus_stop_id
+          AND trip_id = $2 ORDER BY minute_of_day DESC LIMIT 1) AS scheduled_departure_id,
+        (SELECT enter::DATE + MAKE_INTERVAL(mins => minute_of_day)
+          FROM scheduled_departures WHERE id = 
+          (SELECT id FROM scheduled_departures
+           WHERE scheduled_departures.bus_stop_id = visits_temp.bus_stop_id
+           AND trip_id = $2 ORDER BY minute_of_day DESC LIMIT 1)) AS scheduled,
+        enter,
+        enter AS exit,
+        enter - (SELECT enter::DATE + MAKE_INTERVAL(mins => minute_of_day)
+                        FROM scheduled_departures WHERE id =
+                        (SELECT id FROM scheduled_departures
+                          WHERE scheduled_departures.bus_stop_id = visits_temp.bus_stop_id
+                          AND trip_id = $2 ORDER BY minute_of_day DESC LIMIT 1)) delta,
+        skipped
+      FROM visits_temp WHERE id = $1 LIMIT 1
   `;
+
+  let currentTripId = 0;
+  let currentVehicleId = 0;
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    if (!currentTripId || row.vehicle_id != currentVehicleId) {
+      currentTripId = row.trip_id;
+      currentVehicleId = row.vehicle_id;
+      continue;
+    }
+
+    if (row.trip_id !== currentTripId) {
+      await database.query(DUPLICATE_ROW_WITH_ID, [row.id, currentTripId]);
+      currentTripId = row.trip_id;
+    }
+  }
 }
 
 export async function getRawData() {
