@@ -7,7 +7,6 @@ import { DateTime } from "luxon";
 import { TripType } from "./TripSchema";
 import { getAvlFromAvlId } from "../resolvers/AvlResolver";
 import { getBusStopFromId } from "../resolvers/BusStopResolver";
-import { getPredictedDepartureTodayFromScheduledDepartureId } from "../resolvers/PredictedDepartureResolver";
 import { toActualTime } from "../utils/TimeUtils";
 
 export const DepartureType = new GraphQLObjectType({

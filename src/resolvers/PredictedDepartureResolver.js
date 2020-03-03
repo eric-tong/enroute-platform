@@ -4,13 +4,11 @@ import { DateTime } from "luxon";
 import database from "../database/database";
 
 export const PREDICTED_DEPARTURE_COLUMNS = [
-  "id",
-  `scheduled_departure_id AS "scheduledDepartureId"`,
-  `avl_id AS "avlId"`,
-  `predicted_timestamp::text AS "predictedTimestamp"`
-]
-  .map(column => "predicted_departures." + column)
-  .join(", ");
+  "predicted_departures.id",
+  `predicted_departures.scheduled_departure_id AS "scheduledDepartureId"`,
+  `predicted_departures.avl_id AS "avlId"`,
+  `(predicted_departures.predicted_timestamp - MAKE_INTERVAL(secs => COALESCE(predicted_departures.predicted_delta, 0)))::TEXT AS "predictedTimestamp"`
+].join(", ");
 
 export function getPredictedDepartureTodayFromScheduledDepartureId(
   scheduledDepartureId: number
