@@ -77,7 +77,8 @@ CREATE TABLE "predicted_departures" (
   "avl_id" int NOT NULL,
   "scheduled_departure_id" int NOT NULL,
   "predicted_timestamp" timestamptz NOT NULL DEFAULT (now()),
-  "distance" float NOT NULL DEFAULT 0
+  "distance" float NOT NULL DEFAULT 0,
+  "predicted_delta" float,
 );
 
 CREATE TABLE "routes" (

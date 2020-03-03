@@ -80,7 +80,8 @@ async function insertPredictionsFromAvl(avl: AVL) {
         predictedTimestamp: predictedTime.toSQL(),
         avlId: avl.id,
         scheduledDepartureId: upcomingScheduledDepartures[i].id,
-        distance: accumulativeDistances[i]
+        distance: accumulativeDistances[i],
+        predictedDelta: predictedDeltas[i]
       })
     )
   );
@@ -138,15 +139,17 @@ async function insertPrediction(prediction: {|
   scheduledDepartureId: number,
   avlId: number,
   predictedTimestamp: string,
-  distance: number
+  distance: number,
+  predictedDelta: number
 |}) {
   return database.query(
-    "INSERT INTO predicted_departures (scheduled_departure_id, avl_id, predicted_timestamp, distance) VALUES ($1, $2, $3, $4)",
+    "INSERT INTO predicted_departures (scheduled_departure_id, avl_id, predicted_timestamp, distance, predicted_delta) VALUES ($1, $2, $3, $4, $5)",
     [
       prediction.scheduledDepartureId,
       prediction.avlId,
       prediction.predictedTimestamp,
-      prediction.distance
+      prediction.distance,
+      prediction.predictedDelta
     ]
   );
 }
