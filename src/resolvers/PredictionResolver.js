@@ -71,7 +71,12 @@ async function insertPredictionsFromAvl(avl: AVL) {
     travelData.map(data => data.distance)
   );
   const predictedDeltas = await Promise.all(
-    accumulativeDistances.map(distance => predictDelta(tripId, distance))
+    accumulativeDistances.map(distance =>
+      predictDelta(tripId, distance).catch(error => {
+        console.error(error);
+        return 0;
+      })
+    )
   );
 
   Promise.all(
