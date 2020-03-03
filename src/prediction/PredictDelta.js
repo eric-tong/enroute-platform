@@ -12,10 +12,9 @@ export default async function predictDelta(tripId: number, distance: number) {
   });
   if (!model) return 0;
 
-  const prediction = await model.predict(
-    tf.tensor1d([distance / MAX_DISTANCE])
-  );
-  const delta = prediction.dataSync()[0] * MAX_DELTA;
+  const input = Math.min(1, distance / MAX_DISTANCE);
+  const prediction = await model.predict(tf.tensor1d([input])).dataSync()[0];
+  const delta = Math.min(1, Math.max(-1, prediction)) * MAX_DELTA;
   return delta;
 }
 
