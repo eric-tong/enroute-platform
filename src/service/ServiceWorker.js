@@ -19,7 +19,6 @@ startServiceWorker();
 
 function startServiceWorker() {
   TASKS.forEach(({ task, period }) => {
-    task().catch(console.error);
     setIntervalWithCheck(task, period);
   });
   startInitialTasks();

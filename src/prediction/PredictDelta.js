@@ -1,6 +1,5 @@
 // @flow
 
-import "../service/config";
 const tf = require("@tensorflow/tfjs");
 
 const MAX_DISTANCE = 10000;

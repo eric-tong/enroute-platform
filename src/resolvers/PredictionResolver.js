@@ -14,6 +14,7 @@ import { getAllVehicles } from "./VehicleResolver";
 import { getLatestAvlFromVehicleId } from "./AvlResolver";
 import { getScheduledDeparturesFromTripId } from "./ScheduledDepartureResolver";
 import { getTripIdFromAvlId } from "./TripResolver";
+import predictDelta from "../prediction/PredictDelta";
 
 export function insertAllPredictions() {
   return getAllVehicles().then(vehicles =>
@@ -66,9 +67,11 @@ async function insertPredictionsFromAvl(avl: AVL) {
     travelData.map(data => data.duration)
   );
 
-  // accumulative distances use to verify accuracy of predictions over time
   const accumulativeDistances = getAccumulativeDistances(
     travelData.map(data => data.distance)
+  );
+  const predictedDeltas = await Promise.all(
+    accumulativeDistances.map(distance => predictDelta(tripId, distance))
   );
 
   Promise.all(
