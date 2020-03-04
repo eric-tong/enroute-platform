@@ -26,7 +26,7 @@ const server = net.createServer((socket: Socket) => {
     header: undefined,
     imei: undefined
   };
-  console.log(new Date().toUTCString, `Connected to ${client.name}`);
+  console.log(new Date().toUTCString(), `Connected to ${client.name}`);
 
   socket.on("data", (stream: Buffer) => {
     if (!client.header) {
@@ -53,7 +53,7 @@ const server = net.createServer((socket: Socket) => {
   });
 
   socket.on("end", () =>
-    console.log(new Date().toUTCString, `Disconnected from ${client.name}`)
+    console.log(new Date().toUTCString(), `Disconnected from ${client.name}`)
   );
 
   async function setImei(stream: string | Buffer) {
@@ -61,7 +61,7 @@ const server = net.createServer((socket: Socket) => {
     const vehicle = await getVehicleFromImei(imei);
     if (vehicle) {
       console.log(
-        new Date().toUTCString,
+        new Date().toUTCString(),
         `Valid IMEI ${imei}.`,
         `Connected to Vehicle ID ${vehicle.id} ${vehicle.registration}`
       );
@@ -69,7 +69,7 @@ const server = net.createServer((socket: Socket) => {
       write(REPLY.ACCEPT);
     } else {
       write(REPLY.REJECT);
-      console.log(new Date().toUTCString, `Invalid IMEI ${imei}`);
+      console.log(new Date().toUTCString(), `Invalid IMEI ${imei}`);
       socket.end();
     }
   }
@@ -81,7 +81,7 @@ const server = net.createServer((socket: Socket) => {
 
 server.listen(port, () =>
   console.log(
-    new Date().toUTCString,
+    new Date().toUTCString(),
     `EnRoute TCP Platform successfully started at port ${port}.`
   )
 );
