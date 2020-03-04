@@ -13,6 +13,7 @@
     "@babel/preset-env": "^7.6.3",
     "@babel/register": "^7.6.2",
     "@babel/runtime": "^7.6.3",
+    "@sentry/node": "5.13.0",
     "@tensorflow/tfjs": "^1.5.2",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",

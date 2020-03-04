@@ -1,6 +1,7 @@
 // @flow
 
 import { DateTime } from "luxon";
+import checkTrackers from "../trackers/CheckTrackers";
 import { insertAllPredictions } from "../resolvers/PredictionResolver";
 import { updateDeparturesCache } from "./DeparturesCache";
 
@@ -12,6 +13,10 @@ const TASKS: { task: () => Promise<mixed>, period: number }[] = [
   {
     task: updateDeparturesCache,
     period: 15
+  },
+  {
+    task: checkTrackers,
+    period: 30 * 60
   }
 ];
 
