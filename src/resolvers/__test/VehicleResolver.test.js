@@ -1,7 +1,7 @@
 // @flow
 
 import { clearTables, randomId } from "../../__test/testUtils";
-import { getAllVehicles, imeiIsValid } from "../VehicleResolver";
+import { getAllVehicles, getVehicleFromImei } from "../VehicleResolver";
 
 import database from "../../database/database";
 import { insertVehicle } from "../../__test/insert";
@@ -25,7 +25,7 @@ describe("vehicle resolver", () => {
       const imei = randomId().toString();
       await insertVehicle({ imei });
 
-      const actual = await imeiIsValid(imei);
+      const actual = await getVehicleFromImei(imei);
       const expected = true;
 
       expect(actual).toEqual(expected);
@@ -34,7 +34,7 @@ describe("vehicle resolver", () => {
     test("returns false for valid imei", async () => {
       const imei = randomId().toString();
 
-      const actual = await imeiIsValid(imei);
+      const actual = await getVehicleFromImei(imei);
       const expected = false;
 
       expect(actual).toEqual(expected);

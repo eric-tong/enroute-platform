@@ -9,9 +9,9 @@ export function getAllVehicles() {
     .then(results => results.rows);
 }
 
-export function imeiIsValid(imei: string) {
-  const SELECT_VEHICLE_WITH_IMEI = `SELECT imei FROM vehicles WHERE imei = $1`;
+export function getVehicleFromImei(imei: string) {
+  const GET_VEHICLE_FROM_IMEI = `SELECT * FROM vehicles WHERE imei = $1`;
   return database
-    .query<{ imei: string }>(SELECT_VEHICLE_WITH_IMEI, [imei])
-    .then(results => results.rows.length > 0);
+    .query<Vehicle>(GET_VEHICLE_FROM_IMEI, [imei])
+    .then(results => (results.rows.length ? results.rows[0] : undefined));
 }

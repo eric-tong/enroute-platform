@@ -3,7 +3,7 @@
 import type { Codec8Data } from "./Codec8Schema";
 import type { Socket } from "net";
 import crcIsValid from "./Crc16Checker";
-import { imeiIsValid } from "../resolvers/VehicleResolver";
+import { getVehicleFromImei } from "../resolvers/VehicleResolver";
 import { insertBusStopVisitFromAvl } from "../resolvers/BusStopVisitResolver";
 import { insertTrackerDataFromCodec8DataAndImei } from "../resolvers/TrackerDataResolver";
 import net from "net";
@@ -58,8 +58,13 @@ const server = net.createServer((socket: Socket) => {
 
   async function setImei(stream: string | Buffer) {
     const imei = stream.slice(2).toString();
-    if (await imeiIsValid(imei)) {
-      console.log(new Date().toUTCString, `Valid IMEI ${imei}`);
+    const vehicle = await getVehicleFromImei(imei);
+    if (vehicle) {
+      console.log(
+        new Date().toUTCString,
+        `Valid IMEI ${imei}.`,
+        `Connected to Vehicle ID ${vehicle.id} ${vehicle.registration}`
+      );
       client.imei = imei;
       write(REPLY.ACCEPT);
     } else {
