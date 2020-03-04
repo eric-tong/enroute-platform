@@ -26,7 +26,7 @@ const server = net.createServer((socket: Socket) => {
     header: undefined,
     imei: undefined
   };
-  console.log(`Connected to ${client.name}`);
+  console.log(new Date().toUTCString, `Connected to ${client.name}`);
 
   socket.on("data", (stream: Buffer) => {
     if (!client.header) {
@@ -37,6 +37,7 @@ const server = net.createServer((socket: Socket) => {
         else setImei(imei);
       } else {
         write(REPLY.REJECT);
+        socket.end();
       }
     } else if (!client.imei) {
       setImei(stream);
@@ -47,20 +48,23 @@ const server = net.createServer((socket: Socket) => {
       write(Buffer.from([0, 0, 0, data.avlDataCount]));
     } else {
       write(REPLY.REJECT);
+      socket.end();
     }
   });
 
-  socket.on("end", () => console.log(`Disconnected from ${client.name}`));
+  socket.on("end", () =>
+    console.log(new Date().toUTCString, `Disconnected from ${client.name}`)
+  );
 
   async function setImei(stream: string | Buffer) {
     const imei = stream.slice(2).toString();
     if (await imeiIsValid(imei)) {
-      console.log(`Valid IMEI ${imei}`);
+      console.log(new Date().toUTCString, `Valid IMEI ${imei}`);
       client.imei = imei;
       write(REPLY.ACCEPT);
     } else {
       write(REPLY.REJECT);
-      console.log(`Invalid IMEI ${imei}`);
+      console.log(new Date().toUTCString, `Invalid IMEI ${imei}`);
       socket.end();
     }
   }
@@ -71,7 +75,10 @@ const server = net.createServer((socket: Socket) => {
 });
 
 server.listen(port, () =>
-  console.log(`EnRoute TCP Platform successfully started at port ${port}.`)
+  console.log(
+    new Date().toUTCString,
+    `EnRoute TCP Platform successfully started at port ${port}.`
+  )
 );
 
 async function save(data: Codec8Data, imei: string) {
