@@ -1,9 +1,13 @@
 // @flow
 
+import { nodeFileSystemRouter } from "../prediction/NodeFileSystem";
 const tf = require("@tensorflow/tfjs");
 
 const MAX_DISTANCE = 10000;
 const MAX_DELTA = 600;
+
+tf.io.registerLoadRouter(nodeFileSystemRouter);
+tf.io.registerSaveRouter(nodeFileSystemRouter);
 
 export default async function predictDelta(tripId: number, distance: number) {
   const model = await getModel(tripId).catch(error => {
