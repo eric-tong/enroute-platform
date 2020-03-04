@@ -60,11 +60,7 @@ const server = net.createServer((socket: Socket) => {
     const imei = stream.slice(2).toString();
     const vehicle = await getVehicleFromImei(imei);
     if (vehicle) {
-      console.log(
-        new Date().toUTCString(),
-        `Valid IMEI ${imei}.`,
-        `Connected to Vehicle ID ${vehicle.id} ${vehicle.registration}`
-      );
+      console.log(new Date().toUTCString(), `Valid IMEI ${imei}.`, vehicle);
       client.imei = imei;
       write(REPLY.ACCEPT);
     } else {
