@@ -26,7 +26,7 @@ export async function getUpcomingDeparturesFromBusStop(
   busStop: BusStop,
   maxLength?: number = Number.MAX_SAFE_INTEGER
 ) {
-  const departures = await (!busStop.isTerminal
+  const departures: Departure[] = await (!busStop.isTerminal
     ? getAllDeparturesFromBusStopId(busStop.id)
     : await getScheduledDeparturesExceptLastInTripFromBusStopId(
         busStop.id
@@ -35,6 +35,23 @@ export async function getUpcomingDeparturesFromBusStop(
           scheduledDepartures.map(getTerminalDepartureFromScheduledDeparture)
         )
       ));
+
+  if (busStop.willWait) {
+    departures.forEach(departure => {
+      if (departure.predictedDeparture) {
+        const predictedTime = DateTime.fromSQL(
+          departure.predictedDeparture.predictedTimestamp
+        );
+        const scheduledTime = toActualTime(
+          departure.scheduledDeparture.minuteOfDay
+        );
+        if (predictedTime.valueOf() < scheduledTime.valueOf()) {
+          // $FlowFixMe
+          departure.predictedDeparture.predictedTimestamp = scheduledTime.toSQL();
+        }
+      }
+    });
+  }
 
   // $FlowFixMe flow filter bug
   return departures.filter(isUpcomingDeparture).slice(0, maxLength);

@@ -25,7 +25,8 @@ declare type BusStop = {|
   latitude: number,
   longitude: number,
   roadAngle: ?number,
-  isTerminal: boolean
+  isTerminal: boolean,
+  willWait: boolean
 |};
 
 declare type BusStopVisit = {|

@@ -14,7 +14,8 @@ export const BUS_STOP_COLUMNS = [
   "latitude",
   "longitude",
   `road_angle AS "roadAngle"`,
-  `is_terminal AS "isTerminal"`
+  `is_terminal AS "isTerminal"`,
+  `will_wait AS "willWait"`
 ]
   .map(column => "bus_stops." + column)
   .join(", ");
