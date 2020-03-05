@@ -1,5 +1,5 @@
 COPY bus_stops (id, name, street, icon, longitude, latitude, direction, display_position, road_angle, url, is_terminal) FROM stdin;
-1	Begbroke Science Park	Begbroke Lane	B	-1.30649400000000004	51.8179799999999986	Town Centre	1	\N	begbroke-science-park	t
+1	Begbroke Science Park	Begbroke Hill	B	-1.30649400000000004	51.8179799999999986	Town Centre	1	\N	begbroke-science-park	t
 2	Parkway Park & Ride	Oxford Road	P	-1.27447400000000011	51.8022810000000007	Town Centre	2	155	parkway-park-and-ride-southbound	f
 3	Summertown Shops	Banbury Road	S	-1.2649189999999999	51.7777510000000021	Town Centre	3	165	summertown-shops	f
 4	Department of Materials	Parks Road	M	-1.2585869999999999	51.7604240000000004	Town Centre	4	140	department-of-materials-southbound	f
