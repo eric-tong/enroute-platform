@@ -60,9 +60,25 @@ export function getTripIdFromVehicleId(
   vehicleId: number,
   beforeTimestamp?: string = DateTime.local().toSQL()
 ) {
-  return getLatestAvlFromVehicleId(vehicleId).then(avl =>
-    getTripIdFromAvlId(avl.id)
-  );
+  // Pick mode trip from last 5 AVLs to avoid race condition where AVL is inserted
+  // but trip id is still being calculated
+  const GET_TRIP_ID_FROM_VEHICLE_ID = `
+  WITH trips AS (
+  SELECT trip_id FROM avl LEFT JOIN avl_trip 
+    ON avl.id = avl_trip.avl_id
+    WHERE vehicle_id = $1
+    ORDER BY timestamp DESC
+    LIMIT 5
+  )
+
+  SELECT trip_id AS "tripId" FROM trips
+    GROUP BY trip_id
+    ORDER BY COUNT(*) DESC
+    LIMIT 1
+  `;
+  return database
+    .query(GET_TRIP_ID_FROM_VEHICLE_ID, [vehicleId])
+    .then(results => (results.rows.length ? results.rows[0].tripId : null));
 }
 
 export async function tripIsStarted(tripId: number) {
