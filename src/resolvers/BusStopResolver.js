@@ -88,6 +88,7 @@ export function getBusStopFromAvlId(avlId: number) {
     SELECT ${BUS_STOP_COLUMNS} FROM avl
       INNER JOIN bus_stop_visits ON bus_stop_visits.avl_id = avl.id
       INNER JOIN bus_stops ON bus_stops.id = bus_stop_visits.bus_stop_id
+      WHERE is_proxy = false
     `;
 
   return database

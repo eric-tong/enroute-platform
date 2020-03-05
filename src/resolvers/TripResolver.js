@@ -8,7 +8,6 @@ import {
 
 import { DateTime } from "luxon";
 import database from "../database/database";
-import { getBusStopFromAvlId } from "./BusStopResolver";
 import { timeDifferenceInSeconds } from "../utils/TimeUtils";
 
 export function getTripIdFromAvlId(avlId: number) {

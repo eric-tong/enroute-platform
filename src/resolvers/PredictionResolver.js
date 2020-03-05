@@ -42,10 +42,11 @@ async function insertPredictionsFromAvl(avl: AVL) {
   );
   if (upcomingBusStops.length < 1) return [];
 
-  const upcomingScheduledDepartures: ScheduledDeparture[] = await getScheduledDeparturesFromTripId(
+  const scheduledDepartures: ScheduledDeparture[] = await getScheduledDeparturesFromTripId(
     tripId
-  ).then(scheduledDepartures =>
-    scheduledDepartures.slice(-1 * upcomingBusStops.length)
+  );
+  const upcomingScheduledDepartures = scheduledDepartures.slice(
+    -1 * upcomingBusStops.length
   );
 
   const waypoints = [
@@ -61,8 +62,32 @@ async function insertPredictionsFromAvl(avl: AVL) {
     toActualTime(scheduledDeparture.minuteOfDay)
   );
 
+  // If vehicle is current at a bus stop and the bus stop is part of the trip
+  // all subsequent predictions should start from the scheduled departure time
+  // of the bus stop if it is currently before that time (assume waiting)
+  const startTime = (() => {
+    const avlTime = DateTime.fromSQL(avl.timestamp);
+    if (
+      !visitedBusStops.length ||
+      !currentBusStop ||
+      visitedBusStops[visitedBusStops.length - 1].id !== currentBusStop.id
+    )
+      return avlTime;
+
+    const currentScheduledDeparture = scheduledDepartures.find(
+      scheduledDeparture => scheduledDeparture.busStopId === currentBusStop.id
+    );
+    if (!currentScheduledDeparture) return avlTime;
+
+    const scheduledDepartureTime = toActualTime(
+      currentScheduledDeparture.minuteOfDay
+    );
+    if (avlTime.valueOf() > scheduledDepartureTime.valueOf()) return avlTime;
+    return scheduledDepartureTime;
+  })();
+
   const predictedTimes = getAccumulativeTimes(
-    DateTime.fromSQL(avl.timestamp),
+    startTime,
     minimumTimes,
     travelData.map(data => data.duration)
   );
