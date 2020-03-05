@@ -35,8 +35,8 @@ CREATE TABLE "bus_stops" (
   "latitude" float NOT NULL,
   "road_angle" int,
   "is_terminal" boolean NOT NULL DEFAULT false,
-  "will_wait"  boolean NOT NULL DEFAULT false,
   "display_position" int,
+  "will_wait"  boolean NOT NULL DEFAULT false,
 );
 
 CREATE TABLE "bus_stop_proxies" (
