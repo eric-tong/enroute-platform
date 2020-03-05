@@ -12,6 +12,7 @@ import {
 } from "../resolvers/VehicleResolver";
 
 import { AvlType } from "./AvlSchema";
+import { TripType } from "./TripSchema";
 import { getLatestAvlFromVehicleId } from "../resolvers/AvlResolver";
 import { getTripIdFromVehicleId } from "../resolvers/TripResolver";
 
@@ -27,8 +28,11 @@ const VehicleType = new GraphQLObjectType({
       resolve: (vehicle: Vehicle) => getLatestAvlFromVehicleId(vehicle.id)
     },
     trip: {
-      type: GraphQLInt,
-      resolve: (vehicle: Vehicle) => getTripIdFromVehicleId(vehicle.id)
+      type: TripType,
+      resolve: (vehicle: Vehicle) =>
+        getTripIdFromVehicleId(vehicle.id).then(id => ({
+          id
+        }))
     }
   })
 });
