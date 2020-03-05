@@ -9,6 +9,13 @@ export function getAllVehicles() {
     .then(results => results.rows);
 }
 
+export function getVehicleFromRegistration(registration: string) {
+  const GET_VEHICLE_FROM_REGISTRATION = `SELECT * FROM vehicles WHERE LOWER(registration) = LOWER($1)`;
+  return database
+    .query<Vehicle>(GET_VEHICLE_FROM_REGISTRATION, [registration])
+    .then(results => (results.rows.length ? results.rows[0] : undefined));
+}
+
 export function getVehicleFromImei(imei: string) {
   const GET_VEHICLE_FROM_IMEI = `SELECT * FROM vehicles WHERE imei = $1`;
   return database

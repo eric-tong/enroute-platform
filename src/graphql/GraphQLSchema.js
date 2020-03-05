@@ -3,11 +3,11 @@
 import { BusStopQuery, BusStopsQuery } from "./BusStopSchema";
 import { CheckOutMutation, CreateNewCheckInMutation } from "./CheckInSchema";
 import { GraphQLObjectType, GraphQLSchema } from "graphql";
+import { VehicleQuery, VehiclesQuery } from "./VehicleSchema";
 
 import { AvlQuery } from "./AvlSchema";
 import { RouteQuery } from "./RouteSchema";
 import { TripQuery } from "./TripSchema";
-import { VehicleQuery } from "./VehicleSchema";
 
 const MutationType = new GraphQLObjectType({
   name: "MutationType",
@@ -20,7 +20,8 @@ const MutationType = new GraphQLObjectType({
 const RootQueryType = new GraphQLObjectType({
   name: "RootQueryType",
   fields: {
-    vehicles: VehicleQuery,
+    vehicles: VehiclesQuery,
+    vehicle: VehicleQuery,
     busStops: BusStopsQuery,
     busStop: BusStopQuery,
     route: RouteQuery,
