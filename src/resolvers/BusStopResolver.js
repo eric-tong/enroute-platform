@@ -129,7 +129,7 @@ export async function getNearbyBusStopsFromLocation(
     WITH bus_stops AS (
       SELECT bus_stops.id, bus_stops.url, bus_stops.name, bus_stops.street, bus_stops.direction, bus_stops.icon, 
       bus_stop_proxies.longitude, bus_stop_proxies.latitude, bus_stops.road_angle, bus_stops.is_terminal, 
-      bus_stops.display_position, true as is_proxy FROM bus_stops 
+      bus_stops.display_position, true as is_proxy, bus_stops.will_wait FROM bus_stops 
       INNER JOIN bus_stop_proxies ON bus_stops.id = bus_stop_proxies.bus_stop_id 
       UNION SELECT *, false as is_proxy FROM bus_stops
     )
