@@ -23,7 +23,7 @@ export default async function checkTrackers() {
         scope.setLevel("warning");
         scope.setExtra(
           "vehicle",
-          vehicles.find(vehicle => (vehicle.id = avl.vehicleId))
+          vehicles.find(vehicle => vehicle.id === avl.vehicleId)
         );
         scope.setExtra("avl", avl);
         captureException(new Error("Tracker hasn't sent data in a while"));

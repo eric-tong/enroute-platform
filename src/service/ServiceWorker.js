@@ -31,7 +31,7 @@ function startServiceWorker() {
 
 function setIntervalWithCheck(task, periodInSeconds) {
   return setInterval(() => {
-    if (shouldRunTasks) task().catch(console.error);
+    if (shouldRunTasks()) task().catch(console.error);
   }, periodInSeconds * 1000);
 }
 
@@ -43,5 +43,5 @@ async function startInitialTasks() {
 
 function shouldRunTasks() {
   const now = DateTime.local();
-  return now.weekday <= 5 && now.hour > 7 && now.hour < 20;
+  return now.weekday <= 5 && now.hour >= 6 && now.hour <= 21;
 }
