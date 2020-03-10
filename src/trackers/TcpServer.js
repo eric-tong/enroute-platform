@@ -57,6 +57,7 @@ const server = net.createServer((socket: Socket) => {
   });
 
   socket.on("end", () => {
+    clients.delete(socket);
     console.log(
       new Date().toUTCString(),
       "Disconnected from",
