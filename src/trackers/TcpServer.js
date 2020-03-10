@@ -30,7 +30,7 @@ const server = net.createServer((socket: Socket) => {
   };
   clients.set(socket, client);
   console.log(new Date().toUTCString(), `Connected to ${client.name}`);
-  console.table(clients.values());
+  printClients();
 
   socket.on("data", (stream: Buffer) => {
     if (!client.header) {
@@ -63,7 +63,7 @@ const server = net.createServer((socket: Socket) => {
       "Disconnected from",
       client.vehicle ?? client.name
     );
-    console.table(clients.values());
+    printClients();
   });
 
   async function setImei(stream: string | Buffer) {
@@ -97,4 +97,8 @@ async function save(data: Codec8Data, imei: string) {
   insertTrackerDataFromCodec8DataAndImei(data, imei)
     .then(avls => Promise.all(avls.map(insertBusStopVisitFromAvl)))
     .catch(console.error);
+}
+
+function printClients() {
+  console.log(Array.from(clients.values()));
 }
