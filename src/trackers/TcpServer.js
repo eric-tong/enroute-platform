@@ -100,5 +100,10 @@ async function save(data: Codec8Data, imei: string) {
 }
 
 function printClients() {
-  console.table(Array.from(clients.values()));
+  console.table(
+    Array.from(clients.values()).map(client => ({
+      ...client,
+      vehicle: client.vehicle ? client.vehicle.id : undefined
+    }))
+  );
 }
