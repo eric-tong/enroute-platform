@@ -12,7 +12,8 @@ import parseCodec8Stream from "./Codec8Parser";
 type Client = {|
   name: string,
   header: ?string,
-  imei: ?string
+  imei: ?string,
+  vehicle: ?Vehicle
 |};
 
 const REPLY = { ACCEPT: "\x01", REJECT: "\x00" };
@@ -24,9 +25,12 @@ const server = net.createServer((socket: Socket) => {
   const client: Client = {
     name: `${socket.remoteAddress ?? "undefined"}:${socket.remotePort}`,
     header: undefined,
-    imei: undefined
+    imei: undefined,
+    vehicle: undefined
   };
+  clients.set(socket, client);
   console.log(new Date().toUTCString(), `Connected to ${client.name}`);
+  console.table(clients.values());
 
   socket.on("data", (stream: Buffer) => {
     if (!client.header) {
@@ -39,7 +43,7 @@ const server = net.createServer((socket: Socket) => {
         write(REPLY.REJECT);
         socket.end();
       }
-    } else if (!client.imei) {
+    } else if (!isNaN(stream.toString()) && !client.imei) {
       setImei(stream);
     } else if (client.imei && crcIsValid(stream)) {
       const imei = client.imei;
@@ -52,9 +56,14 @@ const server = net.createServer((socket: Socket) => {
     }
   });
 
-  socket.on("end", () =>
-    console.log(new Date().toUTCString(), `Disconnected from ${client.name}`)
-  );
+  socket.on("end", () => {
+    console.log(
+      new Date().toUTCString(),
+      "Disconnected from",
+      client.vehicle ?? client.name
+    );
+    console.table(clients.values());
+  });
 
   async function setImei(stream: string | Buffer) {
     const imei = stream.slice(2).toString();
@@ -62,6 +71,7 @@ const server = net.createServer((socket: Socket) => {
     if (vehicle) {
       console.log(new Date().toUTCString(), `Valid IMEI ${imei}.`, vehicle);
       client.imei = imei;
+      client.vehicle = vehicle;
       write(REPLY.ACCEPT);
     } else {
       write(REPLY.REJECT);
