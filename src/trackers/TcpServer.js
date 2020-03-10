@@ -42,7 +42,7 @@ const server = net.createServer((socket: Socket) => {
         write(REPLY.REJECT);
         socket.end();
       }
-    } else if (!isNaN(stream.toString()) && !client.imei) {
+    } else if (!isNaN(stream.slice(2).toString()) && !client.imei) {
       setImei(stream);
     } else if (client.imei && crcIsValid(stream)) {
       const imei = client.imei;
