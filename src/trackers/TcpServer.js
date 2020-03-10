@@ -100,5 +100,5 @@ async function save(data: Codec8Data, imei: string) {
 }
 
 function printClients() {
-  console.log(Array.from(clients.values()));
+  console.table(Array.from(clients.values()));
 }
