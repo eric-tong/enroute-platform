@@ -30,7 +30,6 @@ const server = net.createServer((socket: Socket) => {
   };
   clients.set(socket, client);
   console.log(new Date().toUTCString(), `Connected to ${client.name}`);
-  printClients();
 
   socket.on("data", (stream: Buffer) => {
     if (!client.header) {
@@ -74,6 +73,7 @@ const server = net.createServer((socket: Socket) => {
       client.imei = imei;
       client.vehicle = vehicle;
       write(REPLY.ACCEPT);
+      printClients();
     } else {
       write(REPLY.REJECT);
       console.log(new Date().toUTCString(), `Invalid IMEI ${imei}`);
